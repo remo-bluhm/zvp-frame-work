@@ -45,8 +45,7 @@ class Version {
 	 * Setzt ein Update auf die Daten
 	 *
 	 * @param $queryData unknown_type Die Anfrage Daten zb. id zur genauen identivizierung der Zeile
-	 * @param $updateHashKey string
-	 *       	 UPDATE_HASH_KEY
+	 * @param $updateHashKey string UPDATE_HASH_KEY
 	 * @param $newData unknown_type       	
 	 */
 	public function setUpdate($queryData, $updateHashKey, $newData) {
