@@ -1,7 +1,5 @@
 ﻿<?php
 
-
-
 class Version {
 	
 	/**
@@ -22,10 +20,8 @@ class Version {
 	/**
 	 * Hollt die Daten für die aufbereitung des Formulars
 	 * 
-	 * @param $queryData unknown_type
-	 *       	 Die Anfrage Daten zb. id zur genauen identivizierung
-	 * @return Ambigous <unknown, multitype:> Die Daten für die aufbereitung des
-	 *         Formulars
+	 * @param $queryData unknown_type Die Anfrage Daten zb. id zur genauen identivizierung
+	 * @return Ambigous <unknown, multitype:> Die Daten für die aufbereitung des Formulars
 	 */
 	public function getUpdateData($queryData) {
 		
