@@ -33,7 +33,7 @@ class DBConnect {
 	const CONF_DB_PRAFIX = "prafix";
 	
 	public static function Connect(Zend_Config $dbConfig) {
-		
+
 		if ($dbConfig === NULL) {
 			throw new Exception ( "Dem Datenbank Connect wurde keine oder eine falsche Configuration Übergeben!", E_ERROR );
 		}

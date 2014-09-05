@@ -15,9 +15,20 @@
 	</fbConsole>
 
 
-	<!--<database> <adapter>Pdo_Mysql</adapter> <params> <host>db1033.mydbserver.com</host> 
-		<dbname>usr_p41239_3</dbname> <username>p41239d1</username> <password>mCmJzsfm54</password> 
-		</params> </database> -->
+	<!-- Online Datenbak bei Bäder Tourist -->
+	
+	<database> 
+		<adapter>Pdo_Mysql</adapter> 
+		<params>
+			<host>db1146.mydbserver.com</host> 
+			<dbname>usr_p41239_1</dbname> 
+			<username>p41239d2</username> 
+			<password>iyuhAqek$345</password> 
+		</params> 
+	</database> 
+	
+	<!-- Alte zugangsdaten von virtualen Rechner xampp -->
+	<!--
 	<database>
 		<prafix></prafix>
 		<adapter>Pdo_Mysql</adapter>
@@ -28,6 +39,7 @@
 			<password>t6yLCVq7jnYu8qx2</password>
 			<charset>utf8</charset></params>
 	</database>
+	-->
 
 	<cacheRightsAcl isOn="false">
 		<frontendOption>
@@ -36,7 +48,7 @@
 			<caching>true</caching>
 		</frontendOption>
 		<backendOption>
-			<cache_dir>C:/xampp/htdocs/service/sys/webserv/data/cach/rights/</cache_dir>
+			<cache_dir>C:/xampp/htdocs/zvp-frame-work/cach/rights/</cache_dir>
 		</backendOption>
 	</cacheRightsAcl>
 
@@ -67,7 +79,7 @@
 	<serviceResource>
 
 		<allDirectory>
-			<dir>C:\xampp\htdocs\service\sys\v1.1\service</dir>
+			<dir>C:\xampp\htdocs\zvp-frame-work\service/</dir>
 		</allDirectory>
 
 		<service>

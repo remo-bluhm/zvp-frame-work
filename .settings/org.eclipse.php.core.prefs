@@ -1,4 +1,4 @@
-#Thu Sep 04 12:58:06 CEST 2014
+#Thu Sep 04 18:19:35 CEST 2014
 eclipse.preferences.version=1
-include_path=5;org.zend.php.framework.CONTAINER\u00055;org.eclipse.dltk.USER_LIBRARY/libzend\u00050;/ZVP-Service
+include_path=5;org.eclipse.dltk.USER_LIBRARY/libzend\u00050;/ZVP-FrameWork
 use_asp_tags_as_php=false

@@ -616,10 +616,8 @@ class ServiceResource {
 	 * Giebt alle Dateinamen eines Servicesverzeichnis in einen Array zurück.
 	 * Giebt nur die datein die den Prefix "Service" haben.
 	 * 
-	 * @param
-	 *       	 string Verzeichnisory
-	 * @throws Exception "Der Pfad zu der Resource ( $Directory ) ist nicht
-	 *         vorhanden"
+	 * @param string Verzeichnisory
+	 * @throws Exception "Der Pfad zu der Resource ( $Directory ) ist nicht vorhanden"
 	 * @throws Exception "Die Übergabe des Verzeichnises mus ein String sein"
 	 * @return array:
 	 */
@@ -699,6 +697,8 @@ class ServiceResource {
 		$classIsOnIsFalse = TRUE;
 		
 		if (is_object ( $ClassDockBlock )) {
+			
+			$classIsOnDocValue = NULL;
 			
 			if ($ClassDockBlock->hasTag ( self::$FileDescTag_CitroIsOn_Text )) {
 				

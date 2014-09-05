@@ -38,8 +38,7 @@ class ServiceContact extends AService {
 		require_once 'db/contact/contacts.php';
 	
 		$db = contacts::getDefaultAdapter();
-	
-	
+
 		$resortSel = $db->select ();
 	
 		$spA = array();
