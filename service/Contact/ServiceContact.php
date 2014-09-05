@@ -411,19 +411,12 @@ class ServiceContact extends AService {
 	 */
 	public function ActionUpdateData($contactId, $userDataArray) {
 	
-		//$user = $this->ActionGetContact ( $contactId );
+
 		
 		require_once 'citro/db/contact/contacts.php';
 		require_once 'citro/DBupdateRepository.php';
 		
-// 		// Abarbeitung der Guppe
-// 		$idList = $this->_MainUser->getMyGroups ( TRUE );
-// 		if (array_key_exists ( "group_id", $userDataArray )) {
-// 			if (in_array ( $userDataArray ["group_id"], $idList )) {
-// 				$userDataArray [sys_user::SP_GROUPID] = $userDataArray ["group_id"];
-// 			}
-// 		}
-		
+
 		$userDataArray [contacts::SP_DATA_EDIT] = DBTable::DateTime ();
 		$userDataArray [contacts::SP_USER_EDIT] = $this->_MainUser->getGUID();
 		
@@ -439,19 +432,12 @@ class ServiceContact extends AService {
 				contacts::SP_TELEFON_FAX,
 				);
 		
-// 				$userTab = new sys_user ();
-// 				$userSelect = $userTab->select ();
-// 				$userSelect->where ( sys_user::SP_GUID . " = ?", $guid );
-// 				$userRow = $userTab->fetchRow ( $userSelect );
-// 				$userId = $userRow->offsetGet ( "id" );
-		
 				$repos = new DBupdateRepository ( $this->_MainUser->getGUID(), new contacts (), $contactId );
-	//	print_r($userDataArray);
+
 				$isUpdateUser = $repos->setUpdate ( $userDataArray, $updateColumn );
 		
 				return $isUpdateUser;
 	}
-	
 
 	
 	
