@@ -1,5 +1,5 @@
 ﻿<?php
-
+// class version
 class Version {
 	
 	/**
