@@ -921,7 +921,7 @@ class ServiceGroup extends AService {
 		require_once 'db/sys/access/sys_access.php';
 		
 		$accessTab = new sys_access();
-		$accessRow = $accessTab->createRow($this->_rightsAcl->getAccess()->getId(), $contactsId, $groupId, $loginmail, $password, array());
+		$accessRow = $accessTab->createAccessRow($this->_rightsAcl->getAccess()->getId(), $contactsId, $groupId, $loginmail, $password, array());
 		$accessRow->save();
 		return $accessRow->toArray();
 	

@@ -2,9 +2,9 @@
 
 require_once 'citro/DBTable.php';
 /**
- * class sys_customer
+ * class sys_access
  *
- * Description for class sys_customer
+ * Description for class sys_access
  *
  * @author :
  *        
@@ -173,8 +173,8 @@ class sys_access extends DBTable {
 	 * @param array		$data 
 	 * @return Zend_Db_Table_Row_Abstract 
 	 */
-	public function createRow($accessId, $contactid, $groupid, $loginname, $password_blank, $data){
-		
+	public function createAccessRow($accessId, $contactid, $groupid, $loginname, $password_blank, $data){
+	
 
 		$data[self::SP_CONTACT_ID] = $contactid;
 		$data[self::SP_GROUPID] = $groupid;
@@ -193,7 +193,7 @@ class sys_access extends DBTable {
 		$data[self::SP_ADMIN] = 0;
 		$data[self::SP_DELETE] = 0;
 		
-		$accessRow = parent::createRow($data);
+		$accessRow = $this->createRow($data);
 		return $accessRow;
 	}
 	
