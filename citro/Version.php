@@ -1,6 +1,6 @@
 ﻿<?php
 // class version
-// so und jetzt noch mal für das Pad
+// 
 class Version {
 	
 	/**
