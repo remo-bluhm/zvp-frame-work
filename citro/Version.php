@@ -1,6 +1,6 @@
 ﻿<?php
 // class version
-// so noch mal was 
+// jetzt mach schon
 class Version {
 	
 	/**
