@@ -48,7 +48,7 @@
 			<caching>true</caching>
 		</frontendOption>
 		<backendOption>
-			<cache_dir>C:/xampp/htdocs/zvp-frame-work/cach/rights/</cache_dir>
+			<cache_dir>C:/xampp/htdocs/cach/rights/</cache_dir>
 		</backendOption>
 	</cacheRightsAcl>
 
