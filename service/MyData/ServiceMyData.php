@@ -125,9 +125,10 @@ class ServiceMyData extends AService {
 	 */
 	public function ActionUpdateData($uid, $hashKey, $data) {
 	
+		//$uid = $this->_rightsAcl->getAccess()->
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
-		require_once 'service/Contact/ServiceContactUpdate.php';
-		$servContUpd = new ServiceContactUpdate($uid);
+		require_once 'service/Contact/ServiceContactUpdateHelper.php';
+		$servContUpd = new ServiceContactUpdateHelper($uid);
 		
 		// Inizialisieren des Update Reposetorys
 // 		require_once 'citro/update/UpdateFactory.php';
@@ -161,14 +162,14 @@ class ServiceMyData extends AService {
 	public function ActionGetToUpdate() {
 		
 		$myContactId = $this->_rightsAcl->getAccess()->getContactId();
-		$db = DBConnect::getConnect();
-		$sqlContact = $db->select()->from("contacts",array("uid"))->where("id = ?",$myContactId) ;
-		$myContactUid = $db->fetchOne($sqlContact);
+// 		$db = DBConnect::getConnect();
+// 		$sqlContact = $db->select()->from("contacts",array("uid"))->where("id = ?",$myContactId) ;
+// 		$myContactId = $db->fetchOne($sqlContact);
 
 		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
-		require_once 'service/Contact/ServiceContactUpdate.php';
-		$servContUpd = new ServiceContactUpdate($myContactUid);
+		require_once 'service/Contact/ServiceContactUpdateHelper.php';
+		$servContUpd = new ServiceContactUpdateHelper($myContactId);
 
 		// Inizialisieren des Update Reposetorys
 		require_once 'citro/update/SelectFactory.php';
@@ -183,33 +184,7 @@ class ServiceMyData extends AService {
 	
 		
 		return $backData;
-		
-// 		echo "<pre>";
-// 		print_r($dbupdateReposetory->getToUpdate());
-		//print_r($backData);
-// 		print_r($dbupdateReposetory->getHashKey());
-		//return $backData;
-		
-		
-// 		$userTab = new sys_user ();
-// 		$userSelect = $userTab->select ();
-// 		$userSelect->where ( sys_user::SP_ID . " = ?", $MyId );
-// 		$userRow = $userTab->fetchRow ( $userSelect );
-// 		$userId = $userRow->offsetGet ( "id" );
-		
-// 		$user = $userRow->toArray ();
-		
-// 		require_once 'citro/db/sys/sys_user.php';
-// 		require_once 'citro/DBupdateRepository.php';
-		
-// 		$repos = new DBupdateRepository ( $this->_MainUser, new sys_user (), $userId );
-		
-// 		$hashKeyArray = $repos->getUpdateHashKey ();
-		
-// 		$result = array_merge ( ( array ) $user, ( array ) $hashKeyArray );
-		
-// 		return $result;
-	
+			
 	}
 	
 	

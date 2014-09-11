@@ -1,12 +1,15 @@
 <?php
 require_once 'citro/update/UpdateDb.php';
 
-class ServiceContactUpdate extends UpdateDb{
+class ServiceContactUpdateHelper extends UpdateDb{
 	
-	private $_contactUId = NULL;
+	private $_contactId = NULL;
 	
-	function __construct($ContactUid){
-		$this->_contactUId = $ContactUid;
+	/**
+	 * @param sting $ContactId Die contact Id
+	 */
+	function __construct($ContactId){
+		$this->_contactId = $ContactId;
 	}
 
 
@@ -18,7 +21,7 @@ class ServiceContactUpdate extends UpdateDb{
 		require_once 'service/Contact/ServiceContact.php';
 
 		$contact = new ServiceContact();
-		$backData = $contact->ActionGetSingle($this->_contactUId);
+		$backData = $contact->ActionGetSingle($this->_contactId);
 
 		return $backData;
 	
@@ -42,7 +45,7 @@ class ServiceContactUpdate extends UpdateDb{
 	
 		
 		$contUpdateData = array_intersect_key($updateData, array_flip($contData));
-		$where = $contTab->getDefaultAdapter()->quoteInto("uid = ?", $this->_contactUId) ;
+		$where = $contTab->getDefaultAdapter()->quoteInto("id = ?", $this->_contactId) ;
 		$contTab->update($contUpdateData,$where );
 
 		

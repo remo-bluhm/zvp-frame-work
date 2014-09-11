@@ -369,36 +369,50 @@ class ServiceContact extends AService {
 	}
 	
 	/**
-	 * Giebt einen einzelnen contact zurück
+	 * Giebt Die Daten zurück für den Update
 	 *
-	 * @param string $contactId  Die Guid des Users als Strüng
+	 * @param string $contactUId  Die Guid des Users als Strüng
 	 * @return array rückgabe wert
 	 * @citro_isOn true
 	 */
-	public function ActionGetToUpdate($contactId) {
+	public function ActionGetToUpdate($contactUId) {
 
 	
 		
+// 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
+// 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
+// 		$servContUpd = new ServiceContactUpdateHelper($contactId);
+		
+// 		// Inizialisieren des Update Reposetorys
+// 		require_once 'citro/update/ToUpdateFactory.php';
+// 		$dbupdateReposetory = new ToUpdateFactory( DBConnect::getConnect(),$servContUpd );
+		
+		
+// 		return $updateData;
+		
+		$myContactId = $contactUId;
+		$db = DBConnect::getConnect();
+		$sqlContact = $db->select()->from("contacts",array("id"))->where("uid = ?",$contactUId) ;
+		$myContactId = $db->fetchOne($sqlContact);
+		
+		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
-		require_once 'service/Contact/ServiceContactUpdate.php';
-		$servContUpd = new ServiceContactUpdate($contactId);
+		require_once 'service/Contact/ServiceContactUpdateHelper.php';
+		$servContUpd = new ServiceContactUpdateHelper($myContactId);
 		
 		// Inizialisieren des Update Reposetorys
-		require_once 'citro/update/ToUpdateFactory.php';
-		$dbupdateReposetory = new ToUpdateFactory( DBConnect::getConnect(),$servContUpd );
-		
-		// Hollen der UpdateDaten
-		//$updateData = $dbupdateReposetory->getToUpdate($servContUpd);
-		// Erstellen einses Hashkeys aus den updateDaten
-		//$updateHashKey = $dbupdateReposetory->generateeHashKey($updateData);
-		
-		// verbinden der Daten zum verschicken
-		//$updateHashKeyArray = array (DBupdateRepository::UPDATE_HASH_KEY => $updateHashKey );
-		//$updateData = array_merge ( ( array ) $updateData, ( array ) $updateHashKeyArray );
-		
-		return $updateData;
+		require_once 'citro/update/SelectFactory.php';
+		$dbupdateReposetory = new SelectFactory( DBConnect::getConnect(),$servContUpd );
+		$dbupdateReposetory->toUpdate();
 		
 		
+		require_once 'citro/update/UpdateHelpFunc.php';
+		//$backArray = array("title","first_name","first_add_name","last_name","affix_name","uid","edata","vdata");
+		//$backData = UpdateHelpFunc::getColumnToUpdate($dbupdateReposetory->getToUpdate(), $backArray);
+		$backData = UpdateHelpFunc::insertHashKey($dbupdateReposetory);
+		
+		
+		return $backData;
 	
 	}
 	
