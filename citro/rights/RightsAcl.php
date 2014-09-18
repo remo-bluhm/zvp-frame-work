@@ -357,7 +357,7 @@ class RightsAcl extends Zend_Acl {
 		
 			$this->_setRechte ($group->getRoleId() );
 			
-			$this->_counter++;
+			//$this->_counter++;
 		
 		}
 		
