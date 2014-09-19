@@ -12,20 +12,85 @@
  */
 class ServiceResourceInstance {
 	
-	private static $_CacheIsOn = TRUE;
-	private static $_CacheLifeTime = 3600;
-	private static $_cacheDir = NULL;
+	const CONF_SERVICERESOURCE = "serviceResource";
+	
+	private $_cacheName = "Main";
+	private $_CacheIsOn = TRUE;
+	private $_CacheLifeTime = 3600;
+	private $_cacheDir = NULL;
+	
+	private $_cachePreFileName = "resource_";
+	
+	private $_confServiceResource = NULL;
+	private $conf = NULL;
+	
+	function __construct( Zend_Config $servResConf = NULL){
+		
+		$this->conf = $servResConf;
+		
+		if(is_a($servResConf, "Zend_Config")) $this->workConfig ( $servResConf );
+		
+
+	}
+	
+	
+	/**
+	 * @param cachConf
+	 */
+	private function workConfig(Zend_Config $conf) {
+		
+		
+		if($conf->__isset("cache") && is_a($conf->cache, "Zend_Config")) {
+			
+			$cachConf = $conf->cache;
+						
+			if($cachConf->__isset("name")) $this->setName($cachConf->name);
+			
+			if($cachConf->__isset("frontendOption") && is_a($cachConf->frontendOption, "Zend_Config")){
+				
+				if($cachConf->frontendOption->__isset("caching")) $this->setCacheOff($cachConf->frontendOption->caching);
+				if($cachConf->frontendOption->__isset("lifetime")) $this->setCacheLifeTime($cachConf->frontendOption->lifetime);
+				
+			}
+			
+			if($cachConf->__isset("backendOption") && is_a($cachConf->backendOption, "Zend_Config")){
+				if($cachConf->backendOption->__isset("cache_dir")) $this->setCachDir($cachConf->backendOption->cache_dir);					
+			}
+
+		}
+		
+		if($conf->__isset("serviceResource") && is_a($conf->serviceResource, "Zend_Config")) {
+				
+			$this->_confServiceResource = $conf->serviceResource;
+		}
+	}
+
+	
+	
+	
 	
 	/**
 	 * Hiermit kann der Cach ausgeschaltet werden
 	 * 
-	 * @param $isOn bool       	
+	 * @param $isOn bool|string  by String True or False       	
 	 */
-	public static function setCacheOff($isOn = TRUE) {
-		if (is_bool ( $isOn )) {
-			self::$_CacheIsOn = $isOn;
+	public function setCacheOff($isOn = TRUE) {
+		
+		if(is_string($isOn)){
+			switch ( strtoupper( $isOn )){
+				case "TRUE":$isOn = TRUE;break;
+				case "FALSE":$isOn = FALSE;break;
+			}
 		}
+			
+			
+		if (is_bool ( $isOn ))	$this->_CacheIsOn = $isOn;
+		
+		
 	}
+	
+	
+	
 	
 	/**
 	 * Setzt die Zeit in Sekunden wann der Cache verfallen soll
@@ -34,12 +99,34 @@ class ServiceResourceInstance {
 	 * 
 	 * @param $Sek integer       	
 	 */
-	public static function setCacheLifeTime($Sek) {
-		if ($Sek > 0) {
-			self::$_CacheLifeTime = $Sek;
+	public function setCacheLifeTime($Sek) {
+		if(is_numeric($Sek)){
+			if ($Sek > 0) $this->_CacheLifeTime = $Sek;
 		}
 	}
 	
+	
+	
+	
+	/**
+	 * Setzt den Namen für die Cache Datei
+	 * @param string $name
+	 */
+	public function setName($name){
+		$this->_cacheName = $name;
+	}
+	
+	
+	
+	
+	/**
+	 * Kann separat gennommen werden um der ServiceResourche einene config mitzugeben
+	 * standartmäsig kann diese aber auch bei der inizialisierungs config mit eingeschlossen werden
+	 * @param Zend_Config $conf
+	 */
+	public function setConfigServiceResource(Zend_Config $conf){
+		$this->_confServiceResource = $conf;
+	}
 	
 	
 	
@@ -50,14 +137,14 @@ class ServiceResourceInstance {
 	 *
 	 * @return string
 	 */
-	public static function setCachDir($dir) {
-		if(is_dir($dir)){
-			self::$_cacheDir = $dir;
-			return TRUE;
-		}else{
-			return FALSE;
-		}
+	public function setCachDir($dir) {
+		if(is_dir($dir)){$this->_cacheDir = $dir;return TRUE;
+		}else{return FALSE;	}
 	}
+	
+	
+	
+	
 	
 	/**
 	 * Giebt das Verzeichnis zurück in den die Cachdaten gespeichert werden
@@ -65,105 +152,101 @@ class ServiceResourceInstance {
 	 * 
 	 * @return string
 	 */
-	public static function getCachDir() {
+	public function getCachDir() {
 		//$dir = dirname ( __FILE__ ) . DIRECTORY_SEPARATOR . "serviceResource_Cach";
-		return self::$_cacheDir;
+		return $this->_cacheDir;
 	}
+	
+	
+	
 	
 	/**
 	 * Löscht den Cache
 	 */
-	public static function CacheRefresch() {
-		$cache = self::getCacheObj ();
+	public function CacheRefresch() {
+		$cache = $this->getCacheObj();
 		$cache->remove ( "resource" );
 	}
 	
+
+	
+	// Fertig Inizialiserte und abgearbeitete ResourcenObjekte
+	private  $serviceResourceInst = NULL;
+	// ist die übergebene noch nicht abgearbeitete ServiceResourcen objekte nur
+	// Inizialisiert
+	//private static $ServResourceObj = array ();
+	
+
+	public function existInstance(){
+		if(is_a($this->serviceResourceInst, "ServiceResource")) return TRUE;
+		return FALSE;
+	}
+	
+	public function getInstance() {
+
+		if($this->existInstance()){
+			return $this->serviceResourceInst;
+		}
+	
+		$servRes = $this->getInstanceFromCache();
+		$this->serviceResourceInst = $servRes;
+		return $servRes;
+		
+
+	}
+	
+
+
+	private function getInstanceFromCache(){
+		
+		$cache = $this->getCacheObj();
+		
+		require_once 'citro/rights/resources/ServiceResource.php';
+		
+		// Nachsehen, ob der Cache bereits existiert:
+		if (! $Res = $cache->load ( $this->_cachePreFileName . $this->_cacheName )) {
+
+			$Res = $this->getInstanceCreate();
+		
+			$cache->save ( $Res, $this->_cachePreFileName . $this->_cacheName );
+		}
+		
+		return $Res;
+	}
+	
+	
+	
+	
+	
+	
+	private function getInstanceCreate(){
+		
+		$servRes = new ServiceResource($this->_confServiceResource);
+		$servRes->Create ();
+		return $servRes;
+	}
+	
+	
 	/**
 	 * Giebt das Cacheobjekt zurück
-	 * 
+	 *
 	 * @return Ambigous <Zend_Cache_Core, Zend_Cache_Frontend, mixed>
 	 */
-	private static function getCacheObj() {
-		
-		$FE_cache ["lifetime"] = self::$_CacheLifeTime;
+	private function getCacheObj() {
+	
+		$FE_cache ["lifetime"] = $this->_CacheLifeTime;
 		$FE_cache ["automatic_serialization"] = TRUE;
-		$FE_cache ["caching"] = self::$_CacheIsOn;
-		// echo self::getCachDir();
+		$FE_cache ["caching"] = $this->_CacheIsOn;
+	
 		$BE_cache ["cache_dir"] = self::getCachDir ();
-		
-		// Ein Zend_Cache_Core Objekt erzeugen
+	
 		require_once 'Zend/Cache.php';
 		$cache = Zend_Cache::factory ( 'Core', 'File', $FE_cache, $BE_cache );
-		
+	
 		return $cache;
 	
 	}
 	
-	// Fertig Inizialiserte und abgearbeitete ResourcenObjekte
-	private static $Instances = array ();
-	// ist die übergebene noch nicht abgearbeitete ServiceResourcen objekte nur
-	// Inizialisiert
-	private static $ServResourceObj = array ();
-	
-	/**
-	 * Giebt die MAIN Resourchen Instance
-	 * 
-	 * @return ServiceResource
-	 */
-	public static function getMainInstance() {
-		return self::getInstance ( "MAIN" );
-	}
-	
-	public static function getInstance($Name) {
-
-		// prüfen ob sie schon mal in der anfrage geladen wurde
-		if (array_key_exists ( $Name, self::$Instances )) {
-			$servRes = self::$Instances [$Name];
-			return $servRes;
-		}
-	
-		require_once 'Zend/Cache.php';
-		$cache = self::getCacheObj ();
-		
-		// Nachsehen, ob der Cache bereits existiert:
-		if (! $Res = $cache->load ( "resource_" . $Name )) {
-			
-			if (array_key_exists ( $Name, self::$ServResourceObj )) {
-				
-				$Res = self::$ServResourceObj [$Name];
-				
-				$Res->Create ();
-				
-			} else {
-				// todo ServiceResourcenobjekt exestiet nicht vieleicht eine ausnahme
-			}
-			
-			$cache->save ( $Res, "resource_" . $Name );
-		}
-	
-// 		echo "<pre>";
-// 		print_r($Res);
-		self::$Instances [$Name] = $Res;
-		return $Res;
-	}
-	
-	public static function setMainInstance($ServiceResource) {
-		self::setInstance ( "MAIN", $ServiceResource );
-	}
-	
-	/**
-	 * Erstellt eine Objekt vom Type ServiceResorce (Singelton)
-	 * Beim Setzen der Config mit den CacheDaten wird hier noch ein cache
-	 * abgearbeitet
-	 * 
-	 * @return ServiceResource Ambiguous
-	 */
-	public static function setInstance($Name, ServiceResource $ServiceResource) {
-		
-		self::$ServResourceObj [$Name] = $ServiceResource;
-	
-	}
-
 }
 
 ?>

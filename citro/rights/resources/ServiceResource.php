@@ -76,6 +76,10 @@ class ServiceResource {
 	
 	}
 	
+	/**
+	 * Erstellt die Docu des ResourcenServices
+	 * 
+	 */
 	public function Create() {
 		
 		$this->ResourcenDocuIsON = NULL;
