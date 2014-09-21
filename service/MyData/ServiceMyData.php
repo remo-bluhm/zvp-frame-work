@@ -162,14 +162,14 @@ class ServiceMyData extends AService {
 	public function ActionGetToUpdate() {
 		
 		$myContactId = $this->_rightsAcl->getAccess()->getContactId();
-// 		$db = DBConnect::getConnect();
-// 		$sqlContact = $db->select()->from("contacts",array("uid"))->where("id = ?",$myContactId) ;
-// 		$myContactId = $db->fetchOne($sqlContact);
+		$db = DBConnect::getConnect();
+		$sqlContact = $db->select()->from("contacts",array("uid"))->where("id = ?",$myContactId) ;
+		$myContactUID = $db->fetchOne($sqlContact);
 
 		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-		$servContUpd = new ServiceContactUpdateHelper($myContactId);
+		$servContUpd = new ServiceContactUpdateHelper($myContactUID);
 
 		// Inizialisieren des Update Reposetorys
 		require_once 'citro/update/SelectFactory.php';
