@@ -118,33 +118,28 @@ class ServiceMyData extends AService {
 	/**
 	 * Ist für das Update der eigenen Daten
 	 *
-	 * @param string $uid 
 	 * @param string $hashKey 
 	 * @param array $data 
 	 * @citro_isOn true
 	 */
-	public function ActionUpdateData($uid, $hashKey, $data) {
+	public function ActionUpdateData($hashKey, $data) {
 	
-		//$uid = $this->_rightsAcl->getAccess()->
+		$myContactId = $this->_rightsAcl->getAccess()->getContactId();
+		$db = DBConnect::getConnect();
+		$sqlContact = $db->select()->from("contacts",array("uid"))->where("id = ?",$myContactId) ;
+		$myContactUID = $db->fetchOne($sqlContact);
+		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-		$servContUpd = new ServiceContactUpdateHelper($uid);
-		
-		// Inizialisieren des Update Reposetorys
-// 		require_once 'citro/update/UpdateFactory.php';
-// 		$dbupdateReposetory = new UpdateFactory( DBConnect::getConnect(),$servContUpd );
+		$servContUpd = new ServiceContactUpdateHelper($myContactUID);
 
 		require_once 'citro/update/ChronologicalFactory.php';
 		$dbupdateReposetory = new ChronologicalFactory(
 				"MainContact",
 				$this->_rightsAcl->getAccess()->getId(),
 				 DBConnect::getConnect(),$servContUpd );
-		
-		// $dbupdateReposetory->toUpdate();
-		//$hashKey1 = $dbupdateReposetory->getHashKey();
-		//$data1 = $dbupdateReposetory->getToUpdate();
-		
-		$isOk = $dbupdateReposetory->update($uid, $hashKey, $data);
+				
+		$isOk = $dbupdateReposetory->update($myContactUID, $hashKey, $data);
 		return $isOk;
 		
 	}

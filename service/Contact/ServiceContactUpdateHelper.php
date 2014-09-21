@@ -34,21 +34,48 @@ class ServiceContactUpdateHelper extends UpdateDb{
 	 * @see DbIUpdate::update()
 	 */
 	public function update($updateData) {
-		$contTab = new contacts();
-		$contTab->setDefaultAdapter($this->_connect);
+		
 		$contData = array(
 				"title_name",
 				"first_add_name",
 				"first_name",
 				"last_name",
 				"affix_name"
-				);
+		);
+		$contUpdateData = array_intersect_key($updateData, array_flip($contData));
+		$contTab = new contacts();
+		$contUpdateData['edata'] = $contTab->getDateTime();
+		
+
+		$contTab->setDefaultAdapter($this->_connect);
+		$sel = $contTab->select();
+		$sel->where("uid = ?", $this->_contactId);
+		$contRow = $contTab->fetchRow($sel);
+		$contRow->setFromArray($contUpdateData);
+		$contRow->save();
+
 	
 		
-		$contUpdateData = array_intersect_key($updateData, array_flip($contData));
-		$where = $contTab->getDefaultAdapter()->quoteInto("id = ?", $this->_contactId) ;
-		$contTab->update($contUpdateData,$where );
+		$contId = $contRow->offsetGet("id");	
+		$mainAddressId = $contRow->offsetGet("main_contact_address_id");	
+		
+		
 
+	
+		 if($mainAddressId !== NULL && $mainAddressId > 0){
+				
+				$addrData = array(
+						"adr_land",
+						"adr_landpart",
+						"adr_plz",
+						"adr_ort",
+						"adr_strasse"
+				);
+				$addrUpdateData = array_intersect_key($updateData, array_flip($addrData));
+				$this->_connect->update("contact_address", $addrUpdateData,$this->_connect->quoteInto("id = ?", $mainAddressId));
+		}else{
+			// Insert
+		}
 		
 	}
 

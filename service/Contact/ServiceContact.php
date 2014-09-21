@@ -378,24 +378,6 @@ class ServiceContact extends AService {
 	public function ActionGetToUpdate($contactUId) {
 
 	
-		
-// 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
-// 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-// 		$servContUpd = new ServiceContactUpdateHelper($contactId);
-		
-// 		// Inizialisieren des Update Reposetorys
-// 		require_once 'citro/update/ToUpdateFactory.php';
-// 		$dbupdateReposetory = new ToUpdateFactory( DBConnect::getConnect(),$servContUpd );
-		
-		
-// 		return $updateData;
-		
-// 		$myContactId = $contactUId;
-// 		$db = DBConnect::getConnect();
-// 		$sqlContact = $db->select()->from("contacts",array("id"))->where("uid = ?",$contactUId) ;
-// 		$myContactId = $db->fetchOne($sqlContact);
-		
-		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
 		$servContUpd = new ServiceContactUpdateHelper($contactUId);
@@ -419,38 +401,24 @@ class ServiceContact extends AService {
 	/**
 	 * Ist für das Update der eigenen Daten
 	 *
-	 * @param integer $contactId
-	 * @param array $userDataArray
+	 * @param string $contactUid
+	 * @param string $hashKey
+	 * @param array $data
 	 * @citro_isOn true
 	 */
-	public function ActionUpdateData($contactId, $userDataArray) {
+	public function ActionUpdateData($contactUid,$hashKey, $data) {
 	
+		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
+		require_once 'service/Contact/ServiceContactUpdateHelper.php';
+		$servContUpd = new ServiceContactUpdateHelper($contactUid);
 
-		
-		require_once 'citro/db/contact/contacts.php';
-		require_once 'citro/DBupdateRepository.php';
-		
-
-		$userDataArray [contacts::SP_DATA_EDIT] = DBTable::DateTime ();
-		$userDataArray [contacts::SP_USER_EDIT] = $this->_MainUser->getGUID();
-		
-		$updateColumn = array (
-				contacts::SP_DATA_EDIT, 
-				contacts::SP_USER_EDIT, 
-				contacts::SP_FIRST_NAME, 
-				contacts::SP_LAST_NAME,
-				contacts::SP_FIRMA,
-				contacts::SP_POSITION,
-				contacts::SP_EMAIL,
-				contacts::SP_TELEFON,
-				contacts::SP_TELEFON_FAX,
-				);
-		
-				$repos = new DBupdateRepository ( $this->_MainUser->getGUID(), new contacts (), $contactId );
-
-				$isUpdateUser = $repos->setUpdate ( $userDataArray, $updateColumn );
-		
-				return $isUpdateUser;
+		require_once 'citro/update/ChronologicalFactory.php';
+		$myId = $this->_rightsAcl->getAccess()->getId(); // ist für die Personaliesierung der veränderung
+		$dbCon = DBConnect::getConnect();
+		$dbupdateReposetory = new ChronologicalFactory(	"MainContact",$myId,$dbCon,$servContUpd );
+				
+		$isOk = $dbupdateReposetory->update($contactUid, $hashKey, $data);
+		return $isOk;
 	}
 
 	
