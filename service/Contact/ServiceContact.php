@@ -390,22 +390,22 @@ class ServiceContact extends AService {
 		
 // 		return $updateData;
 		
-		$myContactId = $contactUId;
-		$db = DBConnect::getConnect();
-		$sqlContact = $db->select()->from("contacts",array("id"))->where("uid = ?",$contactUId) ;
-		$myContactId = $db->fetchOne($sqlContact);
+// 		$myContactId = $contactUId;
+// 		$db = DBConnect::getConnect();
+// 		$sqlContact = $db->select()->from("contacts",array("id"))->where("uid = ?",$contactUId) ;
+// 		$myContactId = $db->fetchOne($sqlContact);
 		
 		
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-		$servContUpd = new ServiceContactUpdateHelper($myContactId);
+		$servContUpd = new ServiceContactUpdateHelper($contactUId);
 		
 		// Inizialisieren des Update Reposetorys
 		require_once 'citro/update/SelectFactory.php';
 		$dbupdateReposetory = new SelectFactory( DBConnect::getConnect(),$servContUpd );
-		$dbupdateReposetory->toUpdate();
-		
-		
+		//$daten = $dbupdateReposetory->toUpdate();
+	
+
 		require_once 'citro/update/UpdateHelpFunc.php';
 		//$backArray = array("title","first_name","first_add_name","last_name","affix_name","uid","edata","vdata");
 		//$backData = UpdateHelpFunc::getColumnToUpdate($dbupdateReposetory->getToUpdate(), $backArray);
