@@ -28,7 +28,7 @@ class contacts extends DBTable {
 	const SP_KURZINFO = "kurz_info";
 
 	const SP_ADRESS_ID = "main_contact_address_id";
-	const SP_EMAIL_ID = "main_contact_email";
+	const SP_EMAIL_ID = "main_contact_email_id";
 	const SP_PHONE_ID = "main_contact_phone_id";
 	
 

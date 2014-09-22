@@ -162,14 +162,13 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 	 * @param $id integer       	
 	 * @return integer boolean Fehlerfalle False
 	 */
-	public static function testId($id) {
-		if (is_int ( $id )) {
-			if ($id < 99999999999) {
-				return $id;
-			}
-		
-		}
-		return FALSE;
+	public static function testId($value) {
+		if(empty($value)) return FALSE;
+		if(!is_numeric($value)) return FALSE;
+		if(is_float($value)) return FALSE;
+		if($value < 1)return FALSE;
+		if($value > 99999999999)return FALSE;
+		return  (int)$value;
 	}
 
 }

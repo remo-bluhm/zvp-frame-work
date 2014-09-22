@@ -35,6 +35,8 @@ class ServiceContactUpdateHelper extends UpdateDb{
 	 */
 	public function update($updateData) {
 		
+
+		
 		$contData = array(
 				"title_name",
 				"first_add_name",
@@ -52,30 +54,82 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		$sel->where("uid = ?", $this->_contactId);
 		$contRow = $contTab->fetchRow($sel);
 		$contRow->setFromArray($contUpdateData);
-		$contRow->save();
-
-	
+			
 		
 		$contId = $contRow->offsetGet("id");	
 		$mainAddressId = $contRow->offsetGet("main_contact_address_id");	
-		
-		
+		$mainPhoneId = $contRow->offsetGet("main_contact_phone_id");	
+		$mainMailId = $contRow->offsetGet("main_contact_email_id");	
 
-	
-		 if($mainAddressId !== NULL && $mainAddressId > 0){
-				
-				$addrData = array(
-						"adr_land",
-						"adr_landpart",
-						"adr_plz",
-						"adr_ort",
-						"adr_strasse"
-				);
-				$addrUpdateData = array_intersect_key($updateData, array_flip($addrData));
-				$this->_connect->update("contact_address", $addrUpdateData,$this->_connect->quoteInto("id = ?", $mainAddressId));
+		
+		
+		// Adresse Update
+		
+		require_once 'db/contact/address/contact_address.php';
+		$address = new contact_address();
+		$address->setDefaultAdapter($this->_connect);
+		
+		if(isset($updateData['adr_ort'])) 		$address->setOrt($updateData['adr_ort']);
+		if(isset($updateData['adr_plz'])) 		$address->setPlz($updateData['adr_plz']);
+		if(isset($updateData['adr_strasse'])) 	$address->setStreet($updateData['adr_strasse']);
+		if(isset($updateData['adr_land'])) 		$address->setLand($updateData['adr_land']);
+		if(isset($updateData['adr_landpart'])) 	$address->setLandpart($updateData['adr_landpart']);
+		
+		
+		if($mainAddressId !== NULL && $mainAddressId > 0){
+			$address->updateData($mainAddressId);		// update
+		
+		
 		}else{
-			// Insert
+			
+			if( contact_address::testOrt( $updateData["adr_ort"]) !== FALSE ){
+				$address->setArt("main");
+				$addrPrimId = $address->insertData($contId);			// Insert
+				$contRow->offsetSet("main_contact_address_id", $addrPrimId);
+			}
 		}
+		
+		// Phone Update
+		
+		require_once 'db/contact/phone/contact_phone.php';
+		$phone = new contact_phone();
+		$phone->setDefaultAdapter($this->_connect);
+		
+		if(isset($updateData['phone_number'])) 	$phone->setNumber($updateData['phone_number']);
+		if(isset($updateData['phone_text'])) 	$phone->setText($updateData['phone_text']);
+		
+		if($mainPhoneId !== NULL && $mainPhoneId > 0){
+			$phone->updateData($mainPhoneId);		// update
+		}else{
+			if( contact_phone::testPhoneNumber( $updateData["phone_number"]) !== FALSE ){
+				$phone->setArt("main");
+				$newPhoneId = $phone->insertData($contId);			// Insert
+				$contRow->offsetSet("main_contact_phone_id", $newPhoneId);
+			}
+		}
+	
+		// Email Update
+		
+		require_once 'db/contact/email/contact_email.php';
+		$email = new contact_email();
+		$email->setDefaultAdapter($this->_connect);
+		
+		if(isset($updateData['mail_adress'])) 	$email->setEmail($updateData['mail_adress']);
+		if(isset($updateData['mail_text'])) 	$email->setText($updateData['mail_text']);
+		
+		if($mainMailId !== NULL && $mainMailId > 0){
+			$email->updateData($mainMailId);		// update
+		}else{
+			if( contact_email::testEmail( $updateData["mail_adress"]) !== FALSE ){
+				$newMailId = $email->insertData($contId);			// Insert
+				$contRow->offsetSet("main_contact_email_id", $newMailId);
+			}
+		}
+		
+		
+		$contRow->save();
+		
+		
 		
 	}
 

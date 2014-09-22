@@ -65,7 +65,7 @@ class ServiceGuest extends AService {
 		
 		$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "gu.contacts_id = c.id", $spContacts );
  			
- 		require_once 'db/contact/contact_address.php';
+ 		require_once '../../db/contact/address/contact_address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
@@ -77,7 +77,7 @@ class ServiceGuest extends AService {
  		}
  		
  		
- 		require_once 'db/contact/contact_phone.php';
+ 		require_once '../../db/contact/phone/contact_phone.php';
  		$phoneSpaltenA = array();
  		$phoneSpaltenA['p_art'] = "art";
  		$phoneSpaltenA['p_number'] = "number";
@@ -221,7 +221,7 @@ class ServiceGuest extends AService {
 	
 		if( !empty($fields["adr_ort"]) ){
 	
-			require_once 'db/contact/contact_address.php';
+			require_once '../../db/contact/address/contact_address.php';
 			$adressOrt = contact_address::testOrt($fields["adr_ort"]);
 			if($adressOrt !== FALSE){
 	
@@ -249,7 +249,7 @@ class ServiceGuest extends AService {
 		// Telefon
 		$phoneData = NULL;
 		if(!empty($fields["phone_number"])){
-			require_once 'db/contact/contact_phone.php';
+			require_once '../../db/contact/phone/contact_phone.php';
 				
 			$phoneNumber = contact_phone::testPhoneNumber($fields["phone_number"]);
 			if($phoneNumber !== FALSE){
@@ -266,7 +266,7 @@ class ServiceGuest extends AService {
 		// Email
 		$emailData = NULL;
 		if(!empty($fields["mail_adress"])){
-			require_once 'db/contact/contact_email.php';
+			require_once '../../db/contact/email/contact_email.php';
 	
 			$emailAdresss = contact_email::testEmail($fields["mail_adress"]);
 			if($emailAdresss !== FALSE){
@@ -416,7 +416,7 @@ class ServiceGuest extends AService {
 		$adresSp["adr_strasse"] = "strasse";
 		$adresSp["adr_infotext"] = "info_text";
 	
-		require_once 'db/contact/contact_address.php';
+		require_once '../../db/contact/address/contact_address.php';
 		$sel->joinLeft(array('ca'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
 	
 	
@@ -425,7 +425,7 @@ class ServiceGuest extends AService {
 		$phoneSp["phone_number"] = "number";
 		$phoneSp["phone_text"] = "text";
 	
-		require_once 'db/contact/contact_phone.php';
+		require_once '../../db/contact/phone/contact_phone.php';
 		$sel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
 	
 	
@@ -433,7 +433,7 @@ class ServiceGuest extends AService {
 		$mailSp["mail_adress"] = "mailadress";
 		$mailSp["mail_text"] = "text";
 			
-		require_once 'db/contact/contact_email.php';
+		require_once '../../db/contact/email/contact_email.php';
 		$sel->joinLeft(array('em'=>contact_email::getTableNameStatic()), "c.main_contact_email = em.id" ,$mailSp);
 	
 		$sel->where("c.uid = ?",$contactuid);
@@ -446,7 +446,7 @@ class ServiceGuest extends AService {
 			
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
-			require_once 'db/contact/contact_address.php';
+			require_once '../../db/contact/address/contact_address.php';
 				
 			$selAdress = $db->select ();
 			$selAdress->from( array('c' => contact_address::getTableNameStatic() ), $adresSp );
@@ -456,7 +456,7 @@ class ServiceGuest extends AService {
 		}
 		//////////////////////////////////////////////////////////////////
 		if( in_array('all_phone',$spalten) ){
-			require_once 'db/contact/contact_phone.php';
+			require_once '../../db/contact/phone/contact_phone.php';
 				
 			$selPhone = $db->select ();
 			$selPhone->from( contact_phone::getTableNameStatic() , $phoneSp );
@@ -506,7 +506,7 @@ class ServiceGuest extends AService {
 		$addressSel->joinRight(array('g'=>'guest'), "c.id = g.contacts_id", $guestSpA );
 			
 		
-		require_once 'db/contact/contact_address.php';
+		require_once '../../db/contact/address/contact_address.php';
 		$adressSpaltenA = array();
 		$adressSpaltenA['a_id'] = "id";
 		$adressSpaltenA['a_land'] = "land";

@@ -80,7 +80,7 @@ class ServiceContact extends AService {
 		
  		
  			
- 		require_once 'db/contact/contact_address.php';
+ 		require_once 'db/contact/address/contact_address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
@@ -92,7 +92,7 @@ class ServiceContact extends AService {
  		}
  		
  		
- 		require_once 'db/contact/contact_phone.php';
+ 		require_once 'db/contact/phone/contact_phone.php';
  		$phoneSpaltenA = array();
  		$phoneSpaltenA['p_art'] = "art";
  		$phoneSpaltenA['p_number'] = "number";
@@ -268,7 +268,7 @@ class ServiceContact extends AService {
 		$adresSp["adr_strasse"] = "strasse";
 		$adresSp["adr_infotext"] = "info_text";
 		
-		require_once 'db/contact/contact_address.php';
+		require_once 'db/contact/address/contact_address.php';
 		$sel->joinLeft(array('ca'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
 
 		
@@ -277,7 +277,7 @@ class ServiceContact extends AService {
  		$phoneSp["phone_number"] = "number";
  		$phoneSp["phone_text"] = "text";
 		
- 		require_once 'db/contact/contact_phone.php';
+ 		require_once 'db/contact/phone/contact_phone.php';
  		$sel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
 
 		
@@ -285,8 +285,8 @@ class ServiceContact extends AService {
  		$mailSp["mail_adress"] = "mailadress";
  		$mailSp["mail_text"] = "text";
  		
- 		require_once 'db/contact/contact_email.php';
- 		$sel->joinLeft(array('em'=>contact_email::getTableNameStatic()), "c.main_contact_email = em.id" ,$mailSp);
+ 		require_once 'db/contact/email/contact_email.php';
+ 		$sel->joinLeft(array('em'=>contact_email::getTableNameStatic()), "c.main_contact_email_id = em.id" ,$mailSp);
 		
 		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
@@ -298,7 +298,7 @@ class ServiceContact extends AService {
 			
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
-			require_once 'db/contact/contact_address.php';
+			require_once 'db/contact/address/contact_address.php';
 					
 			$selAdress = $db->select ();
 			$selAdress->from( array('c' => contact_address::getTableNameStatic() ), $adresSp );
@@ -308,7 +308,7 @@ class ServiceContact extends AService {
 		}
 		//////////////////////////////////////////////////////////////////
 		if( in_array('all_phone',$spalten) ){
-			require_once 'db/contact/contact_phone.php';
+			require_once 'db/contact/phone/contact_phone.php';
 					
 			$selPhone = $db->select ();
 			$selPhone->from( contact_phone::getTableNameStatic() , $phoneSp );
@@ -487,60 +487,49 @@ class ServiceContact extends AService {
 		
 		
 		// Adresss
-		$adressData = NULL;
+		$addressObj = NULL;
 		
 		if( !empty($fields["adr_ort"]) ){
 
-			require_once 'db/contact/contact_address.php';
-			$adressOrt = contact_address::testOrt($fields["adr_ort"]);
-			if($adressOrt !== FALSE){
-				
-				$adressData = array();
-				$adressData[contact_address::SP_ORT] = $adressOrt;
-	
-				$adressPlz = contact_address::testPLZ($fields["adr_plz"]);
-				if($adressPlz !== FALSE)$adressData[contact_address::SP_PLZ] = $adressPlz;	
-				
-				$adressStreet = contact_address::testStreet($fields["adr_strasse"]);
-				if($adressStreet !== FALSE)$adressData[contact_address::SP_STRASSE] = $adressStreet;	
-								
-				$adressLand = contact_address::testLand($fields["adr_land"]);
-				if($adressLand !== FALSE)$adressData[contact_address::SP_LAND] = $adressLand;	
-								
-				$adressLandPart = contact_address::testLandPart($fields["adr_landpart"]);
-				if($adressLandPart !== FALSE)$adressData[contact_address::SP_LAND_PART] = $adressLandPart;	
+			require_once 'db/contact/address/contact_address.php';
 			
+			if(contact_address::testOrt($fields["adr_ort"]) !== FALSE){
+				
+				$addressObj = new contact_address();
+				$addressObj->setArt("main");
+				$addressObj->setOrt($fields['adr_ort']);
+				if(isset($fields['adr_plz'])) 		$addressObj->setPlz($fields['adr_plz']);
+				if(isset($fields['adr_strasse'])) 	$addressObj->setStreet($fields['adr_strasse']);
+				if(isset($fields['adr_land'])) 		$addressObj->setLand($fields['adr_land']);
+				if(isset($fields['adr_landpart'])) 	$addressObj->setLandpart($fields['adr_landpart']);
 			}
-			
 		}
 
-		
 		// Telefon
-		$phoneData = NULL;
+		$phoneObj = NULL;
+		
 		if(!empty($fields["phone_number"])){
-			require_once 'db/contact/contact_phone.php';
+			require_once 'db/contact/phone/contact_phone.php';
 			
-			$phoneNumber = contact_phone::testPhoneNumber($fields["phone_number"]);
-			if($phoneNumber !== FALSE){
-				$phoneData = array();
-				$phoneData[contact_phone::SP_NUMBER] = $phoneNumber;
-				$phoneData[contact_phone::SP_ART] = "Telefon 1";
+			if(contact_phone::testPhoneNumber($fields["phone_number"]) !== FALSE){
 				
-				$phoneText = contact_phone::testText($fields["phone_text"]);
-				if($phoneText !== FALSE)$phoneData[contact_phone::SP_TEXT] = $phoneText;
-				
+				$phoneObj = new contact_phone();
+				$phoneObj->setArt("main");
+				$phoneObj->setNumber($fields["phone_number"]);
+				if(isset($fields['phone_text'])) 	$phoneObj->setText($fields['phone_text']);			
 			}
 		}
 		
 		// Email
-		$emailData = NULL;
+		$emailObj = NULL;
 		if(!empty($fields["mail_adress"])){
-			require_once 'db/contact/contact_email.php';
-				
-			$emailAdresss = contact_email::testEmail($fields["mail_adress"]);
-			if($emailAdresss !== FALSE){
-				$emailData = array();
-				$emailData[contact_email::SP_ADRESS] = $emailAdresss;		
+			require_once 'db/contact/email/contact_email.php';
+			
+			if(contact_email::testEmail($fields["mail_adress"]) !== FALSE){
+				$emailObj = new contact_email();
+				$emailObj->setEmail($fields["mail_adress"]);
+				if(isset($fields['mail_text'])) 	$emailObj->setText($fields['mail_text']);
+	
 			}
 		}
 		
@@ -578,25 +567,17 @@ class ServiceContact extends AService {
 
 			$updateData = array();
 			
-			if(is_array($adressData)){
-				$adressData[contact_address::SP_CONTACT_ID] = $contactsId;
-				$adressTab = new contact_address();
-				$adressId = $adressTab->insert( $adressData);
-				$updateData[contacts::SP_ADRESS_ID] = $adressId;
-				
+			if(is_a($addressObj,"contact_address")){
+				$addressObj->setDefaultAdapter($db);
+				$updateData[contacts::SP_ADRESS_ID] = $addressObj->insertData($contactsId);		
 			}
-			if(is_array($emailData)){
-				$emailData[contact_email::SP_CONTACT_ID] = $contactsId;
-				$mailTab = new contact_email();
-				$emailId = $mailTab->insert( $emailData);
-				
-				$updateData[contacts::SP_EMAIL_ID] = $emailId;
+			if(is_a($emailObj, "contact_email")){
+				$emailObj->setDefaultAdapter($db);
+				$updateData[contacts::SP_EMAIL_ID]  = $emailObj->insertData($contactsId);				
 			}
-			if(is_array($phoneData )){
-				$phoneData[contact_phone::SP_CONTACT_ID] = $contactsId;
-				$phoneTab = new contact_phone();
-				$phoneId = $phoneTab->insert( $phoneData);
-				$updateData[contacts::SP_PHONE_ID] = $phoneId;
+			if( is_a( $phoneObj, "contact_phone" )){
+				$phoneObj->setDefaultAdapter($db);
+				$updateData[contacts::SP_PHONE_ID] = $phoneObj->insertData($contactsId);
 			}
 
 			if(count($updateData) > 0){
