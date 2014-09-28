@@ -60,16 +60,16 @@ class ServiceApartment extends AService {
 		$sel->from(array('a' => apartment::getTableNameStatic()), $spA );
 		
 		if( in_array('usercreate_name',$spalten) ){
-			require_once 'db/contact/contact_access.php';
+			require_once 'db/sys/access/sys_access.php';
 			require_once 'db/contact/contacts.php';
-			$sel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "a.user_create = u.guid ",array() );
+			$sel->joinLeft(array('u'=>sys_access::getTableNameStatic()), "a.user_create = u.guid ",array() );
 			$sel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
-			require_once 'db/contact/contact_access.php';
+			require_once 'db/sys/access/sys_access.php';
 			require_once 'db/contact/contacts.php';
-			$sel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "a.user_edit = u2.guid " ,array() );
+			$sel->joinLeft(array('u2'=>sys_access::getTableNameStatic()), "a.user_edit = u2.guid " ,array() );
 			$sel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 		

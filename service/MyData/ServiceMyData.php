@@ -195,30 +195,11 @@ class ServiceMyData extends AService {
 	 */
 	public function ActionGetMyRight($toList = FALSE) {
 	
-		// Setzt die Anfragende Gruppe
-		//require_once 'citro/rights/roles/group/GroupParent.php';
-	
-	
-		//return $this->_rightsAcl->getMyResources($toList);
-		//$this->_rightsAcl->
-		$myParentGroups = $this->_rightsAcl->getAccess()->getMyParentGroups();
-	
-		
-// 		$Group = new GroupParent( $this->_rightsAcl->getGroup()->getId() );
-// 		$Group->setAllParents();
-	
-// 		if(!$this->_rightsAcl->getAccess()->isAdmin()){
-// 			if($Group->getCreateGuId() != $this->_rightsAcl->getAccess()->getGuId()){
-// 				return FALSE;
-// 			}
-// 		}
-	
-		
-		
+
 		// hollt die gruppen bis zur höchsten Gruppe in in einen Array mit key(roleId) und als daten die Datenbakzeile
-		//$gliste = $Group->getGroupPartent();
+		$myParentGroups = $this->_rightsAcl->getAccess()->getMyParentGroups();
 		$gliste = $myParentGroups->toArray();
-//	print_r($gliste);
+
 	
 		// Das Rechte Array hat eine liste von Rollen und jete Rolle einen Erlaubt und verboten key die dann die Resourcen beinahlten
 		$gRights = array ();

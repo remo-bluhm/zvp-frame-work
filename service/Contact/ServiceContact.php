@@ -237,6 +237,11 @@ class ServiceContact extends AService {
 		$spA["first_name"] = "first_name";
 		$spA["first_add_name"] = "first_add_name";
 		$spA["affix_name"] = "affix_name";
+
+		
+		$spA["address_id"] = "main_contact_address_id";
+		
+		
 		
 		$spA["firma"] = "firma";
 		$spA["position"] = "position";
@@ -299,11 +304,14 @@ class ServiceContact extends AService {
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
 			require_once 'db/contact/address/contact_address.php';
-					
-			$selAdress = $db->select ();
-			$selAdress->from( array('c' => contact_address::getTableNameStatic() ), $adresSp );
-			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
 			
+			$mainAddressId = (int)$contactA["address_id"];
+			$adresSp["is_main"] = "IF(`id` = ".$mainAddressId.", '1', '0' ) ";
+			
+			$selAdress = $db->select ();
+			$selAdress->from( contact_address::getTableNameStatic() , $adresSp );
+			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
+
 			$contactA["adresses"] = $db->fetchAll($selAdress);
 		}
 		//////////////////////////////////////////////////////////////////
@@ -317,6 +325,7 @@ class ServiceContact extends AService {
 			$contactA["phones"] = $db->fetchAll($selPhone);
 		}
 		unset($contactA["id_name"]);
+		unset($contactA["address_id"]);
 		return $contactA;
 	
 	

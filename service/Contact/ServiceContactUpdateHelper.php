@@ -69,6 +69,7 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		$address = new contact_address();
 		$address->setDefaultAdapter($this->_connect);
 		
+		if(isset($updateData['adr_art'])) 		$address->setArt($updateData['adr_art']);
 		if(isset($updateData['adr_ort'])) 		$address->setOrt($updateData['adr_ort']);
 		if(isset($updateData['adr_plz'])) 		$address->setPlz($updateData['adr_plz']);
 		if(isset($updateData['adr_strasse'])) 	$address->setStreet($updateData['adr_strasse']);

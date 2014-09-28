@@ -53,7 +53,7 @@ class ServiceContactAddress extends AService {
 		
  		
  			
- 		require_once '../../db/contact/address/contact_address.php';
+ 		require_once 'db/contact/address/contact_address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_id'] = "id";
  		$adressSpaltenA['a_land'] = "land";

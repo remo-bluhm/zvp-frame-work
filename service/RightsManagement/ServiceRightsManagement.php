@@ -53,22 +53,10 @@ class ServiceRightsManagement extends AService {
 	 * @citro_protocollExist AesKey|sha1hasch Die Geforderten Protocolle	
 	 */
 	public function ActionGetMyRight($groupName) {
-// 		echo "<pre>";
-// 		print_r( $this->_rightsAcl->getServiceResource()->getDocu());
-// 		die();
-		// Setzt die Anfragende Gruppe
-		//require_once 'citro/rightsmanagement/GroupParent.php';
 
-		//$Group = new GroupParent( $groupId );
-		//$Group->setAllParents();
-	
-// 		if(!$this->_rightsAcl->getAccess()->isAdmin()){
-// 			if($Group->getCreateGuId() != $this->_rightsAcl->getAccess()->getGuId()){
-// 				return FALSE;
-// 			}
-// 		}
 
 		require_once 'db/sys/access/groups/sys_access_groups.php';
+		
 		$groupTab = new sys_access_groups();
 		$groupSel = $groupTab->select();
 		$groupSel->where("name = ?",$groupName);
@@ -78,23 +66,17 @@ class ServiceRightsManagement extends AService {
 
 
 		// hollt die gruppen bis zur höchsten Gruppe in in einen Array mit key(roleId) und als daten die Datenbakzeile 
-		//$gliste = $Group->getGroupPartent ();
-		//$myParentGroups = $this->_rightsAcl->getAccess()->getMyParentGroups();
-		
-		require_once 'db/sys/access/groups/sys_access_groups.php';
-		$group = new sys_access_groups ();
-		$myParentGroups = $group->getParentWithName($groupName);
+		$myParentGroups = $groupTab->getParentWithName($groupName);
 
 		
 		$gliste = $myParentGroups->toArray();
 		// Das Rechte Array hat eine liste von Rollen und jete Rolle einen Erlaubt und verboten key die dann die Resourcen beinahlten
 		$gRights = array (); 
+		require_once 'db/sys/access/rights/sys_access_rights.php';
+		$setData = new sys_access_rights ();
 		foreach ( $gliste as  $data ) {
 	
 			$Role = "G_".$data['id'];
-			require_once 'db/sys/access/rights/sys_access_rights.php';
-			$setData = new sys_access_rights ();
-				
 			$RightsAllow = $setData->get ( $Role, sys_access_rights::RULETYPE_ALLOW ,FALSE);
 			//print_r($RightsAllow);
 			$gRights [$Role] ["Allow"] = $RightsAllow;
