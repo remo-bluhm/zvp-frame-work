@@ -65,10 +65,36 @@ abstract class AService {
 	
 	}
 	
+	/**
+	 * @var ServiceFabric
+	 */
+	protected $_serviceFabric = NULL;
+	/**
+	 * Setzen der ServiceFabric beim Inizialisierun um Unterabfragen zu gewährleisten
+	 * @param ServiceFabric $serviceFab
+	 */
+	public function _setServiceFabric(ServiceFabric $serviceFab){
+		$this->_serviceFabric = $serviceFab;
+	}
+	public function getServiceFabric(){
+		return $this->_serviceFabric;
+	}
 	
+
+	
+	/**
+	 * @var ServiceResource
+	 */
 	protected $_resource = NULL;
 	public function _setResource(ServiceResource $resource){
 		$this->_resource = $resource;
+	}
+
+	/**
+	 * @return ServiceResource
+	 */
+	public function getResource(){
+		return $this->_resource;
 	}
 	
 	public function getName() {
@@ -178,14 +204,14 @@ abstract class AService {
 	
 	
 	
-	/**
-	 * Setzt den Sicherheitslevel
-	 * 
-	 * @param $level unknown_type       	
-	 */
-	public function setSecurityLevel($level) {
-		$this->_securityLevel = $level;
-	}
+// 	/**
+// 	 * Setzt den Sicherheitslevel
+// 	 * 
+// 	 * @param $level unknown_type       	
+// 	 */
+// 	public function setSecurityLevel($level) {
+// 		$this->_securityLevel = $level;
+// 	}
 	
 	
 	
@@ -206,8 +232,6 @@ abstract class AService {
 	}
 	
 
-
-	
 	
 	
 	

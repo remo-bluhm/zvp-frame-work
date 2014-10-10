@@ -92,22 +92,27 @@ class Action {
 	public function setParams(array $params) {
 		
 		require_once 'citro/service-class/Param.php';
-		if (is_array ( $params )) {
-			foreach ( $params as $paramName => $paramValue ) {
-				
-				/*
-				 * @var $paramValue Param
-				 */
-				if (is_a ( $paramValue, "Param" )) {
-					$this->params [$paramValue->getName ()] = $paramValue;
-				} else {
-					$param = new Param ( $paramName, $paramValue );
-					$this->params [$param->getName ()] = $param;
-				}
+		
+		foreach ( $params as $paramName => $paramValue ) {
 			
+			/*
+			 * @var $paramValue Param
+			 */
+			if (is_a ( $paramValue, "Param" )) {
+				$this->params [$paramValue->getName ()] = $paramValue;
+			} else {
+				$param = new Param ( $paramName, $paramValue );
+				$this->params [$param->getName ()] = $param;
 			}
+		
 		}
+		
 		return $this;
+	}
+	
+	public function setParam($paramName,$paramValue){
+		$param = new Param ( $paramName, $paramValue );
+		$this->params [$param->getName ()] = $param;
 	}
 	
 	/**

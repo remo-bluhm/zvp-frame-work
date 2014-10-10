@@ -56,7 +56,7 @@ class ServiceTrans extends AService {
 	 	$dataZinno[contacts::SP_LAND] =  "Deutschland" ;
 	 	$dataZinno[contacts::SP_TELEFON] =  "038377/40807";
 	 	$kontaktRow = $kontaktTab->newKontaktRow($this->_MainUser->getId(), contacts::CATECORY_BOOKINGKONTAKT, $dataZinno);
-	 	$gastgeberId = $servCon->ActionNew($gastgeberNummer."-".$zimmerNummer,  array());
+	 	//$gastgeberId = $servCon->ActionNew($gastgeberNummer."-".$zimmerNummer,  array());
 	 	
 	 	$zinno_id = $kontaktRow->offsetGet(contacts::SP_ID);
 	 	
@@ -529,26 +529,26 @@ class ServiceTrans extends AService {
 
 		
 		// ist verantwortlich für den cach der Desctopapplication	
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_desktop_app_cach" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.desktop_app_cach" );
 		// die zimmer	
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_apartment" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.apartment" );
 		//$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_apartment_art" );
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_apartment_prices" );
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_apartment_entries" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.apartment_prices" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.apartment_entries" );
 		
 		
 		// die Objekte
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_resort" );
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_resort_orte" );
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_resort_orte_match" );
-		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_resort_orte_region" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.resort" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.resort_orte" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.resort_orte_match" );
+		$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.resort_orte_region" );
 		
 	
 		
 
 		
 		// löschen aller User die Touristen oder vermieter sind
-		$DBCon->query ( "DELETE FROM usr_p41239_3.bt_contacts WHERE category='TOU' or category ='REN' " );
+		$DBCon->query ( "DELETE FROM usr_p41239_3.contacts WHERE category='TOU' or category ='REN' " );
 			
 			
 			//$DBCon->query ( "TRUNCATE TABLE usr_p41239_3.bt_zimmer_ausst" );

@@ -7,12 +7,12 @@
 class ServiceFabric {
 	
 	
-	const SERVOBJ_FILE_PRE_KEY = "Service";
+// 	const SERVOBJ_FILE_PRE_KEY = "Service";
 	
-	const SERVOBJ_KEY_SEPARATING = "_";
-	const SERVOBJ_KEY_MAX = 10000;
+// 	const SERVOBJ_KEY_SEPARATING = "_";
+// 	const SERVOBJ_KEY_MAX = 10000;
 	
-	const CONF_SERVICEFABRIC = "servicFabric";
+ 	const CONF_SERVICEFABRIC = "servicFabric";
 	
 	
 	/**
@@ -82,12 +82,14 @@ class ServiceFabric {
 			
 			}
 			
+			// setzen der Service Fabric für weitere Unterfragen
+			$ServObj->_setServiceFabric($this);
 			
 			// setzt das Rechtemanagement des users
 			$ServObj->_setRightsAcl( $rights );
 			
 		
-			// setzt das Rechtemanagement des users
+			// setzt die Resourcen
 			$ServObj->_setResource( $serviceResource );
 				
 			// Setzen der Service Parameter
@@ -108,15 +110,13 @@ class ServiceFabric {
 	
 	/**
 	 * Ruft ein Action(ActionsMethode) in dem übergebenen Services auf
-	 * Unter berücksichtigung von Rechtemanagement und ServicResourcen
 	 *
 	 * @param Service Actioner Auszuwertende Service mit wenn vorhandenseine Parametern
 	 * @param string Actione Die Auszuwertente ActionsMethode
-	 * @param string Actioney der Actions falls nicht gesetzt wird der Actionsnamen genutzt
 	 * @throws Exception Etliche Fehlermeldungen falls es nicht möglich ist die Action aufzurufen
 	 * @return mixed Die Rückgabe der Action im Service Objekt
 	 */
-	public function getAction($resource, AService $service, Action $Action, $Key = NULL) {
+	public function getAction($resource, AService $service, Action $Action) {
 	
 		
  	

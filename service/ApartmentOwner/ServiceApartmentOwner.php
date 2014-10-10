@@ -9,7 +9,7 @@ require_once 'citro/service-class/AService.php';
  * @version 1.0
  *         
  */
-class ServiceContact extends AService {
+class ServiceApartmentOwner extends AService {
 	
 	private $_categoryStand = "NOT";
 	public $limit = 10;
@@ -55,25 +55,6 @@ class ServiceContact extends AService {
 		
 		
 
-		
-		
-// 		$spA["visibil"] = "visibil";
-			
-// 		$spA["creat_date"] = "edata";
-// 		$spA["edit_date"] = "vdata";
-	
-// 		$spA["create_guid"] = "usercreate";
-// 		$spA["edit_guid"] = "useredit";
-	
-// 		$spA["strasse"]="strasse";
-	
-
-	
-// 		if( in_array('apartment_count',$spalten) )
-// 			$spA['apartment_count'] = 'IFNULL(count(a.id),0)';
-	
-		// muss nur auf True gestellt werden wenn die hinzugefügten where abfragen gestellt werden 	
-		//$groupIsOn = FALSE;
 	
 		$resortSel->from(array('c' => contacts::getTableNameStatic()) ,$spA);
 
@@ -103,35 +84,7 @@ class ServiceContact extends AService {
  			$resortSel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
  		}
 		
-// 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){
-// 			require_once 'db/resort/resort_orte.php';
-// 			$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
-// 		}
-	
-// 		if( in_array('usercreate_name',$spalten) ){
-// 			require_once 'db/contact/contact_access.php';
-// 			require_once 'db/contact/contacts.php';
-// 			$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
-// 			$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
-// 		}
-	
-// 		if( in_array('useredit_name',$spalten) ){
-// 			require_once 'db/contact/contact_access.php';
-// 			require_once 'db/contact/contacts.php';
-// 			$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
-// 			$resortSel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-// 		}
-	
-// 		$spaltenInApartment = array();
-// 		if( in_array('apartment_namen',$spalten) ){
-// 			$spaltenInApartment['apartment_namen'] = 'GROUP_CONCAT(a.name )';
-// 		}
-	
-// 		if( in_array('apartment_count',$spalten) ){
-// 			require_once 'db/apartment/apartment.php';
-// 			$resortSel->joinLeft(array('a'=>apartment::getTableNameStatic()), "a.resort_id = r.id"  , $spaltenInApartment);
-// 			$resortSel->group("r.id");
-// 		}
+
 	
  		// 		$resortSel->where("r.name=?", $name);
 		$resortSel->where("c.deleted = ?", 0);
@@ -157,13 +110,7 @@ class ServiceContact extends AService {
 			
 			
 		$resortSel->limit($count,$offset);
-		//$resortSel->union(array("SELECT FOUND_ROWS()"));
-// 		if($groupIsOn)
-// 			$resortSel->group("c.id");
-	
- 		//$selectStr = $resortSel->__toString();
- //	$selectStr = $selectStr." UNION SELECT FOUND_ROWS();";
- 		//echo $selectStr;
+
 		$resort = $db->fetchAll( $resortSel );
 	
 		return $resort;
@@ -187,11 +134,7 @@ class ServiceContact extends AService {
 	
 	
 	
-// 		// Suche nach Ort
-// 		if(array_key_exists("ort", $where)){
-// 			require_once 'db/resort/resort_orte.php';
-// 			$searchListSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
-// 		}
+
 		
 		$searchListSel->where("c.deleted = ?", 0);
 		
@@ -416,7 +359,7 @@ class ServiceContact extends AService {
 	 * @citro_isOn true
 	 */
 	public function ActionUpdateData($contactUid,$hashKey, $data) {
-	//$this->getResource()->exist("Group")
+	
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
 		$servContUpd = new ServiceContactUpdateHelper($contactUid);
@@ -442,193 +385,31 @@ class ServiceContact extends AService {
 	 */
 	public function ActionNew($lastName, $fields = array()) {
 				
-		
-		require_once 'db/contact/contacts.php';
-		$kData = array();
-
-		// Setzen der Standartfelder
-		$kData[contacts::SP_DATA_CREATE] = DBTable::DateTime ();
-		$kData[contacts::SP_DATA_EDIT] = DBTable::DateTime ();
-		$kData[contacts::SP_ACCESS_CREATE] = $this->_rightsAcl->getAccess()->getId();
-		$kData[contacts::SP_ACCESS_EDIT] = $this->_rightsAcl->getAccess()->getId();
-		
-		if(!empty($fields["title_name"])){
-			$title = contacts::testTitle($fields["title_name"]);
-			if($title !== FALSE) $kData[contacts::SP_TITLE] = $title;
-		}
-		
-		if(!empty($fields["first_add_name"])){
-			$addFirstName = contacts::testFirstAddName($fields["first_add_name"]);
-			if($addFirstName !== FALSE) $kData[contacts::SP_FIRST_ADD_NAME] = $addFirstName;
-		}
-		
-		if(!empty($fields["first_name"])){
-			$firstName = contacts::testFirstName($fields["first_name"]);
-			if($firstName !== FALSE) $kData[contacts::SP_FIRST_NAME] = $firstName;
-		}
-		
-		if(!empty($fields["affixname"])){
-			$affixName = contacts::testAffixName($fields["affix_name"]);
-			if($affixName !== FALSE) $kData[contacts::SP_AFFIX_NAME] = $affixName;
-		}
-
-		
-		if(!empty($fields["firma"])){
-			$firma = contacts::testAffixName($fields["firma"]);
-			if($firma !== FALSE) $kData[contacts::SP_FIRMA] = $firma;
-		}
-		if(!empty($fields["position"])){
-			$firma = contacts::testAffixName($fields["position"]);
-			if($firma !== FALSE) $kData[contacts::SP_FIRMA_POSITION] = $firma;
-		}
-		if(!empty($fields["infotext"])){
-			$info = contacts::testAffixName($fields["infotext"]);
-			if($info !== FALSE) $kData[contacts::SP_KURZINFO] = $info;
-		}
-		
-
-		// Testen des Pflichtfeldes Last Name oder abbruch
-		$lastName = contacts::testLastName($lastName);
-		if($lastName === FALSE)return FALSE;
-		$kData[contacts::SP_LAST_NAME] = $lastName;
-		
-		
-		
-		
-		// Adresss
-		$addressObj = NULL;
-		
-		if( !empty($fields["adr_ort"]) ){
-
-			require_once 'db/contact/address/contact_address.php';
+		if($this->getResource()->exist("Contact")){
 			
-			if(contact_address::testOrt($fields["adr_ort"]) !== FALSE){
-				
-				$addressObj = new contact_address();
-				$addressObj->setArt("main");
-				$addressObj->setOrt($fields['adr_ort']);
-				if(isset($fields['adr_plz'])) 		$addressObj->setPlz($fields['adr_plz']);
-				if(isset($fields['adr_strasse'])) 	$addressObj->setStreet($fields['adr_strasse']);
-				if(isset($fields['adr_land'])) 		$addressObj->setLand($fields['adr_land']);
-				if(isset($fields['adr_landpart'])) 	$addressObj->setLandpart($fields['adr_landpart']);
-			}
-		}
-
-		// Telefon
-		$phoneObj = NULL;
-		
-		if(!empty($fields["phone_number"])){
-			require_once 'db/contact/phone/contact_phone.php';
 			
-			if(contact_phone::testPhoneNumber($fields["phone_number"]) !== FALSE){
-				
-				$phoneObj = new contact_phone();
-				$phoneObj->setArt("main");
-				$phoneObj->setNumber($fields["phone_number"]);
-				if(isset($fields['phone_text'])) 	$phoneObj->setText($fields['phone_text']);			
-			}
-		}
-		
-		// Email
-		$emailObj = NULL;
-		if(!empty($fields["mail_adress"])){
-			require_once 'db/contact/email/contact_email.php';
+			require_once 'citro/service-class/Service.php';
+			$Service = new Service("Contact");
 			
-			if(contact_email::testEmail($fields["mail_adress"]) !== FALSE){
-				$emailObj = new contact_email();
-				$emailObj->setEmail($fields["mail_adress"]);
-				if(isset($fields['mail_text'])) 	$emailObj->setText($fields['mail_text']);
-	
-			}
-		}
-		
-		
-		
-		// Daten einschreiben
-		$db = contacts::getDefaultAdapter();
-	
-		$setInsert = TRUE;
-		while ( $setInsert )
-		{
-			$newUnId = contacts::generateUnId("bt");
-			$selTuble = $db->select();
-			$selTuble->from(contacts::getTableNameStatic());
-			$selTuble->where(contacts::SP_UNID." = ? ",$newUnId);
-				
-			$allTubles = $db->fetchAll($selTuble);
-
-			if(count($allTubles) == 0){
-				$kData[contacts::SP_UNID] = $newUnId;
-				$setInsert = FALSE;
-				break;
-			}
-						
-		}
-		
-		
-		
-		$db->beginTransaction();
-		
-		
-		try {
-			$contactTab = new contacts();
-			$contactsId = $contactTab->insert($kData);
-
-			$updateData = array();
+			$ServFab = $this->getServiceFabric();
+			$contServ = $ServFab->getService($Service, $this->getResource(), $this->_rightsAcl);
 			
-			if(is_a($addressObj,"contact_address")){
-				$addressObj->setDefaultAdapter($db);
-				$updateData[contacts::SP_ADRESS_ID] = $addressObj->insertData($contactsId);		
-			}
-			if(is_a($emailObj, "contact_email")){
-				$emailObj->setDefaultAdapter($db);
-				$updateData[contacts::SP_EMAIL_ID]  = $emailObj->insertData($contactsId);				
-			}
-			if( is_a( $phoneObj, "contact_phone" )){
-				$phoneObj->setDefaultAdapter($db);
-				$updateData[contacts::SP_PHONE_ID] = $phoneObj->insertData($contactsId);
-			}
-
-			if(count($updateData) > 0){
-				$db->update(contacts::getTableNameStatic(), $updateData, contacts::SP_ID."=".$contactsId);
-			}
+			require_once 'citro/service-class/Action.php';
+			$action = new Action("New");
+			$action->setParam("lastName", $lastName);
+			$action->setParam("fields", $fields);
+		
+			$backAction = $ServFab->getAction($this->getResource(), $contServ, $action);
 			
 			
 			
-			$db->commit();
+			FireBug::setDebug($backAction);
 			
-			return $newUnId;
-		}catch (Exception $eTrans){
-			$db->rollBack();
-			throw new Exception($eTrans->getMessage(),E_ERROR);
-			return FALSE;
+			
 		}
+			
 		
-
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

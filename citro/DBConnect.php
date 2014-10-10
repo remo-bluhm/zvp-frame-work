@@ -48,6 +48,13 @@ class DBConnect {
 			self::setAdappter ( $db );
 			$db->getConnection ();
 			
+			// setzt das Profiling für den Fierfox
+			if($dbConfig->get("profiling_firefox", NULL) === "true"){
+				self::setProfilingFirebug($db);
+			}
+			
+		
+			
 			self::$connect = $db;
 		
 		} catch ( Exception $e ) {
@@ -55,6 +62,15 @@ class DBConnect {
 			throw new Exception ( "Fehler beim Erstellen des Datenbank connect mit Zend_DB!", E_ERROR );
 		}
 	
+	}
+	
+	
+	private static function setProfilingFirebug($dbConn){
+		require_once 'Zend/Db/Profiler/Firebug.php';
+		$profiler = new Zend_Db_Profiler_Firebug('All DB Queries');
+		$profiler->setEnabled(true);
+		//$profiler->setFilterQueryType(32);
+		$dbConn->setProfiler($profiler);
 	}
 	
 	private static function setAdappter(Zend_Db_Adapter_Abstract $conn) {

@@ -53,6 +53,7 @@ class UpdateFactory extends SelectFactory {
 			
 			
 			$this->_connect->commit ();
+	
 			return TRUE;
 			
 		} catch ( Exception $e ) {

@@ -53,9 +53,7 @@ class ServiceResource {
 	private static $ConfigTag_Action_IsOn_Text = "isOn";
 	private static $ConfigTag_Action_IsOn_Value = "false";
 	
-// 	public function getServiceConfig() {
-// 		return $this->_confService;
-// 	}
+
 
 	/**
 	 * Giebt de gesamte Resourcendocku zurück
@@ -954,6 +952,19 @@ class ServiceResource {
 	}
 	
 	/**
+	 * Prüft ob eine Resource Existiert
+	 *
+	 * @param string $resourceName
+	 * @return boolean
+	 */
+	public function exist($resourceName){
+	
+		$inArray = in_array ( $resourceName, $this->_resourceList );
+		return $inArray;
+	
+	}
+	
+	/**
 	 * Giebt ein Resourcen Liste(zweidimensional) zurück in dem Alle Resourcen mit Ihren Namen enthalten sind
 	 * Hollt nur Resourcen die mit den Parameter(citro_isOn) ind der Docku nicht "false" gescheltet sind
 	 * Ist für RightsAcl gedacht
@@ -1018,8 +1029,7 @@ class ServiceResource {
 	}
 	
 	/**
-	 * Giebt das Service Objekt Zurück falls es nicht gespert und es gefunden
-	 * wurde
+	 * Giebt das Service Objekt Zurück
 	 * 
 	 * @param $DateiName string       	   	
 	 * @return boolean aServiceObjekt FALSE Objekt nicht gefunden oder nicht erlaubt
