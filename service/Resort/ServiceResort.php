@@ -75,16 +75,16 @@ class ServiceResort extends AService {
 
 		if( in_array('usercreate_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
-			require_once 'db/contact/contacts.php';
+			require_once 'db/contact/Contacts.php';
 			$resortSel->joinLeft(array('u'=>sys_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
-			$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
+			$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
-			require_once 'db/contact/contacts.php';
+			require_once 'db/contact/Contacts.php';
 			$resortSel->joinLeft(array('u2'=>sys_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
-			$resortSel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+			$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 		
 		$spaltenInApartment = array();
@@ -199,7 +199,7 @@ class ServiceResort extends AService {
 		require_once 'db/resort/resort.php';
 		require_once 'db/resort/resort_orte.php';
 		require_once 'db/contact/contact_access.php';
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
 		
 		$db = resort::getDefaultAdapter();
@@ -230,10 +230,10 @@ class ServiceResort extends AService {
 		$resortSel->from(array('r' => resort::getTableNameStatic()) ,$spA);
 		
 		$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
-		$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
+		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
 		
 		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
-		$resortSel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 
 		$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
 		

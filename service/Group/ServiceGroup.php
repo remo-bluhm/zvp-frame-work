@@ -229,15 +229,15 @@ class ServiceGroup extends AService {
 			
 			if( in_array('usercreate_name',$spalten) ){
 				require_once 'db/sys/access/sys_access.php';
-				require_once 'db/contact/contacts.php';
+				require_once 'db/contact/Contacts.php';
 				$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "g.access_owner = a.id",array('create_access_guid' => 'a.guid' )  );
-				$sel->joinLeft(array('c1'=>contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('create_user_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+				$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('create_user_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 			}
 			
 			if( in_array('useredit_name',$spalten) ){
 				require_once 'db/sys/access/sys_access.php';
 				$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "g.access_edit = a2.id" ,array('edit_access_guid' => 'a2.guid' ) );
-				$sel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('edit_user_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+				$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('edit_user_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 			}
 			
 			
@@ -692,7 +692,7 @@ class ServiceGroup extends AService {
 	
 	private function _recycleGroupRecursive($data) {
 		require_once 'db/groups/groups.php';
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
 		if (is_array ( $data )) {
 			
@@ -711,14 +711,14 @@ class ServiceGroup extends AService {
 					
 					if (is_array ( $data ["user"] )) {
 						
-						$user = new contacts ();
+						$user = new Contacts ();
 						/*
 						 * @var $userRow Zend_Db_Table_Row
 						 */
 						foreach ( $data ["user"] as $userRow ) {
 							
 							$userRow->setTable ( $user );
-							$userRow->offsetSet ( contacts::SP_DELETE, 0 );
+							$userRow->offsetSet ( Contacts::SP_DELETE, 0 );
 							$userRow->save ();
 						
 						}
@@ -786,17 +786,17 @@ class ServiceGroup extends AService {
 			
 			$tableRowsAll ["group"] = $groupRow;
 			
-			$userTab = new contacts();
+			$userTab = new Contacts();
 			$userSelect = $userTab->select ();
-			$userSelect->where ( contacts::SP_GROUP_ID . " = ?", $groupRow->offsetGet ( "id" ) );
-			$userSelect->where ( contacts::SP_DELETE . " = ?", 0 );
+			$userSelect->where ( Contacts::SP_GROUP_ID . " = ?", $groupRow->offsetGet ( "id" ) );
+			$userSelect->where ( Contacts::SP_DELETE . " = ?", 0 );
 			$userRowSet = $userTab->fetchAll ( $userSelect );
 			
 			/*
 			 * @var $pGroupRow Zend_Db_Table_Row
 			 */
 			foreach ( $userRowSet as $userRow ) {
-				$userRow->offsetSet ( contacts::SP_DELETE, 1 );
+				$userRow->offsetSet ( Contacts::SP_DELETE, 1 );
 				$userRow->save ();
 				
 				$tableRowsAll ["user"] [] = $userRow;
@@ -836,7 +836,7 @@ class ServiceGroup extends AService {
 		
 		require_once 'db/sys/access/sys_access.php';
 		require_once 'db/sys/access/groups/sys_access_groups.php';
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 	
 		
 
@@ -863,13 +863,13 @@ class ServiceGroup extends AService {
 		$accessSelect->from ( array ('a' => sys_access::getTableNameStatic() ),  $accessSp );
 		
 		$contactsSp = array();
-		$contactsSp['firstname'] = contacts::SP_FIRST_NAME;
-		$contactsSp['lastname'] = contacts::SP_LAST_NAME;
-		$contactsSp['uid'] = contacts::SP_UNID;
+		$contactsSp['firstname'] = Contacts::SP_FIRST_NAME;
+		$contactsSp['lastname'] = Contacts::SP_LAST_NAME;
+		$contactsSp['uid'] = Contacts::SP_UNID;
 		
 		//array ('ownername' => sys_user::SP_NAME, 'ownerguid' => sys_user::SP_GUID ) 
 		// den Account Contact hollen
-		$accessSelect->joinLeft ( array ('uc' => contacts::getTableNameStatic() ), 'a.' . sys_access::SP_CONTACT_ID . ' = uc.' . contacts::SP_ID, $contactsSp);
+		$accessSelect->joinLeft ( array ('uc' => Contacts::getTableNameStatic() ), 'a.' . sys_access::SP_CONTACT_ID . ' = uc.' . Contacts::SP_ID, $contactsSp);
 		
 		$accessSelect->where ( 'a.' . sys_access::SP_GROUPID . " = ?", $groupId );
 		
@@ -891,14 +891,14 @@ class ServiceGroup extends AService {
 	 */
 	public function ActionNewAccount($groupName, $contactuid, $loginmail, $password ){
 	
-		require_once 'db/contact/contacts.php';
-		$contactsTab = new contacts();
-		$contactsRow = $contactsTab->fetchRow($contactsTab->getDefaultAdapter()->quoteInto(contacts::SP_UNID."= ?", $contactuid));
+		require_once 'db/contact/Contacts.php';
+		$contactsTab = new Contacts();
+		$contactsRow = $contactsTab->fetchRow($contactsTab->getDefaultAdapter()->quoteInto(Contacts::SP_UNID."= ?", $contactuid));
 		
 		if($contactsRow !== NULL){
-			$contactsId = $contactsRow->offsetGet(contacts::SP_ID);
-			$contactsName = $contactsRow->offsetGet(contacts::SP_FIRST_NAME);
-			$contactsLastName = $contactsRow->offsetGet(contacts::SP_LAST_NAME);
+			$contactsId = $contactsRow->offsetGet(Contacts::SP_ID);
+			$contactsName = $contactsRow->offsetGet(Contacts::SP_FIRST_NAME);
+			$contactsLastName = $contactsRow->offsetGet(Contacts::SP_LAST_NAME);
 		
 			
 			//return $contactsId;

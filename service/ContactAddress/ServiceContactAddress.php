@@ -28,9 +28,9 @@ class ServiceContactAddress extends AService {
 	 */
 	public function ActionContactListOfContact($contactUid){
 	
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 	
-		$db = contacts::getDefaultAdapter();
+		$db = Contacts::getDefaultAdapter();
 	
 	
 		$addressSel = $db->select ();
@@ -48,12 +48,12 @@ class ServiceContactAddress extends AService {
 		
 
 	
-		$addressSel->from(array('c' => contacts::getTableNameStatic()) ,$spA);
+		$addressSel->from(array('c' => Contacts::getTableNameStatic()) ,$spA);
 
 		
  		
  			
- 		require_once 'db/contact/address/contact_address.php';
+ 		require_once 'db/contact/address/Address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_id'] = "id";
  		$adressSpaltenA['a_land'] = "land";
@@ -66,7 +66,7 @@ class ServiceContactAddress extends AService {
  		$adressSpaltenA['a_strasse'] = "strasse";
  		$adressSpaltenA['a_info_text'] = "info_text";
  	
- 		$addressSel->joinRight(array('a'=>contact_address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
+ 		$addressSel->joinRight(array('a'=>Address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
 
 
 		$addressSel->where("c.deleted = ?", 0);

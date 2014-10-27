@@ -69,23 +69,23 @@ class Contact {
 		
 		if(is_array($contactData)){
 		
-			require_once 'db/contact/contacts.php';
+			require_once 'db/contact/Contacts.php';
 			
-			if(array_key_exists(contacts::SP_ID, $contactData)){
-				$this->_contactId = $contactData[contacts::SP_ID];
+			if(array_key_exists(Contacts::SP_ID, $contactData)){
+				$this->_contactId = $contactData[Contacts::SP_ID];
 			}
 			
-			if(array_key_exists(contacts::SP_FIRST_NAME, $contactData)){
-				$this->_firstName = $contactData[contacts::SP_FIRST_NAME];
+			if(array_key_exists(Contacts::SP_FIRST_NAME, $contactData)){
+				$this->_firstName = $contactData[Contacts::SP_FIRST_NAME];
 			}
 			
-			if(array_key_exists(contacts::SP_LAST_NAME, $contactData)){
-				$this->_lastName = $contactData[contacts::SP_LAST_NAME];
+			if(array_key_exists(Contacts::SP_LAST_NAME, $contactData)){
+				$this->_lastName = $contactData[Contacts::SP_LAST_NAME];
 			}
 			
 			
-			if(array_key_exists(contacts::SP_ID, $contactData)){
-				$this->setContactId($contactData[contacts::SP_ID]);
+			if(array_key_exists(Contacts::SP_ID, $contactData)){
+				$this->setContactId($contactData[Contacts::SP_ID]);
 			}
 		}
 		

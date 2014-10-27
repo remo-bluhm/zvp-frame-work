@@ -96,7 +96,16 @@ abstract class AService {
 	public function getResource(){
 		return $this->_resource;
 	}
-	
+	/**
+	 * Giebt den Access des anfragenden zurück
+	 * @return Access|NULL
+	 */
+	public function getAccess(){
+		if(is_a($this->_rightsAcl,"RightsAcl") && is_a( $this->_rightsAcl->getAccess(),"Access")){
+			return $this->_rightsAcl->getAccess();
+		}
+		return NULL;
+	}
 	public function getName() {
 		return $this->name;
 	}

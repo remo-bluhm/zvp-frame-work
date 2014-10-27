@@ -35,9 +35,9 @@ class ServiceApartmentOwner extends AService {
 	 */
 	public function ActionGetList($count, $offset = 0, $where = array(), $spalten = array()){
 	
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 	
-		$db = contacts::getDefaultAdapter();
+		$db = Contacts::getDefaultAdapter();
 
 		$resortSel = $db->select ();
 	
@@ -56,20 +56,20 @@ class ServiceApartmentOwner extends AService {
 		
 
 	
-		$resortSel->from(array('c' => contacts::getTableNameStatic()) ,$spA);
+		$resortSel->from(array('c' => Contacts::getTableNameStatic()) ,$spA);
 
 		
  		
  			
- 		require_once 'db/contact/address/contact_address.php';
+ 		require_once 'db/contact/address/Address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
  		$adressSpaltenA['a_strasse'] = "strasse";
  		if( array_key_exists('adr_plz',$where) || array_key_exists("adr_ort", $where) || array_key_exists("adr_strasse", $where) ){	
- 			$resortSel->joinLeft(array('a'=>contact_address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
  		}else {
- 			$resortSel->joinLeft(array('a'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = a.id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.main_contact_address_id = a.id", $adressSpaltenA );
  		}
  		
  		
@@ -120,43 +120,6 @@ class ServiceApartmentOwner extends AService {
 	
 	
 	/**
-	 * Giebt die anzahl der Apartments zurück
-	 * @param array $where
-	 * @return array
-	 */
-	public function ActionCount( $where = array()){
-	
-		require_once 'db/contact/contacts.php';
-		$db = contacts::getDefaultAdapter();
-	
-		$searchListSel = $db->select ();
-		$searchListSel->from( array('c' => contacts::getTableNameStatic() ), array( "count(c.id)") );
-	
-	
-	
-
-		
-		$searchListSel->where("c.deleted = ?", 0);
-		
-		if(array_key_exists("last_name", $where))
-			$searchListSel->where("c.last_name LIKE ?", $where["last_name"]);
-		if(array_key_exists("first_name", $where))
-			$searchListSel->where("c.first_name LIKE ?", $where["first_name"]);
-			
-// 		// Suche nach Strasse
-// 		if(array_key_exists("strasse", $where))
-// 			$searchListSel->where("r.strasse LIKE ?", $where["strasse"]."%");
-	
-// 		if(array_key_exists("ort", $where))
-// 			$searchListSel->where("o.name LIKE ?", $where["ort"]."%");
-	
-		$allOrtCounts = $db->fetchOne($searchListSel);
-		return $allOrtCounts;
-	
-	
-	}
-	
-	/**
 	 * Giebt die Contactdaten eines Contactes zurück
 	 *
 	 * @param string $contactuid Die Uid des Contacts als String
@@ -166,8 +129,8 @@ class ServiceApartmentOwner extends AService {
 	public function ActionGetSingle($contactuid, $spalten = array()){
 	
 	
-		require_once 'db/contact/contacts.php';
-		$db = contacts::getDefaultAdapter();
+		require_once 'db/contact/Contacts.php';
+		$db = Contacts::getDefaultAdapter();
 
 		
 		$spA = array();
@@ -192,18 +155,18 @@ class ServiceApartmentOwner extends AService {
 
 				
 		$sel = $db->select ();
-		$sel->from( array('c' => contacts::getTableNameStatic() ), $spA );
+		$sel->from( array('c' => Contacts::getTableNameStatic() ), $spA );
 		
 		if( in_array('usercreate_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
 			$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "c.access_create = a.id",array() );
-			$sel->joinLeft(array('c1'=>contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+			$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
 			$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "c.access_edit = a2.id" ,array() );
-			$sel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+			$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 
 		
@@ -216,8 +179,8 @@ class ServiceApartmentOwner extends AService {
 		$adresSp["adr_strasse"] = "strasse";
 		$adresSp["adr_infotext"] = "info_text";
 		
-		require_once 'db/contact/address/contact_address.php';
-		$sel->joinLeft(array('ca'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
+		require_once 'db/contact/address/Address.php';
+		$sel->joinLeft(array('ca'=>Address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
 
 		
  		$phoneSp = array();
@@ -246,13 +209,13 @@ class ServiceApartmentOwner extends AService {
 			
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
-			require_once 'db/contact/address/contact_address.php';
+			require_once 'db/contact/address/Address.php';
 			
 			$mainAddressId = (int)$contactA["address_id"];
 			$adresSp["is_main"] = "IF(`id` = ".$mainAddressId.", '1', '0' ) ";
 			
 			$selAdress = $db->select ();
-			$selAdress->from( contact_address::getTableNameStatic() , $adresSp );
+			$selAdress->from( Address::getTableNameStatic() , $adresSp );
 			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
 
 			$contactA["adresses"] = $db->fetchAll($selAdress);
@@ -283,7 +246,7 @@ class ServiceApartmentOwner extends AService {
 		
 		
 		require_once 'citro/db/contact/contacts.php';
-		$contactTab = new contacts();
+		$contactTab = new Contacts();
 		$contactSel = $contactTab->select();
 		//$contactSel->where("category = ?", "REN");
 		
@@ -308,10 +271,10 @@ class ServiceApartmentOwner extends AService {
 
 		$contactId = $this->_user->getContactId();
 
-		require_once 'db/contact/contacts.php';
-		$kontaktTab = new contacts();
+		require_once 'db/contact/Contacts.php';
+		$kontaktTab = new Contacts();
 		$contactSel = $kontaktTab->select();
-		$contactSel->where(contacts::SP_ID . " = ?", $contactId);
+		$contactSel->where(Contacts::SP_ID . " = ?", $contactId);
 		$contactRow = $kontaktTab->fetchRow($contactSel);
 		
 		if($contactRow == NULL)
@@ -384,29 +347,103 @@ class ServiceApartmentOwner extends AService {
 	 *
 	 */
 	public function ActionNew($lastName, $fields = array()) {
-				
-		if($this->getResource()->exist("Contact")){
-			
-			
-			require_once 'citro/service-class/Service.php';
-			$Service = new Service("Contact");
-			
-			$ServFab = $this->getServiceFabric();
-			$contServ = $ServFab->getService($Service, $this->getResource(), $this->_rightsAcl);
-			
-			require_once 'citro/service-class/Action.php';
-			$action = new Action("New");
-			$action->setParam("lastName", $lastName);
-			$action->setParam("fields", $fields);
+		echo "<pre>";
+		print_r($fields);
 		
-			$backAction = $ServFab->getAction($this->getResource(), $contServ, $action);
+		if(!is_array($fields))$fields = array();
+
+ 	
+	
+		if( !empty( $lastName) ){
+	
+			require_once 'db/contact/Contacts.php';
+			$contTab = new Contacts();
 			
+			$contTab->getAdapter()->beginTransaction();
+			try {
 			
+				
+				if(!empty( $fields["title_name"]))		$contTab->setTitle($fields["title_name"]);
+				if(!empty( $fields["first_name"]))		$contTab->setFirstName($fields["first_name"]);
+				if(!empty( $fields["first_add_name"]))	$contTab->setFirstAddName($fields["first_add_name"]);
+				if(!empty( $fields["affix_name"]))		$contTab->setAffix($fields["affix_name"]);
+				
+				$id = NULL;
+				$id = $contTab->insertSetData( $this->getAccess()->getId() , $lastName) 	;
 			
-			FireBug::setDebug($backAction);
-			
-			
+				
+				require_once 'db/contact/address/Address.php';
+				
+				if(!empty($fields["adresses"][0]["ort"]) && $ort = Address::testOrt($fields["adresses"][0]["ort"]) !== FALSE){
+					$adrTab = new Address();
+					$adrTab->insertSetDataWithContId($this->getAccess()->getId() , $id, $ort);
+				}
+				$contTab->getAdapter()->rollBack();
+				//$contTab->getAdapter()->commit();
+				
+			} catch (Exception $e) {
+				$contTab->getAdapter()->rollBack();
+			}
+		
 		}
+		//$rows = $contTab->find(1);
+ 		//$row = $rows->current();
+ 		//require_once 'db/contact/address/Address.php';
+ 		//$adrTab = new Address();
+ 		//$sel = $adrTab->select()->from($adrTab->getTableName(), array("contacts_id","ort","plz"));
+ 		//$addressRows = $row->findDependentRowset($adrTab,null,$sel);		
+
+ 		
+		//require_once 'db/contact/apartment_owner/apartment_owner.php';
+
+		//$appOwner = new apartment_owner();
+		
+		//$appOwner->insert($this->_rightsAcl->getAccess()->getId(), $fields);
+		
+// 		if($this->getResource()->exist("Contact")){
+			
+			
+// 			require_once 'citro/service-class/Service.php';
+// 			$Service = new Service("Contact");
+			
+// 			$ServFab = $this->getServiceFabric();
+// 			$contServ = $ServFab->getService($Service, $this->getResource(), $this->_rightsAcl);
+			
+// 			require_once 'citro/service-class/Action.php';
+// 			$action = new Action("New");
+// 			$action->setParam("lastName", $lastName);
+// 			$action->setParam("fields", $fields);
+		
+		
+// 			$newUnId = "bt-53c6cfc02bb2a";
+// 			if($newUnId !== FALSE){
+// 				require_once 'citro/DBConnect.php';
+// 				$db = DBConnect::getConnect();
+// 				$sel = $db->select();
+// 				$sel->from("contacts");
+// 				$sel->where("uid =  ?",$newUnId);
+// 				$contId = $db->fetchOne($sel);
+				
+// 				$apartmentOwnerData = array();
+// 				$apartmentOwnerData["contact_id"] = $contId;
+				
+// 				// Zusatztext
+// 				$emailObj = NULL;
+// 				if(!empty($fields["app_owner_text"])){
+
+						
+// 					$apartmentOwnerData["app_owner_text"] = $fields["app_owner_text"];
+// 				}
+				
+// 				$db->insert("apartment_owner", $apartmentOwnerData);
+
+							
+// 			}
+			
+// 			FireBug::setDebug($newUnId);
+			
+			
+//		}
 			
 		
 	}

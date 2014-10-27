@@ -174,7 +174,7 @@ class ServiceOrte extends AService {
 	
 		require_once 'db/resort/resort_orte.php';
 		require_once 'db/sys/access/sys_access.php';
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
 
 		$db = resort_orte::getDefaultAdapter();
@@ -185,7 +185,7 @@ class ServiceOrte extends AService {
 		
 		
 		$ortListSel->joinLeft(array('u'=>sys_access::getTableNameStatic()), "o.usercreat = u.guid", array ('usercreate_guid' => 'u.guid'));
-		$ortListSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )', 'usercreate_id' => 'c.id' ));
+		$ortListSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )', 'usercreate_id' => 'c.id' ));
 		
 		$ortListSel->limit($count,$offset);
 		$allOrts = $db->fetchAll( $ortListSel );
@@ -300,7 +300,7 @@ class ServiceOrte extends AService {
 	
 		require_once 'db/resort/resort_orte.php';
 		require_once 'db/contact/contact_access.php';
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
 		
 		$db = resort_orte::getDefaultAdapter();
@@ -332,10 +332,10 @@ class ServiceOrte extends AService {
 		$ortListSel->from(array('o' => resort_orte::getTableNameStatic()) );
 				
 		$ortListSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "o.usercreat = u.guid ",array() );
-		$ortListSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
+		$ortListSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
 
 		$ortListSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "o.useredit = u2.guid " ,array() );
-		$ortListSel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+		$ortListSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		
 		
 		$ortListSel->where("o.name=?", $ortName);

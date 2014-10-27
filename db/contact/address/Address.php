@@ -1,9 +1,19 @@
 <?php
 require_once 'citro/DBTable.php';
 
-class contact_address extends DBTable {
+class Address extends DBTable {
 
+	protected $_name = 'contact_address';
 
+//	protected $_dependentTables = array('Contactse');
+	protected $_referenceMap    = array(
+			'Contacts' => array(
+					'columns'           => array('contacts_id'),
+					'refTableClass'     => 'Contacts',
+					'refColumns'        => array('id')
+			)
+	);
+	
 	private $_art = NULL;
 	private $_ort = NULL;
 	private $_plz = NULL;
@@ -85,7 +95,7 @@ class contact_address extends DBTable {
 	/**
 	 * @param NULL $_plz
 	 */
-	public function setPlz($plz) {
+	public function setZip($plz) {
 		$result = self::testPLZ($plz);
 		if($result !== FALSE)$this->_plz = $result;
 		return $result;
@@ -119,7 +129,13 @@ class contact_address extends DBTable {
 	}
 
 	
-	
+	public function setContactId($contactId){
+		$result = self::testContactId($contactId);
+		if($result!==FALSE){
+			$this->_contactId = $result;
+		}
+		
+	}
 	
 	
 	
@@ -193,15 +209,24 @@ class contact_address extends DBTable {
 
 	
 	
-	public function insertData($contactId){
-		$primaryKey = NULL;
-		$contactId = self::testContactId($contactId);
-		if($contactId !== FALSE && $this->_ort !== NULL){
-			$data = $this->generateDate();
-			$data[self::SP_CONTACT_ID] = $contactId;
-			$primaryKey = $this->insert($data);
-		}
-		return $primaryKey;
+	public function insertSetDataWithContId($accessId, $contactId, $ort){
+		
+		$this->setContactId($contactId);
+		if($this->_contactId === NULL ) throw new Exception("Die contactId ist nicht valiede!",E_ERROR);
+		
+		$this->setOrt($ort);
+		if($this->_ort === NULL ) throw new Exception("Der Ort ist nicht valiede!",E_ERROR);
+		
+		
+		// Testen des Pflichtfeldes Last Name oder abbruch
+		if($this->_ort === NULL)return NULL;
+
+		
+		$fields = $this->generateDate();
+		$fields[self::SP_ACCESS_CREATE] = $accessId;
+		$fields[self::SP_ACCESS_EDIT]=$accessId;
+		$this->insert($this->generateDate());
+		
 	}
 	
 	

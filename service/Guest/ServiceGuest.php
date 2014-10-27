@@ -35,9 +35,9 @@ class ServiceGuest extends AService {
 	 */
 	public function ActionGetList($count, $offset = 0, $where = array(), $spalten = array()){
 	
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 	
-		$db = contacts::getDefaultAdapter();
+		$db = Contacts::getDefaultAdapter();
 	
 	
 		$resortSel = $db->select ();
@@ -61,23 +61,23 @@ class ServiceGuest extends AService {
 		$spContacts["firma"] = "firma";
 		$spContacts["position"] = "position";
 		
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
-		$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "gu.contacts_id = c.id", $spContacts );
+		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "gu.contacts_id = c.id", $spContacts );
  			
- 		require_once '../../db/contact/address/contact_address.php';
+ 		require_once 'db/contact/address/Address.php';
  		$adressSpaltenA = array();
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
  		$adressSpaltenA['a_strasse'] = "strasse";
  		if( array_key_exists('adr_plz',$where) || array_key_exists("adr_ort", $where) || array_key_exists("adr_strasse", $where) ){	
- 			$resortSel->joinLeft(array('a'=>contact_address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
  		}else {
- 			$resortSel->joinLeft(array('a'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = a.id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.main_contact_address_id = a.id", $adressSpaltenA );
  		}
  		
  		
- 		require_once '../../db/contact/phone/contact_phone.php';
+ 		require_once 'db/contact/phone/contact_phone.php';
  		$phoneSpaltenA = array();
  		$phoneSpaltenA['p_art'] = "art";
  		$phoneSpaltenA['p_number'] = "number";
@@ -144,53 +144,53 @@ class ServiceGuest extends AService {
 			$gastData["systext"] = $fields["intern_info"];
 		}
 		
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		$kData = array();
 	
 		// Setzen der Standartfelder
-		$kData[contacts::SP_DATA_CREATE] = DBTable::DateTime ();
-		$kData[contacts::SP_DATA_EDIT] = DBTable::DateTime ();
-		$kData[contacts::SP_ACCESS_CREATE] = $this->_rightsAcl->getAccess()->getId();
-		$kData[contacts::SP_ACCESS_EDIT] = $this->_rightsAcl->getAccess()->getId();
+		$kData[Contacts::SP_DATA_CREATE] = DBTable::DateTime ();
+		$kData[Contacts::SP_DATA_EDIT] = DBTable::DateTime ();
+		$kData[Contacts::SP_ACCESS_CREATE] = $this->_rightsAcl->getAccess()->getId();
+		$kData[Contacts::SP_ACCESS_EDIT] = $this->_rightsAcl->getAccess()->getId();
 	
 		// Setzt den Namen für das Adressfeld zusammen
 		$fullName = "";
 		
 		if(!empty($fields["title_name"])){
-			$title = contacts::testTitle($fields["title_name"]);
+			$title = Contacts::testTitle($fields["title_name"]);
 			if($title !== FALSE){
-				$kData[contacts::SP_TITLE] = $title;
+				$kData[Contacts::SP_TITLE] = $title;
 				$fullName.= $title;
 			}
 		}
 	
 		if(!empty($fields["first_add_name"])){
-			$addFirstName = contacts::testFirstAddName($fields["first_add_name"]);
+			$addFirstName = Contacts::testFirstAddName($fields["first_add_name"]);
 			if($addFirstName !== FALSE){
-				$kData[contacts::SP_FIRST_ADD_NAME] = $addFirstName;
+				$kData[Contacts::SP_FIRST_ADD_NAME] = $addFirstName;
 				$fullName.= $addFirstName;
 			}
 		}
 	
 		if(!empty($fields["first_name"])){
-			$firstName = contacts::testFirstName($fields["first_name"]);
+			$firstName = Contacts::testFirstName($fields["first_name"]);
 			if($firstName !== FALSE){
-				$kData[contacts::SP_FIRST_NAME] = $firstName;
+				$kData[Contacts::SP_FIRST_NAME] = $firstName;
 				$fullName.= $firstName;
 			}
 		}
 		
 		// Testen des Pflichtfeldes Last Name oder abbruch
-		$lastName = contacts::testLastName($LastName);
+		$lastName = Contacts::testLastName($LastName);
 		if($lastName === FALSE)return FALSE;
-		$kData[contacts::SP_LAST_NAME] = $lastName;
+		$kData[Contacts::SP_LAST_NAME] = $lastName;
 		$fullName.= $lastName;
 	
 		
 		if(!empty($fields["affixname"])){
-			$affixName = contacts::testAffixName($fields["affix_name"]);
+			$affixName = Contacts::testAffixName($fields["affix_name"]);
 			if($affixName !== FALSE){
-				$kData[contacts::SP_AFFIX_NAME] = $affixName;
+				$kData[Contacts::SP_AFFIX_NAME] = $affixName;
 				$fullName.= $affixName;
 			}
 		}
@@ -198,16 +198,16 @@ class ServiceGuest extends AService {
 	
 	
 		if(!empty($fields["firma"])){
-			$firma = contacts::testAffixName($fields["firma"]);
-			if($firma !== FALSE) $kData[contacts::SP_FIRMA] = $firma;
+			$firma = Contacts::testAffixName($fields["firma"]);
+			if($firma !== FALSE) $kData[Contacts::SP_FIRMA] = $firma;
 		}
 		if(!empty($fields["position"])){
-			$firma = contacts::testAffixName($fields["position"]);
-			if($firma !== FALSE) $kData[contacts::SP_FIRMA_POSITION] = $firma;
+			$firma = Contacts::testAffixName($fields["position"]);
+			if($firma !== FALSE) $kData[Contacts::SP_FIRMA_POSITION] = $firma;
 		}
 		if(!empty($fields["infotext"])){
-			$info = contacts::testAffixName($fields["infotext"]);
-			if($info !== FALSE) $kData[contacts::SP_KURZINFO] = $info;
+			$info = Contacts::testAffixName($fields["infotext"]);
+			if($info !== FALSE) $kData[Contacts::SP_KURZINFO] = $info;
 		}
 	
 	
@@ -221,25 +221,25 @@ class ServiceGuest extends AService {
 	
 		if( !empty($fields["adr_ort"]) ){
 	
-			require_once '../../db/contact/address/contact_address.php';
-			$adressOrt = contact_address::testOrt($fields["adr_ort"]);
+			require_once '../../db/contact/address/Address.php';
+			$adressOrt = Address::testOrt($fields["adr_ort"]);
 			if($adressOrt !== FALSE){
 	
 				$adressData = array();
 				$adressData['name_row_1'] = $fullName;
-				$adressData[contact_address::SP_ORT] = $adressOrt;
+				$adressData[Address::SP_ORT] = $adressOrt;
 	
-				$adressPlz = contact_address::testPLZ($fields["adr_plz"]);
-				if($adressPlz !== FALSE)$adressData[contact_address::SP_PLZ] = $adressPlz;
+				$adressPlz = Address::testPLZ($fields["adr_plz"]);
+				if($adressPlz !== FALSE)$adressData[Address::SP_PLZ] = $adressPlz;
 	
-				$adressStreet = contact_address::testStreet($fields["adr_strasse"]);
-				if($adressStreet !== FALSE)$adressData[contact_address::SP_STRASSE] = $adressStreet;
+				$adressStreet = Address::testStreet($fields["adr_strasse"]);
+				if($adressStreet !== FALSE)$adressData[Address::SP_STRASSE] = $adressStreet;
 	
-				$adressLand = contact_address::testLand($fields["adr_land"]);
-				if($adressLand !== FALSE)$adressData[contact_address::SP_LAND] = $adressLand;
+				$adressLand = Address::testLand($fields["adr_land"]);
+				if($adressLand !== FALSE)$adressData[Address::SP_LAND] = $adressLand;
 	
-				$adressLandPart = contact_address::testLandPart($fields["adr_landpart"]);
-				if($adressLandPart !== FALSE)$adressData[contact_address::SP_LAND_PART] = $adressLandPart;
+				$adressLandPart = Address::testLandPart($fields["adr_landpart"]);
+				if($adressLandPart !== FALSE)$adressData[Address::SP_LAND_PART] = $adressLandPart;
 					
 			}
 				
@@ -278,20 +278,20 @@ class ServiceGuest extends AService {
 	
 	
 		// Daten einschreiben
-		$db = contacts::getDefaultAdapter();
+		$db = Contacts::getDefaultAdapter();
 	
 		$setInsert = TRUE;
 		while ( $setInsert )
 		{
-			$newUnId = contacts::generateUnId("bt");
+			$newUnId = Contacts::generateUnId("bt");
 			$selTuble = $db->select();
-			$selTuble->from(contacts::getTableNameStatic());
-			$selTuble->where(contacts::SP_UNID." = ? ",$newUnId);
+			$selTuble->from(Contacts::getTableNameStatic());
+			$selTuble->where(Contacts::SP_UNID." = ? ",$newUnId);
 	
 			$allTubles = $db->fetchAll($selTuble);
 	
 			if(count($allTubles) == 0){
-				$kData[contacts::SP_UNID] = $newUnId;
+				$kData[Contacts::SP_UNID] = $newUnId;
 				$setInsert = FALSE;
 				break;
 			}
@@ -307,7 +307,7 @@ class ServiceGuest extends AService {
 			
 			
 			
-			$contactTab = new contacts();
+			$contactTab = new Contacts();
 			$contactsId = $contactTab->insert($kData);
 	
 			
@@ -318,10 +318,10 @@ class ServiceGuest extends AService {
 			$updateData = array();
 				
 			if(is_array($adressData)){
-				$adressData[contact_address::SP_CONTACT_ID] = $contactsId;
-				$adressTab = new contact_address();
+				$adressData[Address::SP_CONTACT_ID] = $contactsId;
+				$adressTab = new Address();
 				$adressId = $adressTab->insert( $adressData);
-				$updateData[contacts::SP_ADRESS_ID] = $adressId;
+				$updateData[Contacts::SP_ADRESS_ID] = $adressId;
 	
 			}
 			if(is_array($emailData)){
@@ -329,17 +329,17 @@ class ServiceGuest extends AService {
 				$mailTab = new contact_email();
 				$emailId = $mailTab->insert( $emailData);
 	
-				$updateData[contacts::SP_EMAIL_ID] = $emailId;
+				$updateData[Contacts::SP_EMAIL_ID] = $emailId;
 			}
 			if(is_array($phoneData )){
 				$phoneData[contact_phone::SP_CONTACT_ID] = $contactsId;
 				$phoneTab = new contact_phone();
 				$phoneId = $phoneTab->insert( $phoneData);
-				$updateData[contacts::SP_PHONE_ID] = $phoneId;
+				$updateData[Contacts::SP_PHONE_ID] = $phoneId;
 			}
 	
 			if(count($updateData) > 0){
-				$db->update(contacts::getTableNameStatic(), $updateData, contacts::SP_ID."=".$contactsId);
+				$db->update(Contacts::getTableNameStatic(), $updateData, Contacts::SP_ID."=".$contactsId);
 			}
 				
 				
@@ -369,8 +369,8 @@ class ServiceGuest extends AService {
 	public function ActionGetSingle($contactuid, $spalten = array()){
 	
 	
-		require_once 'db/contact/contacts.php';
-		$db = contacts::getDefaultAdapter();
+		require_once 'db/contact/Contacts.php';
+		$db = Contacts::getDefaultAdapter();
 	
 	
 		$spA = array();
@@ -390,20 +390,20 @@ class ServiceGuest extends AService {
 	
 	
 		$sel = $db->select ();
-		$sel->from( array('c' => contacts::getTableNameStatic() ), $spA );
+		$sel->from( array('c' => Contacts::getTableNameStatic() ), $spA );
 		
 		$sel->joinRight(array('g'=>'guest'), "c.id = g.contacts_id",array('g_systext' =>"systext") );
 	
 		if( in_array('usercreate_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
 			$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "c.access_create = a.id",array() );
-			$sel->joinLeft(array('c1'=>contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+			$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
 	
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
 			$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "c.access_edit = a2.id" ,array() );
-			$sel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+			$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 	
 	
@@ -416,8 +416,8 @@ class ServiceGuest extends AService {
 		$adresSp["adr_strasse"] = "strasse";
 		$adresSp["adr_infotext"] = "info_text";
 	
-		require_once '../../db/contact/address/contact_address.php';
-		$sel->joinLeft(array('ca'=>contact_address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
+		require_once '../../db/contact/address/Address.php';
+		$sel->joinLeft(array('ca'=>Address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
 	
 	
 		$phoneSp = array();
@@ -446,10 +446,10 @@ class ServiceGuest extends AService {
 			
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
-			require_once '../../db/contact/address/contact_address.php';
+			require_once '../../db/contact/address/Address.php';
 				
 			$selAdress = $db->select ();
-			$selAdress->from( array('c' => contact_address::getTableNameStatic() ), $adresSp );
+			$selAdress->from( array('c' => Address::getTableNameStatic() ), $adresSp );
 			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
 				
 			$contactA["adresses"] = $db->fetchAll($selAdress);
@@ -479,9 +479,9 @@ class ServiceGuest extends AService {
 	public function ActionAddressList($contactUid){
 		
 		
-		require_once 'db/contact/contacts.php';
+		require_once 'db/contact/Contacts.php';
 		
-		$db = contacts::getDefaultAdapter();
+		$db = Contacts::getDefaultAdapter();
 		
 		
 		$addressSel = $db->select ();
@@ -499,14 +499,14 @@ class ServiceGuest extends AService {
 		
 		
 		
-		$addressSel->from(array('c' => contacts::getTableNameStatic()) ,$spA);
+		$addressSel->from(array('c' => Contacts::getTableNameStatic()) ,$spA);
 		
 		$guestSpA = array();
 		
 		$addressSel->joinRight(array('g'=>'guest'), "c.id = g.contacts_id", $guestSpA );
 			
 		
-		require_once '../../db/contact/address/contact_address.php';
+		require_once '../../db/contact/address/Address.php';
 		$adressSpaltenA = array();
 		$adressSpaltenA['a_id'] = "id";
 		$adressSpaltenA['a_land'] = "land";
@@ -519,7 +519,7 @@ class ServiceGuest extends AService {
 		$adressSpaltenA['a_strasse'] = "strasse";
 		$adressSpaltenA['a_info_text'] = "info_text";
 		
-		$addressSel->joinRight(array('a'=>contact_address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
+		$addressSel->joinRight(array('a'=>Address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
 		
 		
 		$addressSel->where("c.deleted = ?", 0);

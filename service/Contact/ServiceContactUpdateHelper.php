@@ -65,8 +65,8 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		
 		// Adresse Update
 		
-		require_once 'db/contact/address/contact_address.php';
-		$address = new contact_address();
+		require_once 'db/contact/address/Address.php';
+		$address = new Address();
 		$address->setDefaultAdapter($this->_connect);
 		
 		if(isset($updateData['adr_art'])) 		$address->setArt($updateData['adr_art']);
@@ -83,7 +83,7 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		
 		}else{
 			
-			if( contact_address::testOrt( $updateData["adr_ort"]) !== FALSE ){
+			if( Address::testOrt( $updateData["adr_ort"]) !== FALSE ){
 				$address->setArt("main");
 				$addrPrimId = $address->insertData($contId);			// Insert
 				$contRow->offsetSet("main_contact_address_id", $addrPrimId);

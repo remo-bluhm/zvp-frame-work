@@ -75,9 +75,9 @@ class Install{
 		$loginname = sys_access::testLoginname($data["install_mail"]);
 		$password = sys_access::testPassword($data["install_pass"]);
 
-		require_once 'db/contact/contacts.php';
-		$firstname = contacts::testFirstName($data["install_prename"]);
-		$lastname = contacts::testLastName($data["install_name"]);
+		require_once 'db/contact/Contacts.php';
+		$firstname = Contacts::testFirstName($data["install_prename"]);
+		$lastname = Contacts::testLastName($data["install_name"]);
 		
 		require 'db/sys/access/groups/sys_access_groups.php';
 		
@@ -96,10 +96,10 @@ class Install{
 			$adminGroupId = $group->setRoot("Administratoren","Die Administratoren gruppe auf oberster Ebene",$accessId);
 		
 			$dataCont = array();
-			$dataCont[contacts::SP_FIRST_NAME] = $firstname;
-			$dataCont[contacts::SP_LAST_NAME] = $lastname;
+			$dataCont[Contacts::SP_FIRST_NAME] = $firstname;
+			$dataCont[Contacts::SP_LAST_NAME] = $lastname;
 			
-			$contacts = new contacts();
+			$contacts = new Contacts();
 			$contactsId = $contacts->insert($dataCont,$accessId);
 			
 			$dataUpAccess = array();

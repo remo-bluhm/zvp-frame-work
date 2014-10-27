@@ -8,11 +8,8 @@ include_once ("Zend/Db/Table/Abstract.php");
 
 abstract class DBTable extends Zend_Db_Table_Abstract {
 	
-
-	
 	private static $DbPrafixMaxLang = 5;
 	private static $DbPrafix = NULL;
-	
 	
 	function __construct($config = array()) {
 		parent::__construct ( $config );
@@ -33,8 +30,9 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 	 * @return string DataTime string
 	 *        
 	 */
-	public static function getDateTime($timestamp = NULL){
-		if($timestamp === NULL)$timestamp = time();
+	public static function getDateTime($timestamp = NULL) {
+		if ($timestamp === NULL)
+			$timestamp = time ();
 		$DataTime = date ( "Y-m-d H:i:s", $timestamp );
 		return $DataTime;
 	}
@@ -45,24 +43,22 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 		return $DataTime;
 	}
 	
-	
 	protected function _setupTableName() {
-		$this->_name = self::getTableNameStatic();
-		parent::_setupTableName();
-// 		if (self::$DbPrafix != NULL) {
-// 			//$this->_name = self::getDBPrafix () . $this->_TableName;
-// 			$className = get_called_class();
-// 			$this->_name = self::getDBPrafix () . $className;
-// 		}
-// 		parent::_setupTableName ();
+		// $this->_name = self::getTableNameStatic();
+		parent::_setupTableName ();
+		// if (self::$DbPrafix != NULL) {
+		// //$this->_name = self::getDBPrafix () . $this->_TableName;
+		// $className = get_called_class();
+		// $this->_name = self::getDBPrafix () . $className;
+		// }
+		// parent::_setupTableName ();
 	
 	}
 	
-	
-	public static function getTableNameStatic(){
-		$className = get_called_class();
+	public static function getTableNameStatic() {
+		$className = get_called_class ();
 		if (self::$DbPrafix != NULL) {
-			return  self::getDBPrafix () . $className ;
+			return self::getDBPrafix () . $className;
 		}
 		return $className;
 	}
@@ -72,30 +68,43 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 		return $this->_name;
 	}
 	
-	
-	
-
+	public function testColum($method_name){
+		return  method_exists($this, $method_name);
+	}
 	
 	/**
-	 * Setzt ein Datenbank präfix
-	 * 
-	 * @param $PraefixStr string       	
+	 * Bereinigt das Array $fields mit den mitgegebenen Feldern $cols
+	 * @param array $fields Das zu bereinigende Array
+	 * @param array $cols mit einer liste der Cols die zurückgegeben werden sollen 
 	 */
-	public static function setDBPrafix($PraefixStr) {
-		if (is_string ( $PraefixStr ) && strlen ( $PraefixStr ) < self::$DbPrafixMaxLang) {
-			self::$DbPrafix = $PraefixStr;
-		}
-		if ($PraefixStr === NULL)
-			self::$DbPrafix = NULL;
+	public static function colsCleanArray(array $fields,array $cols) {
+		
+		$cols = array_flip ( $cols );
+		
+		$cleanCols = array_intersect_key ( $fields, $cols );
 	}
-	/**
-	 * giebt fals gesetzt den Datenbank präfix zurück
-	 * 
-	 * @return string NULL Datenbank präfix falls nicht gesetzt dann NULL
-	 */
-	public static function getDBPrafix() {
-		return self::$DbPrafix;
-	}
+	
+	// /**
+	// * Setzt ein Datenbank präfix
+	// *
+	// * @param $PraefixStr string
+	// */
+	// public static function setDBPrafix($PraefixStr) {
+	// if (is_string ( $PraefixStr ) && strlen ( $PraefixStr ) <
+	// self::$DbPrafixMaxLang) {
+	// self::$DbPrafix = $PraefixStr;
+	// }
+	// if ($PraefixStr === NULL)
+	// self::$DbPrafix = NULL;
+	// }
+	// /**
+	// * giebt fals gesetzt den Datenbank präfix zurück
+	// *
+	// * @return string NULL Datenbank präfix falls nicht gesetzt dann NULL
+	// */
+	// public static function getDBPrafix() {
+	// return self::$DbPrafix;
+	// }
 	
 	/**
 	 * Daten die in die Datenbank eingeschrieben werden sollen sollten diese
@@ -118,10 +127,14 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 	/**
 	 * Generiert eine Liste aus einen DBRequest Array
 	 *
-	 * @param $Liste array Die liste die durchlaufen werden soll
-	 * @param $SpalteName string Der Spaltennamen der liste
-	 * @param $toLower bool	 ob der valuewert kleingeschriebben werden soll // veraltet
-	 * @param $KeyAsId FALSE|SpaltenName(id) Falls ein wert gesetzt ist wird dieser als Key verwendet
+	 * @param $Liste array
+	 *       	 Die liste die durchlaufen werden soll
+	 * @param $SpalteName string
+	 *       	 Der Spaltennamen der liste
+	 * @param $toLower bool
+	 *       	 ob der valuewert kleingeschriebben werden soll // veraltet
+	 * @param $KeyAsId FALSE|SpaltenName(id)
+	 *       	 Falls ein wert gesetzt ist wird dieser als Key verwendet
 	 * @return array liste
 	 *        
 	 */
@@ -151,24 +164,28 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 	/**
 	 * erstellt ein eindeutigen UnId
 	 */
-	public static function createNew_UnId(){
-		return  uniqid ();
+	public static function createNew_UnId() {
+		return uniqid ();
 	}
-	
 	
 	/**
 	 * Testet die Id auf Integer und länge
-	 * 
+	 *
 	 * @param $id integer       	
 	 * @return integer boolean Fehlerfalle False
 	 */
 	public static function testId($value) {
-		if(empty($value)) return FALSE;
-		if(!is_numeric($value)) return FALSE;
-		if(is_float($value)) return FALSE;
-		if($value < 1)return FALSE;
-		if($value > 99999999999)return FALSE;
-		return  (int)$value;
+		if (empty ( $value ))
+			return FALSE;
+		if (! is_numeric ( $value ))
+			return FALSE;
+		if (is_float ( $value ))
+			return FALSE;
+		if ($value < 1)
+			return FALSE;
+		if ($value > 99999999999)
+			return FALSE;
+		return ( int ) $value;
 	}
 
 }
