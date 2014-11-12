@@ -92,15 +92,15 @@ class ServiceContact extends AService {
  		}
  		
  		
- 		require_once 'db/contact/phone/contact_phone.php';
+ 		require_once 'db/contact/phone/Phone.php';
  		$phoneSpaltenA = array();
  		$phoneSpaltenA['p_art'] = "art";
  		$phoneSpaltenA['p_number'] = "number";
  		$phoneSpaltenA['p_text'] = "text";
  		if( array_key_exists('phone_art',$where) || array_key_exists("phone_number", $where) || array_key_exists("phone_text", $where) ){
- 			$resortSel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.id = p.contacts_id", $phoneSpaltenA );
+ 			$resortSel->joinLeft(array('p'=>Phone::getTableNameStatic()), "c.id = p.contacts_id", $phoneSpaltenA );
  		}else {
- 			$resortSel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
+ 			$resortSel->joinLeft(array('p'=>Phone::getTableNameStatic()), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
  		}
 		
 // 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){
@@ -282,16 +282,16 @@ class ServiceContact extends AService {
  		$phoneSp["phone_number"] = "number";
  		$phoneSp["phone_text"] = "text";
 		
- 		require_once 'db/contact/phone/contact_phone.php';
- 		$sel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
+ 		require_once 'db/contact/phone/Phone.php';
+ 		$sel->joinLeft(array('p'=>Phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
 
 		
  		$mailSp = array();
  		$mailSp["mail_adress"] = "mailadress";
  		$mailSp["mail_text"] = "text";
  		
- 		require_once 'db/contact/email/contact_email.php';
- 		$sel->joinLeft(array('em'=>contact_email::getTableNameStatic()), "c.main_contact_email_id = em.id" ,$mailSp);
+ 		require_once 'db/contact/email/Email.php';
+ 		$sel->joinLeft(array('em'=>Email::getTableNameStatic()), "c.main_contact_email_id = em.id" ,$mailSp);
 		
 		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
@@ -316,10 +316,10 @@ class ServiceContact extends AService {
 		}
 		//////////////////////////////////////////////////////////////////
 		if( in_array('all_phone',$spalten) ){
-			require_once 'db/contact/phone/contact_phone.php';
+			require_once 'db/contact/phone/Phone.php';
 					
 			$selPhone = $db->select ();
-			$selPhone->from( contact_phone::getTableNameStatic() , $phoneSp );
+			$selPhone->from( Phone::getTableNameStatic() , $phoneSp );
 			$selPhone->where("contacts_id = ?",$contactA["id_name"]);
 			
 			$contactA["phones"] = $db->fetchAll($selPhone);
@@ -518,11 +518,11 @@ class ServiceContact extends AService {
 		$phoneObj = NULL;
 		
 		if(!empty($fields["phone_number"])){
-			require_once 'db/contact/phone/contact_phone.php';
+			require_once 'db/contact/phone/Phone.php';
 			
-			if(contact_phone::testPhoneNumber($fields["phone_number"]) !== FALSE){
+			if(Phone::testPhoneNumber($fields["phone_number"]) !== FALSE){
 				
-				$phoneObj = new contact_phone();
+				$phoneObj = new Phone();
 				$phoneObj->setArt("main");
 				$phoneObj->setNumber($fields["phone_number"]);
 				if(isset($fields['phone_text'])) 	$phoneObj->setText($fields['phone_text']);			
@@ -532,10 +532,10 @@ class ServiceContact extends AService {
 		// Email
 		$emailObj = NULL;
 		if(!empty($fields["mail_adress"])){
-			require_once 'db/contact/email/contact_email.php';
+			require_once 'db/contact/email/Email.php';
 			
-			if(contact_email::testEmail($fields["mail_adress"]) !== FALSE){
-				$emailObj = new contact_email();
+			if(Email::testEmail($fields["mail_adress"]) !== FALSE){
+				$emailObj = new Email();
 				$emailObj->setEmail($fields["mail_adress"]);
 				if(isset($fields['mail_text'])) 	$emailObj->setText($fields['mail_text']);
 	

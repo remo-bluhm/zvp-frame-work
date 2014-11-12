@@ -229,15 +229,14 @@ class ServiceGroup extends AService {
 			
 			if( in_array('usercreate_name',$spalten) ){
 				require_once 'db/sys/access/sys_access.php';
-				require_once 'db/contact/Contacts.php';
 				$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "g.access_owner = a.id",array('create_access_guid' => 'a.guid' )  );
-				$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('create_user_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+				$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('create_user_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 			}
 			
 			if( in_array('useredit_name',$spalten) ){
 				require_once 'db/sys/access/sys_access.php';
 				$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "g.access_edit = a2.id" ,array('edit_access_guid' => 'a2.guid' ) );
-				$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('edit_user_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+				$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('edit_user_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 			}
 			
 			
@@ -836,7 +835,7 @@ class ServiceGroup extends AService {
 		
 		require_once 'db/sys/access/sys_access.php';
 		require_once 'db/sys/access/groups/sys_access_groups.php';
-		require_once 'db/contact/Contacts.php';
+	
 	
 		
 
@@ -863,13 +862,13 @@ class ServiceGroup extends AService {
 		$accessSelect->from ( array ('a' => sys_access::getTableNameStatic() ),  $accessSp );
 		
 		$contactsSp = array();
-		$contactsSp['firstname'] = Contacts::SP_FIRST_NAME;
-		$contactsSp['lastname'] = Contacts::SP_LAST_NAME;
-		$contactsSp['uid'] = Contacts::SP_UNID;
+		$contactsSp['firstname'] = "first_name";
+		$contactsSp['lastname'] = "last_name";
+		$contactsSp['uid'] = "uid";
 		
 		//array ('ownername' => sys_user::SP_NAME, 'ownerguid' => sys_user::SP_GUID ) 
 		// den Account Contact hollen
-		$accessSelect->joinLeft ( array ('uc' => Contacts::getTableNameStatic() ), 'a.' . sys_access::SP_CONTACT_ID . ' = uc.' . Contacts::SP_ID, $contactsSp);
+		$accessSelect->joinLeft ( array ('uc' => "contacts" ), 'a.' . sys_access::SP_CONTACT_ID . ' = uc.id', $contactsSp);
 		
 		$accessSelect->where ( 'a.' . sys_access::SP_GROUPID . " = ?", $groupId );
 		

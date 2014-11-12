@@ -50,8 +50,7 @@ class sys_access_rights extends DBTable {
 		if(($resource = $this->testResource($resource)) === FALSE)return FALSE;
 
 		// Löschen falls vorhanden
-		$this->delete($resource, $role);
-
+		$this->deleteResource($resource, $role);
 		// Neu einschreiben
 		$writeDate = array (
 				self::SP_E_DATA => $this->getDateTime(), 
@@ -59,8 +58,10 @@ class sys_access_rights extends DBTable {
 				self::SP_ROLE_KEY => trim ( $role ), 					
 				self::SP_RULE_TYPE => $ruleTypeVal
 				 );
+		
 
 		$Id = $this->insert ( $writeDate );
+	
 		return TRUE;
 	}
 	

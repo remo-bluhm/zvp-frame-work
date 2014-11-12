@@ -195,7 +195,6 @@ class ServiceRightsManagement extends AService {
 	 */
 	public function ActionSetRightGroup($art,$resource,$role) {
 	
-	
 		$erg = FALSE;
 	
 		require_once 'db/sys/access/rights/sys_access_rights.php';

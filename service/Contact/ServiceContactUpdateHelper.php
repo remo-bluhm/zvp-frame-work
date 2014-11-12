@@ -92,8 +92,8 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		
 		// Phone Update
 		
-		require_once 'db/contact/phone/contact_phone.php';
-		$phone = new contact_phone();
+		require_once 'db/contact/phone/Phone.php';
+		$phone = new Phone();
 		$phone->setDefaultAdapter($this->_connect);
 		
 		if(isset($updateData['phone_number'])) 	$phone->setNumber($updateData['phone_number']);
@@ -102,7 +102,7 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		if($mainPhoneId !== NULL && $mainPhoneId > 0){
 			$phone->updateData($mainPhoneId);		// update
 		}else{
-			if( contact_phone::testPhoneNumber( $updateData["phone_number"]) !== FALSE ){
+			if( Phone::testPhoneNumber( $updateData["phone_number"]) !== FALSE ){
 				$phone->setArt("main");
 				$newPhoneId = $phone->insertData($contId);			// Insert
 				$contRow->offsetSet("main_contact_phone_id", $newPhoneId);
@@ -111,8 +111,8 @@ class ServiceContactUpdateHelper extends UpdateDb{
 	
 		// Email Update
 		
-		require_once 'db/contact/email/contact_email.php';
-		$email = new contact_email();
+		require_once 'db/contact/email/Email.php';
+		$email = new Email();
 		$email->setDefaultAdapter($this->_connect);
 		
 		if(isset($updateData['mail_adress'])) 	$email->setEmail($updateData['mail_adress']);
@@ -121,7 +121,7 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		if($mainMailId !== NULL && $mainMailId > 0){
 			$email->updateData($mainMailId);		// update
 		}else{
-			if( contact_email::testEmail( $updateData["mail_adress"]) !== FALSE ){
+			if( Email::testEmail( $updateData["mail_adress"]) !== FALSE ){
 				$newMailId = $email->insertData($contId);			// Insert
 				$contRow->offsetSet("main_contact_email_id", $newMailId);
 			}

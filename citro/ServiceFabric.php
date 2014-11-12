@@ -58,7 +58,7 @@ class ServiceFabric {
 	 * @param $service Service       	
 	 * @return AService NULL
 	 */
-	public function getService(Service $service, ServiceResource $serviceResource, RightsAcl $rights) {
+	public function getService(Service $service, ServiceResource $serviceResource, RightsAcl $rights = NULL) {
 		
 		// Setzt der Service Namen
 		$ServName = $service->getName ();

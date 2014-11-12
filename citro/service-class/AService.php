@@ -69,6 +69,7 @@ abstract class AService {
 	 * @var ServiceFabric
 	 */
 	protected $_serviceFabric = NULL;
+	
 	/**
 	 * Setzen der ServiceFabric beim Inizialisierun um Unterabfragen zu gewährleisten
 	 * @param ServiceFabric $serviceFab
@@ -211,16 +212,7 @@ abstract class AService {
 		return $params;
 	}
 	
-	
-	
-// 	/**
-// 	 * Setzt den Sicherheitslevel
-// 	 * 
-// 	 * @param $level unknown_type       	
-// 	 */
-// 	public function setSecurityLevel($level) {
-// 		$this->_securityLevel = $level;
-// 	}
+
 	
 	
 	
@@ -233,11 +225,11 @@ abstract class AService {
 	 */
 	public function _setRightsAcl(RightsAcl $RM = NULL) {
 		$this->_rightsAcl = $RM;
-		
-		$this->_MainUser = $RM->getAccess();
-		$this->_user = $RM->getAccess();
-		
-		$this->_MainGroup = $RM->getGroup();
+		if(is_a($RM,"RightsAcl")){
+			$this->_MainUser = $RM->getAccess();
+			$this->_user = $RM->getAccess();
+			$this->_MainGroup = $RM->getGroup();
+		}
 	}
 	
 

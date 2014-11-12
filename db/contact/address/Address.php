@@ -131,7 +131,7 @@ class Address extends DBTable {
 	
 	public function setContactId($contactId){
 		$result = self::testContactId($contactId);
-		if($result!==FALSE){
+		if($result !== FALSE){
 			$this->_contactId = $result;
 		}
 		
@@ -187,17 +187,7 @@ class Address extends DBTable {
 		return DBTable::testId($value);
 	}
 	
-	private function generateDate(){
-		$data = array();
-		if($this->_art !== NULL) $data[self::SP_ART] = $this->_art;
-		if($this->_ort !== NULL) $data[self::SP_ORT] = $this->_ort;
-		if($this->_plz !== NULL) $data[self::SP_PLZ] = $this->_plz;
-		if($this->_street !== NULL) $data[self::SP_STRASSE] = $this->_street;
-		if($this->_land !== NULL) $data[self::SP_LAND] = $this->_land;
-		if($this->_landpart !== NULL) $data[self::SP_LAND_PART] = $this->_landpart;
-		
-		return $data;
-	}
+
 	
 	public function updateData($id){
 		if($this->_ort !== NULL){
@@ -206,27 +196,36 @@ class Address extends DBTable {
 			$this->update($data, $where);
 		}
 	}
+	
+
 
 	
 	
-	public function insertSetDataWithContId($accessId, $contactId, $ort){
+	public function insertSetData( $contactId ,$ort){
+		$insertId = NULL;
 		
+		// Testen des Pflichtfeldes Contact Id oder abbruch
 		$this->setContactId($contactId);
-		if($this->_contactId === NULL ) throw new Exception("Die contactId ist nicht valiede!",E_ERROR);
-		
 		$this->setOrt($ort);
-		if($this->_ort === NULL ) throw new Exception("Der Ort ist nicht valiede!",E_ERROR);
 		
-		
+	
 		// Testen des Pflichtfeldes Last Name oder abbruch
-		if($this->_ort === NULL)return NULL;
-
-		
-		$fields = $this->generateDate();
-		$fields[self::SP_ACCESS_CREATE] = $accessId;
-		$fields[self::SP_ACCESS_EDIT]=$accessId;
-		$this->insert($this->generateDate());
-		
+		if($this->_contactId !== NULL && $this->_ort !== NULL ) {
+			
+			$data = array();
+			
+			$data[self::SP_CONTACT_ID] = $this->_contactId;
+			$data[self::SP_ORT] = $this->_ort;
+			
+			if($this->_art !== NULL) $data[self::SP_ART] = $this->_art;
+			if($this->_plz !== NULL) $data[self::SP_PLZ] = $this->_plz;
+			if($this->_street !== NULL) $data[self::SP_STRASSE] = $this->_street;
+			if($this->_land !== NULL) $data[self::SP_LAND] = $this->_land;
+			if($this->_landpart !== NULL) $data[self::SP_LAND_PART] = $this->_landpart;
+			
+			$insertId = $this->insert($data);
+		}
+		return $insertId;
 	}
 	
 	

@@ -1,8 +1,11 @@
 <?php
 require_once 'citro/DBTable.php';
 
-class contact_phone extends DBTable {
+class Phone extends DBTable {
 
+
+	protected $_name = 'contact_phone';
+	
 	private $_contactId = NULL;
 	private $_art = NULL;
 	private $_number = NULL;
@@ -110,14 +113,6 @@ class contact_phone extends DBTable {
 	}
 	
 	
-	private function generateDate(){
-		$data = array();
-		if($this->_art !== NULL)$data[self::SP_ART] = $this->_art;
-		if($this->_number !== NULL) $data[self::SP_NUMBER] = $this->_number;
-		if($this->_text !== NULL) $data[self::SP_TEXT] = $this->_text;
-	
-		return $data;
-	}
 	
 	public function updateData($id){
 		if($this->_number !== NULL){
@@ -129,21 +124,26 @@ class contact_phone extends DBTable {
 	
 	
 	
-	public function insertData($contactId){
+	public function insertSetData($contactId,$number){
 		$primaryKey = NULL;
-		$contactId = self::testContactId($contactId);
-		if($contactId !== FALSE && $this->_number !== NULL){
-			$data = $this->generateDate();
+		
+		// setzen der Pflichtfelder
+		$this->setContactId($contactId);
+		$this->setNumber($number);
+		
+		
+		if($this->_contactId !== NULL && $this->_number !== NULL){
+			$data = array();
 			$data[self::SP_CONTACT_ID] = $contactId;
+			$data[self::SP_NUMBER] = $this->_number;
+			
+			if($this->_art !== NULL)	$data[self::SP_ART] = $this->_art;
+			if($this->_text !== NULL) 	$data[self::SP_TEXT] = $this->_text;
+			
 			$primaryKey = $this->insert($data);
 		}
 		return $primaryKey;
 	}
-	
-	
-	
-	
-	
 	
 	
 	

@@ -33,7 +33,7 @@ class ServiceContact extends AService {
 	 * @param array $spalten
 	 * @return array
 	 */
-	public function ActionGetList($count, $offset = 0, $where = array(), $spalten = array()){
+	public function ActionList($count, $offset = 0, $where = array(), $spalten = array()){
 	
 		require_once 'db/contact/Contacts.php';
 	
@@ -44,6 +44,7 @@ class ServiceContact extends AService {
 		$spA = array();
 		$spA["uid"] = "uid";
 		//$spA["anzahl"] = "count(uid)";
+		$spA["type"] = "type";
 		$spA["title_name"] = "title_name";
 		$spA["last_name"] = "last_name";
 		$spA["first_name"] = "first_name";
@@ -55,27 +56,8 @@ class ServiceContact extends AService {
 		
 		
 
-		
-		
-// 		$spA["visibil"] = "visibil";
-			
-// 		$spA["creat_date"] = "edata";
-// 		$spA["edit_date"] = "vdata";
 	
-// 		$spA["create_guid"] = "usercreate";
-// 		$spA["edit_guid"] = "useredit";
-	
-// 		$spA["strasse"]="strasse";
-	
-
-	
-// 		if( in_array('apartment_count',$spalten) )
-// 			$spA['apartment_count'] = 'IFNULL(count(a.id),0)';
-	
-		// muss nur auf True gestellt werden wenn die hinzugefügten where abfragen gestellt werden 	
-		//$groupIsOn = FALSE;
-	
-		$resortSel->from(array('c' => Contacts::getTableNameStatic()) ,$spA);
+		$resortSel->from(array('c' => "contacts") ,$spA);
 
 		
  		
@@ -86,21 +68,21 @@ class ServiceContact extends AService {
  		$adressSpaltenA['a_ort'] = "ort";
  		$adressSpaltenA['a_strasse'] = "strasse";
  		if( array_key_exists('adr_plz',$where) || array_key_exists("adr_ort", $where) || array_key_exists("adr_strasse", $where) ){	
- 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.id = a.contacts_id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>"contact_address"), "c.id = a.contacts_id", $adressSpaltenA );
  		}else {
- 			$resortSel->joinLeft(array('a'=>Address::getTableNameStatic()), "c.main_contact_address_id = a.id", $adressSpaltenA );
+ 			$resortSel->joinLeft(array('a'=>"contact_address"), "c.main_contact_address_id = a.id", $adressSpaltenA );
  		}
  		
  		
- 		require_once 'db/contact/phone/contact_phone.php';
+ 
  		$phoneSpaltenA = array();
  		$phoneSpaltenA['p_art'] = "art";
  		$phoneSpaltenA['p_number'] = "number";
  		$phoneSpaltenA['p_text'] = "text";
  		if( array_key_exists('phone_art',$where) || array_key_exists("phone_number", $where) || array_key_exists("phone_text", $where) ){
- 			$resortSel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.id = p.contacts_id", $phoneSpaltenA );
+ 			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.id = p.contacts_id", $phoneSpaltenA );
  		}else {
- 			$resortSel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
+ 			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
  		}
 		
 // 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){
@@ -220,9 +202,9 @@ class ServiceContact extends AService {
 	 * @param array $spalten
 	 * @return array
 	 */
-	public function ActionGetSingle($contactuid, $spalten = array()){
+	public function ActionSingle($contactuid, $spalten = array()){
 	
-	
+		
 		require_once 'db/contact/Contacts.php';
 		$db = Contacts::getDefaultAdapter();
 
@@ -240,6 +222,8 @@ class ServiceContact extends AService {
 
 		
 		$spA["address_id"] = "main_contact_address_id";
+		$spA["phone_id"] = "main_contact_phone_id";
+		$spA["email_id"] = "main_contact_email_id";
 		
 		
 		
@@ -249,18 +233,18 @@ class ServiceContact extends AService {
 
 				
 		$sel = $db->select ();
-		$sel->from( array('c' => Contacts::getTableNameStatic() ), $spA );
+		$sel->from( array('c' => "contacts" ), $spA );
 		
 		if( in_array('usercreate_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "c.access_create = a.id",array() );
-			$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+			
+			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array() );
+			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "c.access_edit = a2.id" ,array() );
-			$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array() );
+			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 
 		
@@ -273,8 +257,7 @@ class ServiceContact extends AService {
 		$adresSp["adr_strasse"] = "strasse";
 		$adresSp["adr_infotext"] = "info_text";
 		
-		require_once 'db/contact/address/Address.php';
-		$sel->joinLeft(array('ca'=>Address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
+		$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
 
 		
  		$phoneSp = array();
@@ -282,16 +265,16 @@ class ServiceContact extends AService {
  		$phoneSp["phone_number"] = "number";
  		$phoneSp["phone_text"] = "text";
 		
- 		require_once 'db/contact/phone/contact_phone.php';
- 		$sel->joinLeft(array('p'=>contact_phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
+ 
+ 		$sel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id" ,$phoneSp);
 
 		
  		$mailSp = array();
  		$mailSp["mail_adress"] = "mailadress";
  		$mailSp["mail_text"] = "text";
  		
- 		require_once 'db/contact/email/contact_email.php';
- 		$sel->joinLeft(array('em'=>contact_email::getTableNameStatic()), "c.main_contact_email_id = em.id" ,$mailSp);
+
+ 		$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
 		
 		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
@@ -303,57 +286,75 @@ class ServiceContact extends AService {
 			
 		//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
-			require_once 'db/contact/address/Address.php';
+	
 			
 			$mainAddressId = (int)$contactA["address_id"];
-			$adresSp["is_main"] = "IF(`id` = ".$mainAddressId.", '1', '0' ) ";
+			$adresSp["is_main"] = "IF(`id` = ".$mainAddressId.", 'TRUE', 'FALSE' ) ";
 			
 			$selAdress = $db->select ();
-			$selAdress->from( Address::getTableNameStatic() , $adresSp );
+			$selAdress->from( "contact_address" , $adresSp );
 			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
 
 			$contactA["adresses"] = $db->fetchAll($selAdress);
 		}
 		//////////////////////////////////////////////////////////////////
 		if( in_array('all_phone',$spalten) ){
-			require_once 'db/contact/phone/contact_phone.php';
+			
+			$mainPhoneId = (int)$contactA["phone_id"];
+			$phoneSp["is_main"] = "IF(`id` = ".$mainPhoneId.", 'TRUE', 'FALSE' ) ";
 					
 			$selPhone = $db->select ();
-			$selPhone->from( contact_phone::getTableNameStatic() , $phoneSp );
+			$selPhone->from( "contact_phone" , $phoneSp );
 			$selPhone->where("contacts_id = ?",$contactA["id_name"]);
 			
 			$contactA["phones"] = $db->fetchAll($selPhone);
 		}
+		//////////////////////////////////////////////////////////////////
+		if( in_array('all_email',$spalten) ){
+				
+			$mainEmailId = (int)$contactA["email_id"];
+			$mailSp["is_main"] = "IF(`id` = ".$mainEmailId.", 'TRUE', 'FALSE' ) ";
+				
+			$selEmail = $db->select ();
+			$selEmail->from( "contact_email" , $mailSp );
+			$selEmail->where("contacts_id = ?",$contactA["id_name"]);
+				
+			$contactA["emails"] = $db->fetchAll($selEmail);
+		}
+
+
 		unset($contactA["id_name"]);
 		unset($contactA["address_id"]);
+		unset($contactA["phone_id"]);
+		unset($contactA["email_id"]);
 		return $contactA;
 	
 	
 	}
 	
+
+	
 	/**
 	 * Giebt meinene Contactdaten zurück
-	 * 
+	 *
 	 * @return citro_list Die contact daten
 	 */
 	public function ActionContactList(){
-		
-		
+	
+	
 		require_once 'citro/db/contact/contacts.php';
 		$contactTab = new Contacts();
 		$contactSel = $contactTab->select();
-		//$contactSel->where("category = ?", "REN");
-		
-		
+	
 		$limit = 10;
 		if(isset($this->limit) && $this->limit < 101){
 			$limit = $this->limit;
 		}
-		
+	
 		$contactSel->limit($limit,0);
-		
+	
 		$contactArry = $contactTab->fetchAll($contactSel);
-		
+	
 		return $contactArry->toArray();
 	}
 	
@@ -441,168 +442,42 @@ class ServiceContact extends AService {
 	 *
 	 */
 	public function ActionNew($lastName, $fields = array()) {
-				
 		
+		// Setzen der $fieldsvariabel auf array
+		if(!is_array($fields))$fields = array();
+		
+		// Prüfen des lastName
 		require_once 'db/contact/Contacts.php';
-		$kData = array();
-
-		// Setzen der Standartfelder
-		$kData[Contacts::SP_DATA_CREATE] = DBTable::DateTime ();
-		$kData[Contacts::SP_DATA_EDIT] = DBTable::DateTime ();
-		$kData[Contacts::SP_ACCESS_CREATE] = $this->_rightsAcl->getAccess()->getId();
-		$kData[Contacts::SP_ACCESS_EDIT] = $this->_rightsAcl->getAccess()->getId();
-		
-		if(!empty($fields["title_name"])){
-			$title = Contacts::testTitle($fields["title_name"]);
-			if($title !== FALSE) $kData[Contacts::SP_TITLE] = $title;
-		}
-		
-		if(!empty($fields["first_add_name"])){
-			$addFirstName = Contacts::testFirstAddName($fields["first_add_name"]);
-			if($addFirstName !== FALSE) $kData[Contacts::SP_FIRST_ADD_NAME] = $addFirstName;
-		}
-		
-		if(!empty($fields["first_name"])){
-			$firstName = Contacts::testFirstName($fields["first_name"]);
-			if($firstName !== FALSE) $kData[Contacts::SP_FIRST_NAME] = $firstName;
-		}
-		
-		if(!empty($fields["affixname"])){
-			$affixName = Contacts::testAffixName($fields["affix_name"]);
-			if($affixName !== FALSE) $kData[Contacts::SP_AFFIX_NAME] = $affixName;
-		}
-
-		
-		if(!empty($fields["firma"])){
-			$firma = Contacts::testAffixName($fields["firma"]);
-			if($firma !== FALSE) $kData[Contacts::SP_FIRMA] = $firma;
-		}
-		if(!empty($fields["position"])){
-			$firma = Contacts::testAffixName($fields["position"]);
-			if($firma !== FALSE) $kData[Contacts::SP_FIRMA_POSITION] = $firma;
-		}
-		if(!empty($fields["infotext"])){
-			$info = Contacts::testAffixName($fields["infotext"]);
-			if($info !== FALSE) $kData[Contacts::SP_KURZINFO] = $info;
-		}
-		
-
-		// Testen des Pflichtfeldes Last Name oder abbruch
 		$lastName = Contacts::testLastName($lastName);
-		if($lastName === FALSE)return FALSE;
-		$kData[Contacts::SP_LAST_NAME] = $lastName;
+		if( $lastName !== NULL ){
 		
 		
+			$contTab = new Contacts();
+			$contTab->getDefaultAdapter()->beginTransaction();
+			try {
 		
-		
-		// Adresss
-		$addressObj = NULL;
-		
-		if( !empty($fields["adr_ort"]) ){
-
-			require_once 'db/contact/address/Address.php';
-			
-			if(Address::testOrt($fields["adr_ort"]) !== FALSE){
 				
-				$addressObj = new Address();
-				$addressObj->setArt("main");
-				$addressObj->setOrt($fields['adr_ort']);
-				if(isset($fields['adr_plz'])) 		$addressObj->setPlz($fields['adr_plz']);
-				if(isset($fields['adr_strasse'])) 	$addressObj->setStreet($fields['adr_strasse']);
-				if(isset($fields['adr_land'])) 		$addressObj->setLand($fields['adr_land']);
-				if(isset($fields['adr_landpart'])) 	$addressObj->setLandpart($fields['adr_landpart']);
+				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName,$fields);
+					
+				// Nochmaliges Prüfen auf contactid
+				if($contactUid === NULL){
+					$contTab->getAdapter()->rollBack();
+					return FALSE;
+				}
+				$contTab->getAdapter()->commit();		
+				return $contactUid;
+		
+			} catch (Exception $e) {
+				$contTab->getAdapter()->rollBack();
+				return FALSE;
 			}
-		}
-
-		// Telefon
-		$phoneObj = NULL;
 		
-		if(!empty($fields["phone_number"])){
-			require_once 'db/contact/phone/contact_phone.php';
-			
-			if(contact_phone::testPhoneNumber($fields["phone_number"]) !== FALSE){
-				
-				$phoneObj = new contact_phone();
-				$phoneObj->setArt("main");
-				$phoneObj->setNumber($fields["phone_number"]);
-				if(isset($fields['phone_text'])) 	$phoneObj->setText($fields['phone_text']);			
-			}
-		}
-		
-		// Email
-		$emailObj = NULL;
-		if(!empty($fields["mail_adress"])){
-			require_once 'db/contact/email/contact_email.php';
-			
-			if(contact_email::testEmail($fields["mail_adress"]) !== FALSE){
-				$emailObj = new contact_email();
-				$emailObj->setEmail($fields["mail_adress"]);
-				if(isset($fields['mail_text'])) 	$emailObj->setText($fields['mail_text']);
-	
-			}
-		}
-		
-		
-		
-		// Daten einschreiben
-		$db = Contacts::getDefaultAdapter();
-	
-		$setInsert = TRUE;
-		while ( $setInsert )
-		{
-			$newUnId = Contacts::generateUnId("bt");
-			$selTuble = $db->select();
-			$selTuble->from(Contacts::getTableNameStatic());
-			$selTuble->where(Contacts::SP_UNID." = ? ",$newUnId);
-				
-			$allTubles = $db->fetchAll($selTuble);
-
-			if(count($allTubles) == 0){
-				$kData[Contacts::SP_UNID] = $newUnId;
-				$setInsert = FALSE;
-				break;
-			}
-						
-		}
-		
-		
-		
-		$db->beginTransaction();
-		
-		
-		try {
-			$contactTab = new Contacts();
-			$contactsId = $contactTab->insert($kData);
-
-			$updateData = array();
-			
-			if(is_a($addressObj,"contact_address")){
-				$addressObj->setDefaultAdapter($db);
-				$updateData[Contacts::SP_ADRESS_ID] = $addressObj->insertData($contactsId);		
-			}
-			if(is_a($emailObj, "contact_email")){
-				$emailObj->setDefaultAdapter($db);
-				$updateData[Contacts::SP_EMAIL_ID]  = $emailObj->insertData($contactsId);				
-			}
-			if( is_a( $phoneObj, "contact_phone" )){
-				$phoneObj->setDefaultAdapter($db);
-				$updateData[Contacts::SP_PHONE_ID] = $phoneObj->insertData($contactsId);
-			}
-
-			if(count($updateData) > 0){
-				$db->update(Contacts::getTableNameStatic(), $updateData, Contacts::SP_ID."=".$contactsId);
-			}
-			
-			
-			
-			$db->commit();
-			
-			return $newUnId;
-		}catch (Exception $eTrans){
-			$db->rollBack();
-			throw new Exception($eTrans->getMessage(),E_ERROR);
+		}else{
+			// Fehler da der Lastname nicht valiede ist
 			return FALSE;
 		}
+		return FALSE;
+		// FireBug::setDebug($newUnId);
 		
 
 	}

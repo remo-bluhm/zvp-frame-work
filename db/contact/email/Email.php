@@ -1,11 +1,13 @@
 <?php
 require_once 'citro/DBTable.php';
 
-class contact_email extends DBTable {
+class Email extends DBTable {
 
-
+	protected $_name = 'contact_email';
+	
 	private $_email = NULL;
 	private $_text = NULL;
+	private $_contactId = NULL;
 	
 	const SP_ID = "id";
 		
@@ -13,7 +15,12 @@ class contact_email extends DBTable {
 	const SP_ADRESS = "mailadress";
 	const SP_TEXT = "text";
 
-	
+	/**
+	 * @return the $_contactId
+	 */
+	public function getContactId() {
+		return $this->_contactId;
+	}
 	
 	/**
 	 * @return the $_email
@@ -29,6 +36,15 @@ class contact_email extends DBTable {
 		return $this->_text;
 	}
 
+	/**
+	 * @param NULL $_contactId
+	 */
+	public function setContactId($contactId) {
+		$result = self::testContactId($contactId);
+		if($result !== FALSE)$this->_contactId = $result;
+		return $result;
+	}
+	
 	/**
 	 * @param NULL $_email
 	 */
@@ -68,13 +84,7 @@ class contact_email extends DBTable {
 	
 	
 	
-	private function generateDate(){
-		$data = array();
-		if($this->_email !== NULL) $data[self::SP_ADRESS] = $this->_email;
-		if($this->_text !== NULL) $data[self::SP_TEXT] = $this->_text;
-	
-		return $data;
-	}
+
 	
 	public function updateData($id){
 		if($this->_email !== NULL){
@@ -86,12 +96,19 @@ class contact_email extends DBTable {
 	
 	
 	
-	public function insertData($contactId){
+	public function insertSetData($contactId,$email){
 		$primaryKey = NULL;
-		$contactId = self::testContactId($contactId);
-		if($contactId !== FALSE && $this->_email !== NULL){
-			$data = $this->generateDate();
+		
+		// Die Pflichtparameter
+		$this->setContactId($contactId);
+		$this->setEmail($email);
+	
+		if($this->_contactId !== NUll && $this->_email !== NULL){
 			$data[self::SP_CONTACT_ID] = $contactId;
+			$data[self::SP_ADRESS] = $this->_email;
+	
+			if($this->_text !== NULL) 	$data[self::SP_TEXT] = $this->_text;
+			
 			$primaryKey = $this->insert($data);
 		}
 		return $primaryKey;

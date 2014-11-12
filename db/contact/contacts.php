@@ -4,11 +4,11 @@ require_once 'citro/DBTable.php';
 class Contacts extends DBTable {
 	
 	protected $_name = 'contacts';
-	
-	protected $apartmetOwner = NULL;
-	protected $guest = NULL;
-	protected $adresses = NULL;
-	protected $mainAdressId = NULL;
+
+	const GUEST = "GUEST";
+	const HIRER = "HIRER";
+	const ADJUSTOR = "ADJUSTOR";
+	const NOTSET = "NOTSET";
 	
 	const SP_ID = "id";
 	const SP_UNID = "uid";
@@ -27,40 +27,17 @@ class Contacts extends DBTable {
 	
 	const SP_FIRMA = "firma";
 	const SP_FIRMA_POSITION = "position";
-	
-	const SP_KURZINFO = "kurz_info";
+
 
 	const SP_ADRESS_ID = "main_contact_address_id";
 	const SP_EMAIL_ID = "main_contact_email_id";
 	const SP_PHONE_ID = "main_contact_phone_id";
-	
-	/**
-	 * Findet einen Contact anhand seiner UID
-	 * @param string $uid
-	 * @param bool $testDeletet
-	 * @return Zend_Db_Table_Row_Abstract|NULL
-	 */
-	public function findUid($uid, $testDeletet = TRUE){
-		$sel = $this->select();
-		$sel->where( self::SP_UNID."= ?", $uid);
-		if($testDeletet === TRUE){
-			$sel->where(self::SP_DELETE."=?",0);
-		}
-		$contRow = $this->fetchRow($sel);
-		return $contRow;
-	}
+
 
 	
 	
 
-	/**
-	 * Erstellt eine eindeutige Id des Contactes
-	 * @param string $prefix eindeutigen Bezeichner der Firma oder der Datenbank
-	 * @return string
-	 */
-	public static function generateUnId($prefix){
-		return uniqid ($prefix."-");
-	}
+
 	
 	
 	
@@ -93,50 +70,24 @@ class Contacts extends DBTable {
 	}
 
 	
-	public static function testFirma($value){
-		return $value;
-	}
 
-	public static function testPosition($value){
-		return $value;
-	}
-	
-	public static function testKurzInfo($value){
-		return $value;
-	}
 	
 
- 	private $_title = NULL;
- 	private $_firstName = NULL;
- 	private $_firstAddName = NULL;
- 	private $_lastName = NULL;
- 	private $_affix = NULL;
+ 	/**
+ 	 * Prüft auf den Type GUST,HIRER,ADJUSTOR
+ 	 * @param string $value
+ 	 * @return string falls dieser nicht richtig ist dann NOTSET
+ 	 */
+ 	public static function testType($value){
+
+ 		$value = strtoupper($value);
+ 		if($value === self::GUEST) return self::GUEST;
+ 		if($value === self::HIRER) return self::HIRER;
+ 		if($value === self::ADJUSTOR) return self::ADJUSTOR;
+ 		return self::NOTSET;
+ 	}
  	
- 	public function setTitle($valueOrData){
-		$this->_title = $this->testTitle($valueOrData);
- 	}
- 	public function setFirstName($valueOrData){
- 		$this->_firstName = $this->testFirstName($valueOrData);
- 	}
- 	public function setFirstAddName($valueOrData){
-		$this->_firstAddName = $this->testFirstAddName($valueOrData);
- 	}
- 	public function setLastName($valueOrData){
- 		$this->_lastName = $this->testLastName($valueOrData);
- 	}
- 	public function setAffix($valueOrData){
- 		$this->_affix = $this->testAffixName($valueOrData);
- 	}
-	private function generateDate(){
-		$data = array();
-		if($this->_title !== NULL) $data[self::SP_TITLE] = $this->_title;
-		if($this->_firstName !== NULL) $data[self::SP_FIRST_NAME] = $this->_firstName;
-		if($this->_firstAddName !== NULL) $data[self::SP_FIRST_ADD_NAME] = $this->_firstAddName;
-		if($this->_lastName !== NULL) $data[self::SP_LAST_NAME] = $this->_lastName;
-		if($this->_affix !== NULL) $data[self::SP_AFFIX_NAME] = $this->_affix;
-			
-		return $data;
-	}
+
 	
 	/**
 	 * Einschreiben der gesetzten Daten mit prüfung der Daten die vorher mit den set Methoden gesetzt wurden
@@ -144,51 +95,196 @@ class Contacts extends DBTable {
 	 * @param string $lastName Der Nachname als String
 	 * @return NULL|integer Bei erfolgreichen einschreiben die Id des Contactes ansonste NULL
 	 */
-	public function insertSetData($accessId, $lastName){
-		
-		$this->setLastName($lastName);
-		
-		// Testen des Pflichtfeldes Last Name oder abbruch
-		if($this->_lastName === NULL)return NULL;
-		
-		$fields = $this->generateDate();		
-		$fields[self::SP_ACCESS_CREATE] = $accessId;
-		$fields[self::SP_ACCESS_EDIT]=$accessId;	
-		
-		return $this->insert($fields);
-		
-	}
+	public function insertData($accessId,$lastName,$data=array()){
 	
-	public function insert($fields){
-	
-		// Setzen der Standartfelder
-		$fields[Contacts::SP_DATA_CREATE] = DBTable::DateTime ();
-		$fields[Contacts::SP_DATA_EDIT] = DBTable::DateTime ();
+		// Die Pflichtparameter
+		$lastName = self::testLastName( $lastName);
 		
-		
-		
-		
-		$setInsert = TRUE;
-		while ( $setInsert )
-		{
-			$newUnId = self::generateUnId("bt");
-			$allTubles = $this->findUid($newUnId,FALSE);
-		
-			if($allTubles === NULL){
-				$fields[self::SP_UNID] = $newUnId;
-				$setInsert = FALSE;
-				break;
-			}else{
-				//@TODO hier muss noch ein logging eingebaut werden wenn die Id schon mal gefunden wurde um so ein überblic zu behalten
+		// testen auf die Pflichtparameter
+		if($lastName !== NUll){
+			$fields = array();	
+			
+			// setzen der Pflichtparameters Nachname
+			$fields[self::SP_LAST_NAME] = $lastName;
+			
+			// setzen der Standartfelder
+			$fields[self::SP_ACCESS_CREATE] = $accessId;
+			$fields[self::SP_ACCESS_EDIT]=$accessId;	
+			$fields[Contacts::SP_DATA_CREATE] = DBTable::DateTime ();
+			$fields[Contacts::SP_DATA_EDIT] = DBTable::DateTime ();
+
+			// Setzen des Types
+			if(!empty( $data["cont_type"])){
+				$fields["type"] = self::testType($data["cont_type"]);
 			}
+			
+			//Titel setzen
+			if(!empty( $data["title_name"])){
+				$title = self::testTitle ( $data["title_name"]);
+				if($title !== NULL )	$fields[self::SP_TITLE] = $title ;
+			}
+			
+			//$firstName setzen
+			if(!empty( $data["first_name"])){
+				$firstName = self::testFirstName ( $data["first_name"]);
+				if($firstName !== NULL )	$fields[self::SP_FIRST_NAME] = $firstName ;
+			}
+			
+			//addFirstName setzen
+			if(!empty( $data["first_add_name"])){
+				$addFirstName = self::testFirstAddName( $data["first_add_name"]);
+				if($addFirstName !== NULL )	$fields[self::SP_FIRST_ADD_NAME] = $addFirstName ;
+			}
+			
+			//affixName setzen
+			if(!empty( $data["affix_name"])){
+				$affixName = self::testAffixName( $data["affix_name"]);
+				if($affixName !== NULL )	$fields[self::SP_AFFIX_NAME] = $affixName;
+			}
+			
+
+			
+			// setzen der UID
+			$newUnId = NULL;
+			$setInsert = TRUE;
+			while ( $setInsert )
+			{
+				$newUnId = self::generateUnId("bt");
+				$allTubles = $this->findUid($newUnId,FALSE);
+			
+				if($allTubles === NULL){
+					$fields[self::SP_UNID] = $newUnId;
+					$setInsert = FALSE;
+					break;
+				}else{
+					//@TODO hier muss noch ein logging eingebaut werden wenn die Id schon mal gefunden wurde um so ein überblic zu behalten
+				}
+			}
+			$fields[Contacts::SP_UNID] = $newUnId;
+			
 		
+			//########### Einschreiben der Daten
+			$contactId = (integer)$this->insert($fields);
+	
+			
+			// setzen von Adressen
+			$mainAdressId = NULL;
+			if(array_key_exists("adresses",$data) && is_array($data["adresses"]) ){
+				require_once 'db/contact/address/Address.php';
+				$adrTab = new Address();
+				foreach ($data["adresses"] as $adrFields){
+					if(is_array($adrFields) && !empty($adrFields["ort"])){
+						$adrTab->setArt($adrFields["art"]);
+						$adrTab->setStreet($adrFields["strasse"]);
+						$adrTab->setZip($adrFields["plz"]);
+						$adrTab->setLand($adrFields["land"]);
+						$adrTab->setLandpart($adrFields["landpart"]);
+						$adressId = $adrTab->insertSetData( $contactId, $adrFields["ort"]);
+						if (!empty($adrFields["is_main"])){
+							if(strtoupper ( $adrFields["is_main"]) == "TRUE") $mainAdressId = $adressId;
+						}
+					}
+				}
+			}
+				
+				
+				
+			// setzen der Telefonnummern
+			$mainPhoneId = NULL;
+			if(array_key_exists("numbers",$data) && is_array($data["numbers"]) ){
+				require_once 'db/contact/phone/Phone.php';
+				$phoneTab = new Phone();
+				foreach ($data["numbers"] as $phoneFields){
+					if(is_array($phoneFields) && !empty($phoneFields["number"])){
+						$phoneTab->setArt($phoneFields["art"]);
+						$phoneTab->setText($phoneFields["text"]);
+						$phoneId = $phoneTab->insertSetData( $contactId,$phoneFields["number"]);
+						if (!empty($phoneFields["is_main"])){
+							if(strtoupper ( $phoneFields["is_main"]) == "TRUE") $mainPhoneId = $phoneId;
+						}
+					}
+				}
+			}
+				
+				
+				
+			// setzen der Mails
+			$mainMailId = NULL;
+			if(array_key_exists("emails",$data) && is_array($data["emails"]) ){
+				require_once 'db/contact/email/Email.php';
+				$mailTab = new Email();
+				foreach ($data["emails"] as $mailFields){
+					if(is_array($mailFields) && !empty($mailFields["adress"])){
+						$mailTab->setText($mailFields["text"]);
+						$mailId = $mailTab->insertSetData( $contactId,$mailFields["adress"]);
+						if (!empty($mailFields["is_main"])){
+							if(strtoupper ( $mailFields["is_main"]) == "TRUE") $mainMailId = $mailId;
+						}
+					}
+				}
+			}
+				
+				
+			// Setzen der Haupt Adressen, Mails oder Telefonnummern
+			$updateData = array();
+			if($mainAdressId !== NULL) $updateData[Contacts::SP_ADRESS_ID] = $mainAdressId;
+			if($mainPhoneId !== NULL) $updateData[Contacts::SP_PHONE_ID] = $mainPhoneId;
+			if($mainMailId !== NULL) $updateData[Contacts::SP_EMAIL_ID] = $mainMailId;
+			if(count($updateData) > 0 )$this->update($updateData, "id = ".$contactId);
+				
+			return $newUnId;
+			
 		}
 		
-		
-		
-		return  parent::insert($fields);
-		
+		return NULL;
+						
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public function update($date,$where){
+		$date[self::SP_DATA_EDIT] = DBTable::DateTime ();
+		parent::update($date, $where);
+	}
+	
+	
+	/**
+	 * Erstellt eine eindeutige Id des Contactes
+	 * @param string $prefix eindeutigen Bezeichner der Firma oder der Datenbank
+	 * @return string
+	 */
+	public static function generateUnId($prefix){
+		return uniqid ($prefix."-");
+	}
+	
+	
+	public function exist($uid){
+		$value = DBConnect::getConnect()->fetchOne("select 'id' from contacts where uid=$uid");
+		return $value;
+	}
+	
+	/**
+	 * Findet einen Contact anhand seiner UID
+	 * @param string $uid
+	 * @param bool $testDeletet
+	 * @return Zend_Db_Table_Row_Abstract|NULL
+	 */
+	public function findUid($uid, $testDeletet = TRUE){
+		$sel = $this->select();
+		$sel->where( self::SP_UNID."= ?", $uid);
+		if($testDeletet === TRUE){
+			$sel->where(self::SP_DELETE."=?",0);
+		}
+		$contRow = $this->fetchRow($sel);
+		return $contRow;
+	}
+
 }
 
 ?>
