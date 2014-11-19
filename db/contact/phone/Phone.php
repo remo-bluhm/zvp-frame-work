@@ -6,12 +6,6 @@ class Phone extends DBTable {
 
 	protected $_name = 'contact_phone';
 	
-	private $_contactId = NULL;
-	private $_art = NULL;
-	private $_number = NULL;
-	private $_text = NULL;
-	
-	
 	const SP_ID = "id";
 		
 	const SP_CONTACT_ID = "contacts_id";
@@ -19,75 +13,84 @@ class Phone extends DBTable {
 	const SP_NUMBER = "number";
 	const SP_TEXT = "text";
 
+	private $_insertData = array();
 	
-	
-	
-	/**
-	 * @return the $_contactId
-	 */
-	public function getContactId() {
-		return $this->_contactId;
+	public function clearData(){
+		$this->_insertData = array();
 	}
+	
 
 	/**
 	 * @return the $_art
 	 */
 	public function getArt() {
-		return $this->_art;
+		if(array_key_exists(self::SP_ART, $this->_insertData)) return $this->_insertData[self::SP_ART];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_number
 	 */
 	public function getNumber() {
-		return $this->_number;
+		if(array_key_exists(self::SP_NUMBER, $this->_insertData)) return $this->_insertData[self::SP_NUMBER];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_text
 	 */
 	public function getText() {
-		return $this->_text;
+		if(array_key_exists(self::SP_TEXT, $this->_insertData)) return $this->_insertData[self::SP_TEXT];
+		return NULL;
 	}
 
 	/**
-	 * @param NULL $_contactId
+	 * @return the $_contactId
 	 */
-	public function setContactId($contactId) {
-		$result = self::testContactId($contactId);
-		if($result !== FALSE)$this->_contactId = $result;
-		return $result;
+	public function getContactId() {
+		if(array_key_exists(self::SP_CONTACT_ID, $this->_insertData)) return $this->_insertData[self::SP_CONTACT_ID];
+		return NULL;
 	}
+	
+	
+
 
 	/**
 	 * @param NULL $_art
 	 */
 	public function setArt($art) {
 		$result = self::testArt($art);
-		if($result !== FALSE)$this->_art = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_ART] = $result;
 		return $result;
 	}
 
 	/**
 	 * @param NULL $_number
 	 */
-	public function setNumber($number) {
-		$result = self::testPhoneNumber($number);
-		if($result !== FALSE)$this->_number = $result;
+	public function setNumber($value) {
+		$result = self::testPhoneNumber($value);
+		if($result !== FALSE)$this->_insertData[self::SP_NUMBER] = $result;
 		return $result;
 	}
 
 	/**
 	 * @param NULL $_text
 	 */
-	public function setText($text) {
-		$result = self::testText($text);
-		if($result !== FALSE)$this->_text = $result;
+	public function setText($value) {
+		$result = self::testText($value);
+		if($result !== FALSE)$this->_insertData[self::SP_TEXT] = $result;
 		return $result;
 	}
 	
 	
-	
+	/**
+	 * @param NULL $_contactId
+	 */
+	public function setContactId($contactId) {
+		$result = self::testContactId($contactId);
+		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
+		return $result;
+	}
 	
 
 	public static function testArt($value){
@@ -124,23 +127,16 @@ class Phone extends DBTable {
 	
 	
 	
-	public function insertSetData($contactId,$number){
+	public function insertDataFull($contactId){
 		$primaryKey = NULL;
 		
 		// setzen der Pflichtfelder
-		$this->setContactId($contactId);
-		$this->setNumber($number);
+		$contactId = $this->setContactId($contactId);
 		
 		
-		if($this->_contactId !== NULL && $this->_number !== NULL){
-			$data = array();
-			$data[self::SP_CONTACT_ID] = $contactId;
-			$data[self::SP_NUMBER] = $this->_number;
-			
-			if($this->_art !== NULL)	$data[self::SP_ART] = $this->_art;
-			if($this->_text !== NULL) 	$data[self::SP_TEXT] = $this->_text;
-			
-			$primaryKey = $this->insert($data);
+		if($contactId !== NULL && $this->getNumber() !== NULL){
+		
+			$primaryKey = $this->insert($this->_insertData);
 		}
 		return $primaryKey;
 	}

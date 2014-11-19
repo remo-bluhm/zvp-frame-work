@@ -14,22 +14,30 @@ class Address extends DBTable {
 			)
 	);
 	
-	private $_art = NULL;
-	private $_ort = NULL;
-	private $_plz = NULL;
-	private $_street = NULL;
-	private $_land = NULL;
-	private $_landpart = NULL;
-	private $_contactId = NULL;
+	
+	function __construct($config = array()) {
+		parent::__construct ( $config );
+	
+	}
+	
+
+	
+	private $_insertData = array();
 	
 	const SP_ID = "id";
 	const SP_CONTACT_ID = "contacts_id";
 	const SP_ART = "art";
+	const SP_NAMELINE = "nameline";
 	const SP_LAND = "land";
 	const SP_LAND_PART = "landpart";
-	const SP_PLZ = "plz";
+	const SP_ZIP = "plz";
 	const SP_ORT = "ort";
-	const SP_STRASSE = "strasse";
+	const SP_STREET = "strasse";
+	
+	
+	public function clearData(){
+		$this->_insertData = array();
+	}
 	
 	
 	
@@ -37,49 +45,79 @@ class Address extends DBTable {
 	 * @return the $_art
 	 */
 	public function getArt() {
-		return $this->_art;
+		if(array_key_exists(self::SP_ART, $this->_insertData)) return $this->_insertData[self::SP_ART];
+		return NULL;
 	}
+	
+	/**
+	 * @return the $_art
+	 */
+	public function getNameLine() {
+		if(array_key_exists(self::SP_NAMELINE, $this->_insertData)) return $this->_insertData[self::SP_NAMELINE];
+		return NULL;
+	}
+	
 	/**
 	 * @return the $_ort
 	 */
 	public function getOrt() {
-		return $this->_ort;
+		if(array_key_exists(self::SP_ORT, $this->_insertData)) return $this->_insertData[self::SP_ORT];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_plz
 	 */
-	public function getPlz() {
-		return $this->_plz;
+	public function getZip() {
+		if(array_key_exists(self::SP_ZIP, $this->_insertData)) return $this->_insertData[self::SP_ZIP];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_street
 	 */
 	public function getStreet() {
-		return $this->_street;
+		if(array_key_exists(self::SP_STREET, $this->_insertData)) return $this->_insertData[self::SP_STREET];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_land
 	 */
 	public function getLand() {
-		return $this->_land;
+		if(array_key_exists(self::SP_LAND, $this->_insertData)) return $this->_insertData[self::SP_LAND];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_landpart
 	 */
 	public function getLandpart() {
-		return $this->_landpart;
+		if(array_key_exists(self::SP_LAND_PART, $this->_insertData)) return $this->_insertData[self::SP_LAND_PART];
+		return NULL;
 	}
+	
+	
+	
+	
+	
+	
 	
 	/**
 	 * @param NULL $_art
 	 */
 	public function setArt($art) {
 		$result = self::testArt($art);
-		if($result !== FALSE)$this->_art = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_ART] = $result;
+		return $result;
+	}
+	
+	/**
+	 * @param NULL $_art
+	 */
+	public function setNameLine($value) {
+		$result = self::testNameLine($value);
+		if($result !== FALSE)$this->_insertData[self::SP_NAMELINE] = $result;
 		return $result;
 	}
 	
@@ -88,7 +126,7 @@ class Address extends DBTable {
 	 */
 	public function setOrt($ort) {
 		$result = self::testOrt($ort);
-		if($result !== FALSE)$this->_ort = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_ORT] = $result;
 		return $result;
 	}
 
@@ -96,8 +134,8 @@ class Address extends DBTable {
 	 * @param NULL $_plz
 	 */
 	public function setZip($plz) {
-		$result = self::testPLZ($plz);
-		if($result !== FALSE)$this->_plz = $result;
+		$result = self::testZip($plz);
+		if($result !== FALSE)$this->_insertData[self::SP_ZIP] = $result;
 		return $result;
 	}
 
@@ -106,7 +144,7 @@ class Address extends DBTable {
 	 */
 	public function setStreet($street) {
 		$result = self::testStreet($street);
-		if($result !== FALSE)$this->_street = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_STREET] = $result;
 		return $result;
 	}
 
@@ -115,7 +153,7 @@ class Address extends DBTable {
 	 */
 	public function setLand($land) {
 		$result = self::testLand($land);
-		if($result !== FALSE)$this->_land = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_LAND] = $result;
 		return $result;
 	}
 
@@ -124,25 +162,20 @@ class Address extends DBTable {
 	 */
 	public function setLandpart($landpart) {
 		$result = self::testLandPart($landpart);
-		if($result !== FALSE)$this->_landpart = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_LAND_PART] = $result;
 		return $result;
 	}
 
 	
 	public function setContactId($contactId){
 		$result = self::testContactId($contactId);
-		if($result !== FALSE){
-			$this->_contactId = $result;
-		}
+		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
+		return $result;
 		
 	}
 	
 	
-	
-	function __construct($config = array()) {
-		parent::__construct ( $config );
-	
-	}
+
 
 	
 
@@ -151,38 +184,57 @@ class Address extends DBTable {
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 1) return FALSE;
 		if(strlen($value) > 12) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
+	public static function testNameLine($value){
+		if(empty($value)) return FALSE;
+		if(strlen($value) < 1) return FALSE;
+		if(strlen($value) > 200) return FALSE;
+		$value = trim($value);
+		return $value;
+	}
+	
 	public static function testOrt($value){
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 3) return FALSE;
 		if(strlen($value) > 150) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
-	public static function testPLZ($value){
+	public static function testZip($value){
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 3) return FALSE;
 		if(strlen($value) > 10) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
 	public static function testStreet($value){
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 3) return FALSE;
 		if(strlen($value) > 150) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
 	public static function testLand($value){
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 1) return FALSE;
 		if(strlen($value) > 100) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
 	public static function testLandPart($value){
 		if(empty($value)) return FALSE;
 		if(strlen($value) < 1) return FALSE;
 		if(strlen($value) > 150) return FALSE;
+		$value = trim($value);
 		return $value;
 	}
+	/**
+	 * Testet die ContactId
+	 * @param Integer $value
+	 * @return Integer|boolean im Feher fall False ansonsten die Id
+	 */
 	public static function testContactId($value){
 		return DBTable::testId($value);
 	}
@@ -198,38 +250,21 @@ class Address extends DBTable {
 	}
 	
 
-
 	
 	
-	public function insertSetData( $contactId ,$ort){
+	public function insertDataFull( $contactId){
 		$insertId = NULL;
 		
 		// Testen des Pflichtfeldes Contact Id oder abbruch
-		$this->setContactId($contactId);
-		$this->setOrt($ort);
-		
-	
-		// Testen des Pflichtfeldes Last Name oder abbruch
-		if($this->_contactId !== NULL && $this->_ort !== NULL ) {
-			
-			$data = array();
-			
-			$data[self::SP_CONTACT_ID] = $this->_contactId;
-			$data[self::SP_ORT] = $this->_ort;
-			
-			if($this->_art !== NULL) $data[self::SP_ART] = $this->_art;
-			if($this->_plz !== NULL) $data[self::SP_PLZ] = $this->_plz;
-			if($this->_street !== NULL) $data[self::SP_STRASSE] = $this->_street;
-			if($this->_land !== NULL) $data[self::SP_LAND] = $this->_land;
-			if($this->_landpart !== NULL) $data[self::SP_LAND_PART] = $this->_landpart;
-			
-			$insertId = $this->insert($data);
+		$contId = $this->setContactId($contactId);
+
+		if($this->getNameLine() !== NULL && $contId !== FALSE){
+
+			$insertId = $this->insert($this->_insertData);
 		}
+		
 		return $insertId;
 	}
-	
-	
-	
 	
 	
 	

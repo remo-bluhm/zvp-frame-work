@@ -15,25 +15,35 @@ class Email extends DBTable {
 	const SP_ADRESS = "mailadress";
 	const SP_TEXT = "text";
 
+	
+	private $_insertData = array();
+	
+	public function clearData(){
+		$this->_insertData = array();
+	}
+	
 	/**
 	 * @return the $_contactId
 	 */
 	public function getContactId() {
-		return $this->_contactId;
+		if(array_key_exists(self::SP_CONTACT_ID, $this->_insertData)) return $this->_insertData[self::SP_CONTACT_ID];
+		return NULL;
 	}
 	
 	/**
 	 * @return the $_email
 	 */
-	public function getEmail() {
-		return $this->_email;
+	public function getEmail() {		
+		if(array_key_exists(self::SP_ADRESS, $this->_insertData)) return $this->_insertData[self::SP_ADRESS];
+		return NULL;
 	}
 
 	/**
 	 * @return the $_text
 	 */
 	public function getText() {
-		return $this->_text;
+		if(array_key_exists(self::SP_TEXT, $this->_insertData)) return $this->_insertData[self::SP_TEXT];
+		return NULL;
 	}
 
 	/**
@@ -41,7 +51,7 @@ class Email extends DBTable {
 	 */
 	public function setContactId($contactId) {
 		$result = self::testContactId($contactId);
-		if($result !== FALSE)$this->_contactId = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
 		return $result;
 	}
 	
@@ -50,7 +60,7 @@ class Email extends DBTable {
 	 */
 	public function setEmail($email) {
 		$result = self::testEmail($email);
-		if($result !== FALSE)$this->_email = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_ADRESS] = $result;
 		return $result;
 	}
 
@@ -59,7 +69,7 @@ class Email extends DBTable {
 	 */
 	public function setText($text) {
 		$result = self::testText($text);
-		if($result !== FALSE)$this->_text = $result;
+		if($result !== FALSE)$this->_insertData[self::SP_TEXT] = $result;
 		return $result;
 	}
 	
@@ -96,20 +106,16 @@ class Email extends DBTable {
 	
 	
 	
-	public function insertSetData($contactId,$email){
+	public function insertDataFull($contactId){
 		$primaryKey = NULL;
 		
-		// Die Pflichtparameter
-		$this->setContactId($contactId);
-		$this->setEmail($email);
-	
-		if($this->_contactId !== NUll && $this->_email !== NULL){
-			$data[self::SP_CONTACT_ID] = $contactId;
-			$data[self::SP_ADRESS] = $this->_email;
-	
-			if($this->_text !== NULL) 	$data[self::SP_TEXT] = $this->_text;
-			
-			$primaryKey = $this->insert($data);
+		// setzen der Pflichtfelder
+		$contactId = $this->setContactId($contactId);
+		
+		
+		if($contactId !== NULL && $this->getEmail() !== NULL){
+
+			$primaryKey = $this->insert($this->_insertData);
 		}
 		return $primaryKey;
 	}

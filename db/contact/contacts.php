@@ -34,7 +34,11 @@ class Contacts extends DBTable {
 	const SP_PHONE_ID = "main_contact_phone_id";
 
 
+	private $_insertData = array();
 	
+	public function clearData(){
+		$this->_insertData = array();
+	}
 	
 
 
@@ -68,11 +72,6 @@ class Contacts extends DBTable {
 	public static function testAffixName($value){
 		return $value;
 	}
-
-	
-
-	
-
  	/**
  	 * Prüft auf den Type GUST,HIRER,ADJUSTOR
  	 * @param string $value
@@ -89,6 +88,10 @@ class Contacts extends DBTable {
  	
 
 	
+ 	
+ 	
+ 	
+ 	
 	/**
 	 * Einschreiben der gesetzten Daten mit prüfung der Daten die vorher mit den set Methoden gesetzt wurden
 	 * @param integer $accessId
@@ -113,6 +116,9 @@ class Contacts extends DBTable {
 			$fields[Contacts::SP_DATA_CREATE] = DBTable::DateTime ();
 			$fields[Contacts::SP_DATA_EDIT] = DBTable::DateTime ();
 
+			
+			
+			
 			// Setzen des Types
 			if(!empty( $data["cont_type"])){
 				$fields["type"] = self::testType($data["cont_type"]);
@@ -164,8 +170,9 @@ class Contacts extends DBTable {
 			
 		
 			//########### Einschreiben der Daten
+
 			$contactId = (integer)$this->insert($fields);
-	
+			
 			
 			// setzen von Adressen
 			$mainAdressId = NULL;
@@ -173,15 +180,25 @@ class Contacts extends DBTable {
 				require_once 'db/contact/address/Address.php';
 				$adrTab = new Address();
 				foreach ($data["adresses"] as $adrFields){
-					if(is_array($adrFields) && !empty($adrFields["ort"])){
-						$adrTab->setArt($adrFields["art"]);
-						$adrTab->setStreet($adrFields["strasse"]);
-						$adrTab->setZip($adrFields["plz"]);
-						$adrTab->setLand($adrFields["land"]);
-						$adrTab->setLandpart($adrFields["landpart"]);
-						$adressId = $adrTab->insertSetData( $contactId, $adrFields["ort"]);
-						if (!empty($adrFields["is_main"])){
-							if(strtoupper ( $adrFields["is_main"]) == "TRUE") $mainAdressId = $adressId;
+					
+					
+					
+					if(is_array($adrFields) && !empty($adrFields["ort"]) ){
+						$adrTab->clearData();
+												
+						if(array_key_exists("art",$adrFields)) 		$adrTab->setArt($adrFields["art"]);
+						if(array_key_exists("adrline",$adrFields)) 	$adrTab->setNameLine($adrFields["adrline"]);
+						if(array_key_exists("strasse",$adrFields)) 	$adrTab->setStreet($adrFields["strasse"]);
+						if(array_key_exists("ort",$adrFields)) 		$adrTab->setOrt($adrFields["ort"]);
+						if(array_key_exists("plz",$adrFields)) 		$adrTab->setZip($adrFields["plz"]);
+						if(array_key_exists("land",$adrFields)) 	$adrTab->setLand($adrFields["land"]);
+						if(array_key_exists("landiade",$adrFields)) $adrTab->setLand($adrFields["landiade"]);
+						if(array_key_exists("landpart",$adrFields)) $adrTab->setLandpart($adrFields["landpart"]);
+						
+						$adressId = $adrTab->insertDataFull($contactId);
+						
+						if (!empty($adrFields["is_main"]) && $adressId !== NULL ){
+							if( strtoupper( $adrFields["is_main"]) == "TRUE" ) $mainAdressId = $adressId;
 						}
 					}
 				}
@@ -197,9 +214,12 @@ class Contacts extends DBTable {
 				foreach ($data["numbers"] as $phoneFields){
 					if(is_array($phoneFields) && !empty($phoneFields["number"])){
 						$phoneTab->setArt($phoneFields["art"]);
+						$phoneTab->setNumber($phoneFields["number"]);
 						$phoneTab->setText($phoneFields["text"]);
-						$phoneId = $phoneTab->insertSetData( $contactId,$phoneFields["number"]);
-						if (!empty($phoneFields["is_main"])){
+						
+						$phoneId = $phoneTab->insertDataFull( $contactId);
+						
+						if (!empty($phoneFields["is_main"]) && $phoneId !== NULL ){
 							if(strtoupper ( $phoneFields["is_main"]) == "TRUE") $mainPhoneId = $phoneId;
 						}
 					}
@@ -216,7 +236,8 @@ class Contacts extends DBTable {
 				foreach ($data["emails"] as $mailFields){
 					if(is_array($mailFields) && !empty($mailFields["adress"])){
 						$mailTab->setText($mailFields["text"]);
-						$mailId = $mailTab->insertSetData( $contactId,$mailFields["adress"]);
+						$mailTab->setEmail($mailFields["adress"]);
+						$mailId = $mailTab->insertDataFull( $contactId);
 						if (!empty($mailFields["is_main"])){
 							if(strtoupper ( $mailFields["is_main"]) == "TRUE") $mainMailId = $mailId;
 						}
