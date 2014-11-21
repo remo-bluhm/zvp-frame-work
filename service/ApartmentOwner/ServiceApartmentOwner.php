@@ -158,7 +158,54 @@ class ServiceApartmentOwner extends AService {
 		return $actionBack;	
 	}
 	
+	/**
+	 * Setzt einen neuen User
+	 *
+	 * @param string $lastName  Name des Users
+	 * @param array $fields Die Gruppe die der Users unterliegt
+	 * @return citro_list Den eingetragenen User mit  guid|name|password|aeskey|visibil|date_create|admin Der Parameter "admin" bekommt man nur wenn man selber Admin ist
+	 *
+	 */
+	public function ActionNew($lastName, $fields = array()) {
 	
+		// Setzen der $fieldsvariabel auf array
+		if(!is_array($fields))$fields = array();
+	
+		// Prüfen des lastName
+		require_once 'db/contact/Contacts.php';
+		$lastName = Contacts::testLastName($lastName);
+		if( $lastName !== NULL ){
+	
+	
+			$contTab = new Contacts();
+			$contTab->getDefaultAdapter()->beginTransaction();
+			try {
+	
+				$fields["cont_type"] = "HIRER";
+				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName,$fields);
+					
+				// Nochmaliges Prüfen auf contactid
+				if($contactUid === NULL){
+					$contTab->getAdapter()->rollBack();
+					return FALSE;
+				}
+				$contTab->getAdapter()->commit();
+				return $contactUid;
+	
+			} catch (Exception $e) {
+				$contTab->getAdapter()->rollBack();
+				return FALSE;
+			}
+	
+		}else{
+			// Fehler da der Lastname nicht valiede ist
+			return FALSE;
+		}
+		return FALSE;
+		// FireBug::setDebug($newUnId);
+	
+	
+	}
 	
 	
 	

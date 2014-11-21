@@ -153,8 +153,8 @@ class ServiceGuest extends AService {
 			$contTab->getDefaultAdapter()->beginTransaction();
 			try {
 		
-				$fields["type"] = "GUEST";
-				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName,$fields);
+				$fields["cont_type"] = "GUEST";
+				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName, $fields);
 					
 				// Nochmaliges Prüfen auf contactid
 				if($contactUid === NULL){
@@ -188,103 +188,20 @@ class ServiceGuest extends AService {
 	public function ActionSingle($contactuid, $spalten = array()){
 	
 	
-		require_once 'db/contact/Contacts.php';
-		$db = Contacts::getDefaultAdapter();
-	
-	
-		$spA = array();
-		$spA["uid"] = "uid";
-		$spA["id_name"] = "id";
-		$spA["create_date"] = "edata";
-		$spA["edit_date"] = "vdata";
-		$spA["title_name"] = "title_name";
-		$spA["last_name"] = "last_name";
-		$spA["first_name"] = "first_name";
-		$spA["first_add_name"] = "first_add_name";
-		$spA["affix_name"] = "affix_name";
-	
-		$spA["firma"] = "firma";
-		$spA["position"] = "position";
-	
-	
-	
-		$sel = $db->select ();
-		$sel->from( array('c' => Contacts::getTableNameStatic() ), $spA );
+		$conn = DBConnect::getConnect();
+		$value = $conn->fetchOne( "SELECT id FROM contacts where (".$conn->quoteInto("uid = ?", $contactuid).") AND (type='GUEST')"  );
+		if($value == FALSE)return FALSE;
 		
-		$sel->joinRight(array('g'=>'guest'), "c.id = g.contacts_id",array('g_systext' =>"systext") );
+		$service = $this->_serviceFabric->getService(new Service("Contact"), $this->_resource);
+		$action =  new Action("Single");
+		$action->setParam("contactuid", $contactuid);
+		//kann noch hinzugefügt werden
+		//$action->setParam("spalten", $spalten);
+		
 	
-		if( in_array('usercreate_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a'=>sys_access::getTableNameStatic()), "c.access_create = a.id",array() );
-			$sel->joinLeft(array('c1'=>Contacts::getTableNameStatic()), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
-		}
-	
-		if( in_array('useredit_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a2'=>sys_access::getTableNameStatic()), "c.access_edit = a2.id" ,array() );
-			$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-		}
-	
-	
-		$adresSp = array();
-		$adresSp["adr_art"] = "art";
-		$adresSp["adr_land"] = "land";
-		$adresSp["adr_landpart"] = "landpart";
-		$adresSp["adr_plz"] = "plz";
-		$adresSp["adr_ort"] = "ort";
-		$adresSp["adr_strasse"] = "strasse";
-		$adresSp["adr_infotext"] = "info_text";
-	
-		require_once '../../db/contact/address/Address.php';
-		$sel->joinLeft(array('ca'=>Address::getTableNameStatic()), "c.main_contact_address_id = ca.id" ,$adresSp);
-	
-	
-		$phoneSp = array();
-		$phoneSp["phone_art"] = "art";
-		$phoneSp["phone_number"] = "number";
-		$phoneSp["phone_text"] = "text";
-	
-		require_once '../../db/contact/phone/Phone.php';
-		$sel->joinLeft(array('p'=>Phone::getTableNameStatic()), "c.main_contact_phone_id = p.id" ,$phoneSp);
-	
-	
-		$mailSp = array();
-		$mailSp["mail_adress"] = "mailadress";
-		$mailSp["mail_text"] = "text";
-			
-		require_once '../../db/contact/email/Email.php';
-		$sel->joinLeft(array('em'=>Email::getTableNameStatic()), "c.main_contact_email = em.id" ,$mailSp);
-	
-		$sel->where("c.uid = ?",$contactuid);
-		$sel->where("c.deleted = ?", "0");
-	
-		$contactA = $db->fetchRow($sel);
-	
-		// falls nichts gefunden wurde dann abbruch
-		if($contactA === FALSE) return FALSE;
-			
-		//////////////////////////////////////
-		if( in_array('all_address',$spalten) ){
-			require_once '../../db/contact/address/Address.php';
-				
-			$selAdress = $db->select ();
-			$selAdress->from( array('c' => Address::getTableNameStatic() ), $adresSp );
-			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
-				
-			$contactA["adresses"] = $db->fetchAll($selAdress);
-		}
-		//////////////////////////////////////////////////////////////////
-		if( in_array('all_phone',$spalten) ){
-			require_once '../../db/contact/phone/Phone.php';
-				
-			$selPhone = $db->select ();
-			$selPhone->from( Phone::getTableNameStatic() , $phoneSp );
-			$selPhone->where("contacts_id = ?",$contactA["id_name"]);
-				
-			$contactA["phones"] = $db->fetchAll($selPhone);
-		}
-		unset($contactA["id_name"]);
-		return $contactA;
+		$actionBack = $this->_serviceFabric->getAction($this->_resource, $service, $action);
+		
+		return $actionBack;	
 	
 	
 	}

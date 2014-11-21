@@ -119,6 +119,8 @@ class Contacts extends DBTable {
 			
 			
 			
+	
+			
 			// Setzen des Types
 			if(!empty( $data["cont_type"])){
 				$fields["type"] = self::testType($data["cont_type"]);
