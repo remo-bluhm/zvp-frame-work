@@ -22,7 +22,7 @@ class ServiceContactUpdateHelper extends UpdateDb{
 		require_once 'service/Contact/ServiceContact.php';
 
 		$contact = new ServiceContact();
-		$backData = $contact->ActionGetSingle($this->_contactId);
+		$backData = $contact->ActionSingle($this->_contactId,"*");
 
 		return $backData;
 	

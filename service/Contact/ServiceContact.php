@@ -121,27 +121,27 @@ class ServiceContact extends AService {
  		
 		// suche nach Namen
 		if(!empty($where["last_name"]))
-			$resortSel->where("c.last_name LIKE ?", $where["last_name"]);
+			$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
 		if(!empty($where["first_name"]))
-			$resortSel->where("c.first_name LIKE ?", $where["first_name"]);
+			$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
 	
 		
 		if(!empty($where["zip"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.plz LIKE ?", $where["zip"]);
+			$resortSel->where("a.plz LIKE ?", $where["zip"]."%");
 		}
 		if(!empty($where["ort"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.ort LIKE ?", $where["ort"]);
+			$resortSel->where("a.ort LIKE ?", $where["ort"]."%");
 		}
 		if(!empty($where["street"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.strasse LIKE ?", $where["street"]);
+			$resortSel->where("a.strasse LIKE ?", $where["street"]."%");
 		}
 		
 		if(!empty($where["email"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("m.mailadress LIKE ?", $where["email"]);
+			$resortSel->where("m.mailadress LIKE ?", $where["email"]."%");
 		}
 			
 			
@@ -156,6 +156,8 @@ class ServiceContact extends AService {
 	
 	}
 	
+
+	
 	
 
 	
@@ -168,6 +170,15 @@ class ServiceContact extends AService {
 	 */
 	public function ActionSingle($contactuid, $spalten = array()){
 	
+		if(is_string($spalten) && $spalten=="*"){
+			$spalten = array();
+			$spalten[] = "usercreate_name";
+			$spalten[] = "useredit_name";
+			$spalten[] = "all_address";
+			$spalten[] = "all_phone";
+			$spalten[] = "all_email";
+		}
+		if(!is_array($spalten))$spalten = array();
 		
 		require_once 'db/contact/Contacts.php';
 		$db = Contacts::getDefaultAdapter();
@@ -191,8 +202,8 @@ class ServiceContact extends AService {
 		
 		
 		
-		$spA["firma"] = "firma";
-		$spA["position"] = "position";
+// 		$spA["firma"] = "firma";
+// 		$spA["position"] = "position";
 		
 
 				
@@ -201,44 +212,48 @@ class ServiceContact extends AService {
 		
 		if( in_array('usercreate_name',$spalten) ){
 			
-			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array() );
+			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array("usercreate_guid"=>"guid") );
 			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array() );
+			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array("useredit_guid"=>"guid") );
 			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 
 		
 		$adresSp = array();
-		$adresSp["adr_art"] = "art";
-		$adresSp["adr_land"] = "land";
-		$adresSp["adr_landpart"] = "landpart";
-		$adresSp["adr_plz"] = "plz";
-		$adresSp["adr_ort"] = "ort";
-		$adresSp["adr_strasse"] = "strasse";
-		$adresSp["adr_infotext"] = "info_text";
+		$adresSp[] = "id";
+		$adresSp[] = "art";
+		$adresSp[] = "nameline";
+		$adresSp[] = "strasse";
+		$adresSp[] = "ort";
+		$adresSp[] = "plz";
+		$adresSp[] = "land";
+		$adresSp[] = "landpart";
+		$adresSp[] = "infotext";
 		
-		$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
+		//$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
 
 		
  		$phoneSp = array();
- 		$phoneSp["phone_art"] = "art";
- 		$phoneSp["phone_number"] = "number";
- 		$phoneSp["phone_text"] = "text";
+ 		$phoneSp[] = "id";
+ 		$phoneSp[] = "art";
+ 		$phoneSp[] = "number";
+ 		$phoneSp[] = "text";
 		
  
- 		$sel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id" ,$phoneSp);
+ 		//$sel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id" ,$phoneSp);
 
 		
  		$mailSp = array();
- 		$mailSp["mail_adress"] = "mailadress";
- 		$mailSp["mail_text"] = "text";
+ 		$mailSp[] = "id";
+ 		$mailSp[] = "mailadress";
+ 		$mailSp[] = "text";
  		
 
- 		$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
+ 		//$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
 		
 		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
@@ -271,7 +286,7 @@ class ServiceContact extends AService {
 			$selPhone->from( "contact_phone" , $phoneSp );
 			$selPhone->where("contacts_id = ?",$contactA["id_name"]);
 			
-			$contactA["phones"] = $db->fetchAll($selPhone);
+			$contactA["numbers"] = $db->fetchAll($selPhone);
 		}
 		//////////////////////////////////////////////////////////////////
 		if( in_array('all_email',$spalten) ){
@@ -355,12 +370,12 @@ class ServiceContact extends AService {
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
 		$servContUpd = new ServiceContactUpdateHelper($contactUId);
-		
 		// Inizialisieren des Update Reposetorys
 		require_once 'citro/update/SelectFactory.php';
 		$dbupdateReposetory = new SelectFactory( DBConnect::getConnect(),$servContUpd );
 		//$daten = $dbupdateReposetory->toUpdate();
 	
+//		FireBug::setDebug($dbupdateReposetory);
 
 		require_once 'citro/update/UpdateHelpFunc.php';
 		//$backArray = array("title","first_name","first_add_name","last_name","affix_name","uid","edata","vdata");
@@ -372,6 +387,17 @@ class ServiceContact extends AService {
 	
 	}
 	
+	/**
+	 * Ist für das Update einer Adresse
+	 *
+	 * @param string $contactUid
+	 * @param string $hashKey
+	 * @param array $data
+	 * @citro_isOn true
+	 */
+	public function ActionUpdateAdress(){
+	
+	}
 	/**
 	 * Ist für das Update der eigenen Daten
 	 *

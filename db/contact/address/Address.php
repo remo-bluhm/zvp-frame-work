@@ -39,6 +39,7 @@ class Address extends DBTable {
 	const SP_ZIP = "plz";
 	const SP_ORT = "ort";
 	const SP_STREET = "strasse";
+	const SP_INFOTEXT = "infotext";
 	
 	
 	public function clearData(){
@@ -269,6 +270,7 @@ class Address extends DBTable {
 		}
 	}
 	
+
 	
 	public function insertDataFull($accessId, $contactId, $data = array()){
 		$insertId = NULL;
@@ -285,7 +287,6 @@ class Address extends DBTable {
 		if(array_key_exists("ort",$data)) 		$this->setOrt($data["ort"]);
 		if(array_key_exists("plz",$data)) 		$this->setZip($data["plz"]);
 		if(array_key_exists("land",$data)) 		$this->setLand($data["land"]);
-		if(array_key_exists("landiade",$data)) 	$this->setLand($data["landiade"]);
 		if(array_key_exists("landpart",$data)) 	$this->setLandpart($data["landpart"]);
 		
 		

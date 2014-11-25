@@ -91,27 +91,27 @@ class ServiceGuest extends AService {
  		
 		// suche nach Namen
 		if(!empty($where["last_name"]))
-			$resortSel->where("c.last_name LIKE ?", $where["last_name"]);
+			$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
 		if(!empty($where["first_name"]))
-			$resortSel->where("c.first_name LIKE ?", $where["first_name"]);
+			$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
 	
 		
 		if(!empty($where["zip"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.plz LIKE ?", $where["zip"]);
+			$resortSel->where("a.plz LIKE ?", $where["zip"]."%");
 		}
 		if(!empty($where["ort"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.ort LIKE ?", $where["ort"]);
+			$resortSel->where("a.ort LIKE ?", $where["ort"]."%");
 		}
 		if(!empty($where["street"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.strasse LIKE ?", $where["street"]);
+			$resortSel->where("a.strasse LIKE ?", $where["street"]."%");
 		}
 		
 		if(!empty($where["email"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("m.mailadress LIKE ?", $where["email"]);
+			$resortSel->where("m.mailadress LIKE ?", $where["email"]."%");
 		}
 			
 			
