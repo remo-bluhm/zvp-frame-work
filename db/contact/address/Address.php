@@ -25,7 +25,13 @@ class Address extends DBTable {
 	private $_insertData = array();
 	
 	const SP_ID = "id";
+	
+	const SP_DATA_CREATE = "edata";
+	const SP_DATA_EDIT = "vdata";
+	const SP_ACCESS_CREATE = "access_create";
+	const SP_ACCESS_EDIT = "access_edit";
 	const SP_CONTACT_ID = "contacts_id";
+	
 	const SP_ART = "art";
 	const SP_NAMELINE = "nameline";
 	const SP_LAND = "land";
@@ -174,6 +180,20 @@ class Address extends DBTable {
 		
 	}
 	
+	public function setAccessCreateId($id){
+		$result = self::testContactId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_CREATE] = $result;
+		return $result;
+	
+	}
+	
+	public function setAccessEditId($id){
+		$result = self::testContactId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_EDIT] = $result;
+		return $result;
+	
+	}
+	
 	
 
 
@@ -249,21 +269,42 @@ class Address extends DBTable {
 		}
 	}
 	
-
 	
-	
-	public function insertDataFull( $contactId){
+	public function insertDataFull($accessId, $contactId, $data = array()){
 		$insertId = NULL;
 		
 		// Testen des Pflichtfeldes Contact Id oder abbruch
 		$contId = $this->setContactId($contactId);
 
+		$this->setAccessCreateId($accessId);
+		$this->setAccessEditId($accessId);
+		
+		if(array_key_exists("art",$data)) 		$this->setArt($data["art"]);
+		if(array_key_exists("adrline",$data)) 	$this->setNameLine($data["adrline"]);
+		if(array_key_exists("strasse",$data)) 	$this->setStreet($data["strasse"]);
+		if(array_key_exists("ort",$data)) 		$this->setOrt($data["ort"]);
+		if(array_key_exists("plz",$data)) 		$this->setZip($data["plz"]);
+		if(array_key_exists("land",$data)) 		$this->setLand($data["land"]);
+		if(array_key_exists("landiade",$data)) 	$this->setLand($data["landiade"]);
+		if(array_key_exists("landpart",$data)) 	$this->setLandpart($data["landpart"]);
+		
+		
 		if($this->getNameLine() !== NULL && $contId !== FALSE){
 
 			$insertId = $this->insert($this->_insertData);
+	
 		}
 		
 		return $insertId;
+	}
+	
+	
+	public function insert($data){
+		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
+		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+
+		return  parent::insert($data);
+
 	}
 	
 	

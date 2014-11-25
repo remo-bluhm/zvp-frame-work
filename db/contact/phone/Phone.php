@@ -8,7 +8,12 @@ class Phone extends DBTable {
 	
 	const SP_ID = "id";
 		
+	const SP_DATA_CREATE = "edata";
+	const SP_DATA_EDIT = "vdata";
+	const SP_ACCESS_CREATE = "access_create";
+	const SP_ACCESS_EDIT = "access_edit";
 	const SP_CONTACT_ID = "contacts_id";
+	
 	const SP_ART = "art";
 	const SP_NUMBER = "number";
 	const SP_TEXT = "text";
@@ -52,9 +57,26 @@ class Phone extends DBTable {
 		return NULL;
 	}
 	
+
+	
 	
 
-
+	public function setContactId($contactId){
+		$result = DBTable::testId($contactId);
+		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
+		return $result;
+	
+	}
+	public function setAccessCreateId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_CREATE] = $result;
+		return $result;
+	}
+	public function setAccessEditId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_EDIT] = $result;
+		return $result;
+	}
 	/**
 	 * @param NULL $_art
 	 */
@@ -81,16 +103,10 @@ class Phone extends DBTable {
 		if($result !== FALSE)$this->_insertData[self::SP_TEXT] = $result;
 		return $result;
 	}
+
 	
 	
-	/**
-	 * @param NULL $_contactId
-	 */
-	public function setContactId($contactId) {
-		$result = self::testContactId($contactId);
-		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
-		return $result;
-	}
+
 	
 
 	public static function testArt($value){
@@ -111,9 +127,6 @@ class Phone extends DBTable {
 		if(strlen($value) > 255) return FALSE;
 		return $value;
 	}
-	public static function testContactId($value){
-		return DBTable::testId($value);
-	}
 	
 	
 	
@@ -127,18 +140,31 @@ class Phone extends DBTable {
 	
 	
 	
-	public function insertDataFull($contactId){
+	public function insertDataFull($accessId, $contactId, $data = array()){
 		$primaryKey = NULL;
 		
 		// setzen der Pflichtfelder
 		$contactId = $this->setContactId($contactId);
 		
+		$this->setAccessCreateId($accessId);
+		$this->setAccessEditId($accessId);
+		
+		if(array_key_exists("art",$data)) $this->setArt($data["art"]);
+		if(array_key_exists("number",$data)) $this->setNumber($data["number"]);
+		if(array_key_exists("text",$data)) $this->setText($data["text"]);
 		
 		if($contactId !== NULL && $this->getNumber() !== NULL){
-		
 			$primaryKey = $this->insert($this->_insertData);
 		}
 		return $primaryKey;
+	}
+	
+	public function insert($data){
+		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
+		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+		
+		return  parent::insert($data);
+	
 	}
 	
 	

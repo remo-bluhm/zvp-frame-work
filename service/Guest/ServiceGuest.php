@@ -38,63 +38,87 @@ class ServiceGuest extends AService {
 		require_once 'db/contact/Contacts.php';
 	
 		$db = Contacts::getDefaultAdapter();
-	
+
 		$resortSel = $db->select ();
 	
 		$spA = array();
 		$spA["uid"] = "uid";
+		//$spA["anzahl"] = "count(uid)";
+		$spA["type"] = "type";
 		$spA["title_name"] = "title_name";
 		$spA["last_name"] = "last_name";
 		$spA["first_name"] = "first_name";
 		$spA["first_add_name"] = "first_add_name";
 		$spA["affix_name"] = "affix_name";
-	
+		
 		$spA["firma"] = "firma";
 		$spA["position"] = "position";
-	
-	
-	
-	
-		$resortSel->from(array('c' => "contacts") ,$spA);
-	
 		
-			
+
+		$resortSel->from(array('c' => "contacts") ,$spA);
+
 	
-		require_once 'db/contact/address/Address.php';
-		$adressSpaltenA = array();
-		$adressSpaltenA['a_plz'] = "plz";
-		$adressSpaltenA['a_ort'] = "ort";
-		$adressSpaltenA['a_strasse'] = "strasse";
-		if( array_key_exists('adr_plz',$where) || array_key_exists("adr_ort", $where) || array_key_exists("adr_strasse", $where) ){
-			$resortSel->joinLeft(array('a'=>"contact_address"), "c.id = a.contacts_id", $adressSpaltenA );
-		}else {
-			$resortSel->joinLeft(array('a'=>"contact_address"), "c.main_contact_address_id = a.id", $adressSpaltenA );
-		}
-			
-			
-	
-		$phoneSpaltenA = array();
-		$phoneSpaltenA['p_art'] = "art";
-		$phoneSpaltenA['p_number'] = "number";
-		$phoneSpaltenA['p_text'] = "text";
-		if( array_key_exists('phone_art',$where) || array_key_exists("phone_number", $where) || array_key_exists("phone_text", $where) ){
-			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.id = p.contacts_id", $phoneSpaltenA );
-		}else {
-			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
-		}
-	
-	
+ 		
+ 			
+ 		require_once 'db/contact/address/Address.php';
+ 		$adressSpaltenA = array();
+ 		$adressSpaltenA['a_plz'] = "plz";
+ 		$adressSpaltenA['a_ort'] = "ort";
+ 		$adressSpaltenA['a_strasse'] = "strasse";
+ 		if( !empty($where["zip"]) || !empty($where["ort"]) || !empty($where["street"]) ){	
+ 			$adressJoin = "c.id = a.contacts_id";
+ 		}else {
+ 			$adressJoin ="c.main_contact_address_id = a.id";
+ 		}
+		$resortSel->joinLeft(array('a'=>"contact_address"),$adressJoin , $adressSpaltenA );
+ 		
+ 		// Join der Email
+ 		$mailSpaltenA = array("m_adress" => "mailadress");
+ 		!empty($where['email'])  ? $emailJoin = "c.id = m.contacts_id": $emailJoin = "c.main_contact_email_id = m.id";
+		$resortSel->joinLeft(array('m'=>"contact_email"),$emailJoin, $mailSpaltenA );
+		
+		// Join der Email
+		$mailSpaltenA = array("p_number" => "number");
+		!empty($where['phonenumber'])  ? $phoneJoin = "c.id = p.contacts_id": $phoneJoin = "c.main_contact_email_id = p.id";
+		$resortSel->joinLeft(array('p'=>"contact_phone"),$phoneJoin, $mailSpaltenA );
+		
 		$resortSel->where("c.deleted = ?", 0);
 		$resortSel->where("c.type = ?", "GUEST");
 
-		// Suche
-		$this->listSearch ( $where, $resortSel );
-
+ 		// suche nach Namen
+ 		if(!empty($where["uid"]))
+ 			$resortSel->where("c.uid LIKE ?", $where["uid"]);
+ 		
+		// suche nach Namen
+		if(!empty($where["last_name"]))
+			$resortSel->where("c.last_name LIKE ?", $where["last_name"]);
+		if(!empty($where["first_name"]))
+			$resortSel->where("c.first_name LIKE ?", $where["first_name"]);
+	
+		
+		if(!empty($where["zip"])){
+			$groupIsOn = TRUE;
+			$resortSel->where("a.plz LIKE ?", $where["zip"]);
+		}
+		if(!empty($where["ort"])){
+			$groupIsOn = TRUE;
+			$resortSel->where("a.ort LIKE ?", $where["ort"]);
+		}
+		if(!empty($where["street"])){
+			$groupIsOn = TRUE;
+			$resortSel->where("a.strasse LIKE ?", $where["street"]);
+		}
+		
+		if(!empty($where["email"])){
+			$groupIsOn = TRUE;
+			$resortSel->where("m.mailadress LIKE ?", $where["email"]);
+		}
 			
 			
 		$resortSel->limit($count,$offset);
-		$resort = $db->fetchAll( $resortSel );
+		$resortSel->group("c.id");
 
+		$resort = $db->fetchAll( $resortSel );
 	
 		return $resort;
 	

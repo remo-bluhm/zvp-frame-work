@@ -4,23 +4,28 @@ require_once 'citro/DBTable.php';
 class Email extends DBTable {
 
 	protected $_name = 'contact_email';
-	
-	private $_email = NULL;
-	private $_text = NULL;
-	private $_contactId = NULL;
-	
+		
 	const SP_ID = "id";
 		
+	const SP_DATA_CREATE = "edata";
+	const SP_DATA_EDIT = "vdata";
+	const SP_ACCESS_CREATE = "access_create";
+	const SP_ACCESS_EDIT = "access_edit";
 	const SP_CONTACT_ID = "contacts_id";
+	
 	const SP_ADRESS = "mailadress";
 	const SP_TEXT = "text";
 
 	
 	private $_insertData = array();
+	public function clearData(){$this->_insertData = array();}
 	
-	public function clearData(){
-		$this->_insertData = array();
-	}
+	
+	
+	
+	
+	
+	//------- Getter -----------------------------------------------------
 	
 	/**
 	 * @return the $_contactId
@@ -45,13 +50,25 @@ class Email extends DBTable {
 		if(array_key_exists(self::SP_TEXT, $this->_insertData)) return $this->_insertData[self::SP_TEXT];
 		return NULL;
 	}
-
+	
+	//------- Setter -----------------------------------------------------
+	
 	/**
 	 * @param NULL $_contactId
 	 */
 	public function setContactId($contactId) {
 		$result = self::testContactId($contactId);
 		if($result !== FALSE)$this->_insertData[self::SP_CONTACT_ID] = $result;
+		return $result;
+	}
+	public function setAccessCreateId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_CREATE] = $result;
+		return $result;
+	}
+	public function setAccessEditId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_EDIT] = $result;
 		return $result;
 	}
 	
@@ -74,7 +91,7 @@ class Email extends DBTable {
 	}
 	
 	
-	
+	//------- Testing -----------------------------------------------------	
 
 	public static function testEmail($value){
 		require_once 'Zend/Validate/EmailAddress.php';
@@ -96,23 +113,21 @@ class Email extends DBTable {
 	
 
 	
-	public function updateData($id){
-		if($this->_email !== NULL){
-			$data = $this->generateDate();
-			$where = $this->getAdapter()->quoteInto( self::SP_ID."= ?", $id);
-			$this->update($data, $where);
-		}
-	}
+
 	
 	
-	
-	public function insertDataFull($contactId){
+	public function insertDataFull($accessId, $contactId, $data = array()){
 		$primaryKey = NULL;
 		
-		// setzen der Pflichtfelder
 		$contactId = $this->setContactId($contactId);
 		
+		$this->setAccessCreateId($accessId);
+		$this->setAccessEditId($accessId);
 		
+		if(array_key_exists("adress",$data)) $this->setEmail($data["adress"]);
+		if(array_key_exists("text",$data)) $this->setText($data["text"]);
+		
+		//Testen auf plichtfelder
 		if($contactId !== NULL && $this->getEmail() !== NULL){
 
 			$primaryKey = $this->insert($this->_insertData);
@@ -122,7 +137,13 @@ class Email extends DBTable {
 	
 	
 	
+	public function insert($data){
+		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
+		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+
+		return  parent::insert($data);
 	
+	}
 	
 	
 	
@@ -131,7 +152,13 @@ class Email extends DBTable {
 	
 	}
 	
-	
+	public function updateData($id){
+		if($this->_email !== NULL){
+			$data = $this->generateDate();
+			$where = $this->getAdapter()->quoteInto( self::SP_ID."= ?", $id);
+			$this->update($data, $where);
+		}
+	}
 	
 }
 

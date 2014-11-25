@@ -54,12 +54,10 @@ class ServiceContact extends AService {
 		$spA["firma"] = "firma";
 		$spA["position"] = "position";
 		
-		
 
-	
 		$resortSel->from(array('c' => "contacts") ,$spA);
 
-		
+	
  		
  			
  		require_once 'db/contact/address/Address.php';
@@ -67,23 +65,24 @@ class ServiceContact extends AService {
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
  		$adressSpaltenA['a_strasse'] = "strasse";
- 		if( array_key_exists('adr_plz',$where) || array_key_exists("adr_ort", $where) || array_key_exists("adr_strasse", $where) ){	
- 			$resortSel->joinLeft(array('a'=>"contact_address"), "c.id = a.contacts_id", $adressSpaltenA );
+ 		if( !empty($where["zip"]) || !empty($where["ort"]) || !empty($where["street"]) ){	
+ 			$adressJoin = "c.id = a.contacts_id";
  		}else {
- 			$resortSel->joinLeft(array('a'=>"contact_address"), "c.main_contact_address_id = a.id", $adressSpaltenA );
+ 			$adressJoin ="c.main_contact_address_id = a.id";
  		}
+		$resortSel->joinLeft(array('a'=>"contact_address"),$adressJoin , $adressSpaltenA );
  		
- 		
- 
- 		$phoneSpaltenA = array();
- 		$phoneSpaltenA['p_art'] = "art";
- 		$phoneSpaltenA['p_number'] = "number";
- 		$phoneSpaltenA['p_text'] = "text";
- 		if( array_key_exists('phone_art',$where) || array_key_exists("phone_number", $where) || array_key_exists("phone_text", $where) ){
- 			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.id = p.contacts_id", $phoneSpaltenA );
- 		}else {
- 			$resortSel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id", $phoneSpaltenA );
- 		}
+ 		// Join der Email
+ 		$mailSpaltenA = array("m_adress" => "mailadress");
+ 		!empty($where['email'])  ? $emailJoin = "c.id = m.contacts_id": $emailJoin = "c.main_contact_email_id = m.id";
+		$resortSel->joinLeft(array('m'=>"contact_email"),$emailJoin, $mailSpaltenA );
+		
+		// Join der Email
+		$mailSpaltenA = array("p_number" => "number");
+		!empty($where['phonenumber'])  ? $phoneJoin = "c.id = p.contacts_id": $phoneJoin = "c.main_contact_email_id = p.id";
+		$resortSel->joinLeft(array('p'=>"contact_phone"),$phoneJoin, $mailSpaltenA );
+		
+
 		
 // 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){
 // 			require_once 'db/resort/resort_orte.php';
@@ -91,10 +90,8 @@ class ServiceContact extends AService {
 // 		}
 	
 // 		if( in_array('usercreate_name',$spalten) ){
-// 			require_once 'db/contact/contact_access.php';
-// 			require_once 'db/contact/contacts.php';
-// 			$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
-// 			$resortSel->joinLeft(array('c'=>contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
+// 			$resortSel->joinLeft(array('u'=>"sys_access"), "c.access_create = u.guid",array("access_create_guid"=>"u.guid") );
+// 			//$resortSel->joinLeft(array('c2'=>"contacts"), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c2.first_name," ",c2.last_name )' ) );
 // 		}
 	
 // 		if( in_array('useredit_name',$spalten) ){
@@ -117,35 +114,41 @@ class ServiceContact extends AService {
 	
  		// 		$resortSel->where("r.name=?", $name);
 		$resortSel->where("c.deleted = ?", 0);
-			
+
+ 		// suche nach Namen
+ 		if(!empty($where["uid"]))
+ 			$resortSel->where("c.uid LIKE ?", $where["uid"]);
+ 		
 		// suche nach Namen
-		if(array_key_exists("last_name", $where))
+		if(!empty($where["last_name"]))
 			$resortSel->where("c.last_name LIKE ?", $where["last_name"]);
-		if(array_key_exists("first_name", $where))
+		if(!empty($where["first_name"]))
 			$resortSel->where("c.first_name LIKE ?", $where["first_name"]);
 	
-		if(array_key_exists("adr_plz", $where)){
+		
+		if(!empty($where["zip"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.plz LIKE ?", $where["adr_plz"]);
+			$resortSel->where("a.plz LIKE ?", $where["zip"]);
 		}
-		if(array_key_exists("adr_ort", $where)){
+		if(!empty($where["ort"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.ort LIKE ?", $where["adr_ort"]);
+			$resortSel->where("a.ort LIKE ?", $where["ort"]);
 		}
-		if(array_key_exists("adr_strasse", $where)){
+		if(!empty($where["street"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.strasse LIKE ?", $where["adr_strasse"]);
+			$resortSel->where("a.strasse LIKE ?", $where["street"]);
+		}
+		
+		if(!empty($where["email"])){
+			$groupIsOn = TRUE;
+			$resortSel->where("m.mailadress LIKE ?", $where["email"]);
 		}
 			
 			
 		$resortSel->limit($count,$offset);
-		//$resortSel->union(array("SELECT FOUND_ROWS()"));
-// 		if($groupIsOn)
-// 			$resortSel->group("c.id");
-	
- 		//$selectStr = $resortSel->__toString();
- //	$selectStr = $selectStr." UNION SELECT FOUND_ROWS();";
- 		//echo $selectStr;
+		$resortSel->group("c.id");
+//  		$selectStr = $resortSel->__toString();
+//  		echo $selectStr;
 		$resort = $db->fetchAll( $resortSel );
 	
 		return $resort;
@@ -154,46 +157,7 @@ class ServiceContact extends AService {
 	}
 	
 	
-	/**
-	 * Giebt die anzahl der Apartments zurück
-	 * @param array $where
-	 * @return array
-	 */
-	public function ActionCount( $where = array()){
-	
-		require_once 'db/contact/Contacts.php';
-		$db = Contacts::getDefaultAdapter();
-	
-		$searchListSel = $db->select ();
-		$searchListSel->from( array('c' => Contacts::getTableNameStatic() ), array( "count(c.id)") );
-	
-	
-	
-// 		// Suche nach Ort
-// 		if(array_key_exists("ort", $where)){
-// 			require_once 'db/resort/resort_orte.php';
-// 			$searchListSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
-// 		}
-		
-		$searchListSel->where("c.deleted = ?", 0);
-		
-		if(array_key_exists("last_name", $where))
-			$searchListSel->where("c.last_name LIKE ?", $where["last_name"]);
-		if(array_key_exists("first_name", $where))
-			$searchListSel->where("c.first_name LIKE ?", $where["first_name"]);
-			
-// 		// Suche nach Strasse
-// 		if(array_key_exists("strasse", $where))
-// 			$searchListSel->where("r.strasse LIKE ?", $where["strasse"]."%");
-	
-// 		if(array_key_exists("ort", $where))
-// 			$searchListSel->where("o.name LIKE ?", $where["ort"]."%");
-	
-		$allOrtCounts = $db->fetchOne($searchListSel);
-		return $allOrtCounts;
-	
-	
-	}
+
 	
 	/**
 	 * Giebt die Contactdaten eines Contactes zurück
@@ -445,7 +409,7 @@ class ServiceContact extends AService {
 		
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
-		
+		//FireBug::setDebug($fields);
 		// Prüfen des lastName
 		require_once 'db/contact/Contacts.php';
 		$lastName = Contacts::testLastName($lastName);
@@ -457,8 +421,67 @@ class ServiceContact extends AService {
 			try {
 		
 				
-				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName,$fields);
-					
+				$contactId =  $contTab->insertDataFull( $this->getAccess()->getId(), $lastName, $fields);
+				$contactUid = $contTab->getUid();
+				
+				// setzen von Adressen
+				$mainAdressId = NULL;
+				if(array_key_exists("adresses",$fields) && is_array($fields["adresses"]) ){
+					require_once 'db/contact/address/Address.php';
+					$adrTab = new Address();
+					foreach ($fields["adresses"] as $adrFields){
+						$adrTab->clearData();	
+						if(is_array($adrFields) && !empty($adrFields["ort"]) ){
+							$adressId = $adrTab->insertDataFull($this->getAccess()->getId(), $contactId, $adrFields);
+							if (!empty($adrFields["is_main"]) && $adressId !== NULL ){
+								if( strtoupper( $adrFields["is_main"]) == "TRUE" ) $mainAdressId = $adressId;
+							}
+						}
+					}
+				}
+				
+				// setzen der Telefonnummern
+				$mainPhoneId = NULL;
+				if(array_key_exists("numbers",$fields) && is_array($fields["numbers"]) ){
+					require_once 'db/contact/phone/Phone.php';
+					$phoneTab = new Phone();
+					foreach ($fields["numbers"] as $phoneFields){
+						if(is_array($phoneFields) && !empty($phoneFields["number"])){
+							$phoneId = $phoneTab->insertDataFull($this->getAccess()->getId(), $contactId, $phoneFields);
+							if (!empty($phoneFields["is_main"]) && $phoneId !== NULL ){
+								if(strtoupper ( $phoneFields["is_main"]) == "TRUE") $mainPhoneId = $phoneId;
+							}
+						}
+					}
+				}
+				
+				// setzen der Mails
+				$mainMailId = NULL;
+				if(array_key_exists("emails",$fields) && is_array($fields["emails"]) ){
+					require_once 'db/contact/email/Email.php';
+					$mailTab = new Email();
+					foreach ($fields["emails"] as $mailFields){
+						if(is_array($mailFields) && !empty($mailFields["adress"])){
+							$mailTab->setText($mailFields["text"]);
+							$mailTab->setEmail($mailFields["adress"]);
+							$mailId = $mailTab->insertDataFull($this->getAccess()->getId(), $contactId,$mailFields);
+							if (!empty($mailFields["is_main"])){
+								if(strtoupper ( $mailFields["is_main"]) == "TRUE") $mainMailId = $mailId;
+							}
+						}
+					}
+				}
+				
+				// Setzen der Haupt Adressen, Mails oder Telefonnummern
+				$updateData = array();
+				if($mainAdressId !== NULL) $updateData[Contacts::SP_ADRESS_ID] = $mainAdressId;
+				if($mainPhoneId !== NULL) $updateData[Contacts::SP_PHONE_ID] = $mainPhoneId;
+				if($mainMailId !== NULL) $updateData[Contacts::SP_EMAIL_ID] = $mainMailId;
+				if(count($updateData) > 0 )$contTab->update($updateData, "id = ".$contactId);
+	
+				
+				//$contactUid = NULL;
+				
 				// Nochmaliges Prüfen auf contactid
 				if($contactUid === NULL){
 					$contTab->getAdapter()->rollBack();
