@@ -82,35 +82,6 @@ class ServiceContact extends AService {
 		!empty($where['phonenumber'])  ? $phoneJoin = "c.id = p.contacts_id": $phoneJoin = "c.main_contact_email_id = p.id";
 		$resortSel->joinLeft(array('p'=>"contact_phone"),$phoneJoin, $mailSpaltenA );
 		
-
-		
-// 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){
-// 			require_once 'db/resort/resort_orte.php';
-// 			$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
-// 		}
-	
-// 		if( in_array('usercreate_name',$spalten) ){
-// 			$resortSel->joinLeft(array('u'=>"sys_access"), "c.access_create = u.guid",array("access_create_guid"=>"u.guid") );
-// 			//$resortSel->joinLeft(array('c2'=>"contacts"), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c2.first_name," ",c2.last_name )' ) );
-// 		}
-	
-// 		if( in_array('useredit_name',$spalten) ){
-// 			require_once 'db/contact/contact_access.php';
-// 			require_once 'db/contact/contacts.php';
-// 			$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
-// 			$resortSel->joinLeft(array('c2'=>contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-// 		}
-	
-// 		$spaltenInApartment = array();
-// 		if( in_array('apartment_namen',$spalten) ){
-// 			$spaltenInApartment['apartment_namen'] = 'GROUP_CONCAT(a.name )';
-// 		}
-	
-// 		if( in_array('apartment_count',$spalten) ){
-// 			require_once 'db/apartment/apartment.php';
-// 			$resortSel->joinLeft(array('a'=>apartment::getTableNameStatic()), "a.resort_id = r.id"  , $spaltenInApartment);
-// 			$resortSel->group("r.id");
-// 		}
 	
  		// 		$resortSel->where("r.name=?", $name);
 		$resortSel->where("c.deleted = ?", 0);
@@ -146,7 +117,7 @@ class ServiceContact extends AService {
 			
 			
 		$resortSel->limit($count,$offset);
-		$resortSel->group("c.id");
+		//$resortSel->group("c.id");
 //  		$selectStr = $resortSel->__toString();
 //  		echo $selectStr;
 		$resort = $db->fetchAll( $resortSel );
@@ -186,71 +157,67 @@ class ServiceContact extends AService {
 		
 		$spA = array();
 		$spA["uid"] = "uid";
+		//$spA["type"] = "type";
 		$spA["id_name"] = "id";
 		$spA["create_date"] = "edata";
 		$spA["edit_date"] = "vdata";
-		$spA["title_name"] = "title_name";
-		$spA["last_name"] = "last_name";
-		$spA["first_name"] = "first_name";
-		$spA["first_add_name"] = "first_add_name";
-		$spA["affix_name"] = "affix_name";
-
+		$spA["name_title"] = "title_name";
+		$spA["name_first"] = "first_name";
+		$spA["name_firstadd"] = "first_add_name";
+		$spA["name_last"] = "last_name";
+		$spA["name_affix"] = "affix_name";
 		
 		$spA["address_id"] = "main_contact_address_id";
 		$spA["phone_id"] = "main_contact_phone_id";
 		$spA["email_id"] = "main_contact_email_id";
-		
-		
-		
+
 // 		$spA["firma"] = "firma";
 // 		$spA["position"] = "position";
 		
-
-				
 		$sel = $db->select ();
 		$sel->from( array('c' => "contacts" ), $spA );
 		
 		if( in_array('usercreate_name',$spalten) ){
 			
-			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array("usercreate_guid"=>"guid") );
-			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('usercreate_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array("create_access_guid"=>"guid") );
+			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('create_access_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
 			require_once 'db/sys/access/sys_access.php';
-			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array("useredit_guid"=>"guid") );
-			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array("edit_access_guid"=>"guid") );
+			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('edit_access_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
 
 		
 		$adresSp = array();
-		$adresSp[] = "id";
-		$adresSp[] = "art";
-		$adresSp[] = "nameline";
-		$adresSp[] = "strasse";
-		$adresSp[] = "ort";
-		$adresSp[] = "plz";
-		$adresSp[] = "land";
-		$adresSp[] = "landpart";
-		$adresSp[] = "infotext";
+		$adresSp["adr_id"] = "id";
+		$adresSp["adr_art"] = "art";
+		$adresSp["adr_nameline"] = "nameline";
+		$adresSp["adr_street"] = "strasse";
+		$adresSp["adr_ort"] = "ort";
+		$adresSp["adr_zip"] = "plz";
+		$adresSp["adr_land"] = "land";
+		$adresSp["adr_landpart"] = "landpart";
+		$adresSp["adr_infotext"] = "infotext";
 		
 		//$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
 
 		
  		$phoneSp = array();
- 		$phoneSp[] = "id";
- 		$phoneSp[] = "art";
- 		$phoneSp[] = "number";
- 		$phoneSp[] = "text";
+ 		$phoneSp["phone_id"] = "id";
+ 		$phoneSp["phone_art"] = "art";
+ 		$phoneSp["phone_number"] = "number";
+ 		$phoneSp["phone_text"] = "text";
 		
  
  		//$sel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id" ,$phoneSp);
 
 		
  		$mailSp = array();
- 		$mailSp[] = "id";
- 		$mailSp[] = "mailadress";
- 		$mailSp[] = "text";
+ 		$mailSp["email_id"] = "id";
+ 		$mailSp["email_adress"] = "mailadress";
+ 		$mailSp["email_text"] = "text";
  		
 
  		//$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
@@ -268,11 +235,12 @@ class ServiceContact extends AService {
 	
 			
 			$mainAddressId = (int)$contactA["address_id"];
-			$adresSp["is_main"] = "IF(`id` = ".$mainAddressId.", 'TRUE', 'FALSE' ) ";
+			$adresSp["adr_is_main"] = "IF(`id` = ".$mainAddressId.", 'TRUE', 'FALSE' ) ";
 			
 			$selAdress = $db->select ();
 			$selAdress->from( "contact_address" , $adresSp );
 			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
+			
 
 			$contactA["adresses"] = $db->fetchAll($selAdress);
 		}
@@ -280,7 +248,7 @@ class ServiceContact extends AService {
 		if( in_array('all_phone',$spalten) ){
 			
 			$mainPhoneId = (int)$contactA["phone_id"];
-			$phoneSp["is_main"] = "IF(`id` = ".$mainPhoneId.", 'TRUE', 'FALSE' ) ";
+			$phoneSp["phone_is_main"] = "IF(`id` = ".$mainPhoneId.", 'TRUE', 'FALSE' ) ";
 					
 			$selPhone = $db->select ();
 			$selPhone->from( "contact_phone" , $phoneSp );
@@ -292,7 +260,7 @@ class ServiceContact extends AService {
 		if( in_array('all_email',$spalten) ){
 				
 			$mainEmailId = (int)$contactA["email_id"];
-			$mailSp["is_main"] = "IF(`id` = ".$mainEmailId.", 'TRUE', 'FALSE' ) ";
+			$mailSp["email_is_main"] = "IF(`id` = ".$mainEmailId.", 'TRUE', 'FALSE' ) ";
 				
 			$selEmail = $db->select ();
 			$selEmail->from( "contact_email" , $mailSp );
@@ -306,6 +274,8 @@ class ServiceContact extends AService {
 		unset($contactA["address_id"]);
 		unset($contactA["phone_id"]);
 		unset($contactA["email_id"]);
+		
+		FireBug::setDebug($contactA,"ServiceContact Single");
 		return $contactA;
 	
 	
@@ -365,17 +335,18 @@ class ServiceContact extends AService {
 	 * @citro_isOn true
 	 */
 	public function ActionGetToUpdate($contactUId) {
-
+		$myId = $this->_rightsAcl->getAccess()->getId(); // ist für die Personaliesierung der veränderung
 	
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-		$servContUpd = new ServiceContactUpdateHelper($contactUId);
+		$servContUpd = new ServiceContactUpdateHelper($contactUId,$myId);
+		
 		// Inizialisieren des Update Reposetorys
 		require_once 'citro/update/SelectFactory.php';
 		$dbupdateReposetory = new SelectFactory( DBConnect::getConnect(),$servContUpd );
 		//$daten = $dbupdateReposetory->toUpdate();
 	
-//		FireBug::setDebug($dbupdateReposetory);
+
 
 		require_once 'citro/update/UpdateHelpFunc.php';
 		//$backArray = array("title","first_name","first_add_name","last_name","affix_name","uid","edata","vdata");
@@ -387,17 +358,7 @@ class ServiceContact extends AService {
 	
 	}
 	
-	/**
-	 * Ist für das Update einer Adresse
-	 *
-	 * @param string $contactUid
-	 * @param string $hashKey
-	 * @param array $data
-	 * @citro_isOn true
-	 */
-	public function ActionUpdateAdress(){
-	
-	}
+
 	/**
 	 * Ist für das Update der eigenen Daten
 	 *
@@ -407,13 +368,14 @@ class ServiceContact extends AService {
 	 * @citro_isOn true
 	 */
 	public function ActionUpdateData($contactUid,$hashKey, $data) {
-	//$this->getResource()->exist("Group")
+		
+		$myId = $this->_rightsAcl->getAccess()->getId(); // ist für die Personaliesierung der veränderung
+
 		// Inizialiseren eines ServiceContactUpdates das die Schnitstelle DBIUpdate enthällt
 		require_once 'service/Contact/ServiceContactUpdateHelper.php';
-		$servContUpd = new ServiceContactUpdateHelper($contactUid);
+		$servContUpd = new ServiceContactUpdateHelper($contactUid,$myId);
 
 		require_once 'citro/update/ChronologicalFactory.php';
-		$myId = $this->_rightsAcl->getAccess()->getId(); // ist für die Personaliesierung der veränderung
 		$dbCon = DBConnect::getConnect();
 		$dbupdateReposetory = new ChronologicalFactory(	"MainContact",$myId,$dbCon,$servContUpd );
 				
@@ -435,7 +397,7 @@ class ServiceContact extends AService {
 		
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
-		//FireBug::setDebug($fields);
+		FireBug::setDebug($fields,"ServContact New Fields");
 		// Prüfen des lastName
 		require_once 'db/contact/Contacts.php';
 		$lastName = Contacts::testLastName($lastName);
@@ -457,10 +419,10 @@ class ServiceContact extends AService {
 					$adrTab = new Address();
 					foreach ($fields["adresses"] as $adrFields){
 						$adrTab->clearData();	
-						if(is_array($adrFields) && !empty($adrFields["ort"]) ){
+						if(is_array($adrFields) && !empty($adrFields["adr_ort"]) ){
 							$adressId = $adrTab->insertDataFull($this->getAccess()->getId(), $contactId, $adrFields);
-							if (!empty($adrFields["is_main"]) && $adressId !== NULL ){
-								if( strtoupper( $adrFields["is_main"]) == "TRUE" ) $mainAdressId = $adressId;
+							if (!empty($adrFields["adr_is_main"]) && $adressId !== NULL ){
+								if( strtoupper( $adrFields["adr_is_main"]) == "TRUE" ) $mainAdressId = $adressId;
 							}
 						}
 					}
@@ -472,10 +434,11 @@ class ServiceContact extends AService {
 					require_once 'db/contact/phone/Phone.php';
 					$phoneTab = new Phone();
 					foreach ($fields["numbers"] as $phoneFields){
-						if(is_array($phoneFields) && !empty($phoneFields["number"])){
+						$phoneTab->clearData();
+						if(is_array($phoneFields) && !empty($phoneFields["phone_number"])){
 							$phoneId = $phoneTab->insertDataFull($this->getAccess()->getId(), $contactId, $phoneFields);
-							if (!empty($phoneFields["is_main"]) && $phoneId !== NULL ){
-								if(strtoupper ( $phoneFields["is_main"]) == "TRUE") $mainPhoneId = $phoneId;
+							if (!empty($phoneFields["phone_is_main"]) && $phoneId !== NULL ){
+								if(strtoupper ( $phoneFields["phone_is_main"]) == "TRUE") $mainPhoneId = $phoneId;
 							}
 						}
 					}
@@ -487,12 +450,13 @@ class ServiceContact extends AService {
 					require_once 'db/contact/email/Email.php';
 					$mailTab = new Email();
 					foreach ($fields["emails"] as $mailFields){
-						if(is_array($mailFields) && !empty($mailFields["adress"])){
-							$mailTab->setText($mailFields["text"]);
-							$mailTab->setEmail($mailFields["adress"]);
+						$mailTab->clearData();
+						if(is_array($mailFields) && !empty($mailFields["email_adress"])){
 							$mailId = $mailTab->insertDataFull($this->getAccess()->getId(), $contactId,$mailFields);
-							if (!empty($mailFields["is_main"])){
-								if(strtoupper ( $mailFields["is_main"]) == "TRUE") $mainMailId = $mailId;
+							if (!empty($mailFields["email_is_main"])){
+								if(strtoupper ( $mailFields["email_is_main"]) == "TRUE"){ $mainMailId = $mailId;
+								
+								}
 							}
 						}
 					}

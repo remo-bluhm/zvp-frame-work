@@ -7,31 +7,34 @@
  *
  * @author:
 */
-class apartment extends DBTable {
+class Apartment extends DBTable {
+	protected $_name = 'apartment';
 	
-	protected $_TableName = "apartment";
 	const SP_ID = "id";
 	
-	const SP_OWNER_ID = "contact_id";
-	const SP_ZIMMER_ART_ID = "art_id";
+	const SP_OWNER_ID = "owner_id";
+	const SP_APARTM_ART_ID = "art_id";
 	const SP_BOOKINGKONTAKT_ID = "bookingcontact_id";
 	const SP_RESORT_ID = "resort_id";
+	const SP_APARTM_NAME = "name";// ist ein einmaliger Wer für das zimmer der keine lerrzeichen enthalten darf oder sonderzeichen auser minus
 	
 	
 	
 	const SP_DATA_CREATE = "date_create";
 	const SP_DATA_EDIT = "date_edit";
-	const SP_USER_CREAT = "user_creat";
-	const SP_USER_EDIT = "user_edit";
+	const SP_ACCESS_CREAT = "user_creat";
+	const SP_ACCESS_EDIT = "user_edit";
 	
 	
 	const SP_SPERR = "sperre";
 	const SP_VISIBIL = "visibil";
 	const SP_DELETED = "deleted";
 	
-	const SP_GG_TYPE = "gg_typ";
+	const SP_GG_TYPE = "gg_typ"; // VertragsArt
 	const SP_ADR_ZUSATZ = "adr_zusatz";// ist für zb. woh1 oder...
-	const SP_ADR_NAME = "name";
+	//const SP_ADR_NAME = "name"; 
+	
+	const SP_ADR_ORT = "orts_id";
 	
 	const SP_MIN_MZEIT = "mi_mzeit";
 	const SP_ANR_TAGE = "anr_tage";
@@ -39,65 +42,106 @@ class apartment extends DBTable {
 	const SP_ZUS_BETTEN = "zubett";
 	
 	const SP_PERSON_MAX = "max_person";
-	
 	const SP_VERPF_ART = "verpf_art";
-	
 	const SP_KURZTEXT = "kurztext";
-	
 	const SP_PREIS_ENDREINIGUNG = "preis_endreinigung"; // sollte hier auch raus 
-	
 	const SP_KIND_BETT = "kindbett"; // Ist nicht mehr vorhanen
-	
-	
-	
+
 	const SP_PET_ALLOW = "pet_allow";
 	const SP_PET_ALLOW_TEXT = "pet_text";
-
 		
 	const SP_BA_DUSCHE = "dusche";
 	const SP_BA_WANNE = "bad";
 	const SP_BA_WC = "wc";
 	
-	
-	
 	const SP_ENTF_MAIN = "entf_main"; // sollte auch in resourt verschoben werden
 	
 	
+	private $_insertData = array();
+	
+	public function clearData(){
+		$this->_insertData = array();
+	}
+	
+	public function setName($value){
+		$result = self::testApartmName($value);
+		if($result !== NULL)$this->_insertData[self::SP_APARTM_NAME] = $result;
+		return $result;
+	}
+	public function setArt($value){
+		$result = self::testApartmentArt($value);
+		if($result !== NULL)$this->_insertData[self::SP_APARTM_ART_ID] = $result;
+		return $result;
+	}
+	public function setOwnerId($value){
+		$result = DBTable::testId($value);
+		if($result !== NULL)$this->_insertData[self::SP_OWNER_ID] = $result;
+		return $result;
+	}
+	public function setBookingontId($value){
+		$result = DBTable::testId($value);
+		if($result !== FALSE)$this->_insertData[self::SP_TYPE] = $result;
+		return $result;
+	}
+	public function setResourtId($value){
+		$result = DBTable::testId($value);
+		if($result !== FALSE)$this->_insertData[self::SP_TYPE] = $result;
+		return $result;
+	}
+	public function setOrtId($value){
+		$result = DBTable::testId($value);
+		if($result !== FALSE)$this->_insertData[self::SP_] = $result;
+		return $result;
+	}
+	public function setAccessCreateId($value){
+		$result = DBTable::testId($value);
+		if($result !== FALSE)$this->_insertData[self::SP_DATA_CREATE] = $result;
+		return $result;
+	}
+	public function setAccessEditId($value){
+		$result = DBTable::testId($value);
+		if($result !== FALSE)$this->_insertData[self::SP_DATA_EDIT] = $result;
+		return $result;
+	}
+	
+	
 
 	
-	//const SP_SPEC_ KURZTEXT = "kurztext";
-	
-	
-	
-	
-	const VERPFART_VULL = "V";
-	const VERPFART_HALV = "H";
-	const VERPFART_BREAKFAST = "B";
-	
-	const OUTSITEAREA_BALCONY = "BAL";
-	const OUTSITEAREA_TERRACE = "TER";
-	const OUTSITEAREA_GARDEN = "GAR";
 
 	
+	public function insertDataFull($accessId,$name,$ownerId,    $data=array()){
+		// Die Pflichtparameter
+		$this->setAccessCreateId($accessId);
+		
+		$apartmName = $this->setName($name);
+		
+		$resultFind = $this->exist($name);
+		
+		$ownerIdValue = $this->setOwnerId($ownerId);
+		
+		if($apartmName !== NULL  && $resultFind === FALSE ){
+			return $this->insert($this->_insertData);
+		}else{
+			return NULL;
+			//@TODO hier kann noch ein Fehler gesetzt werden
+		}
+	}
 	
-// 	public function getZimmerBuNr($ObjNr, $ZimNr = null) {
-		
-// 		$select = $this->_DBCon->select ();
-		
-// 		// Hinzuf�gen einer FROM Bedingung
-// 		$select->FROM ( $this->getDBTableName () );
-// 		$select->where ( zvp_zimmer::SP_OBJ_NR . " = ?", $ObjNr, 'INTEGER' );
-// 		if ($ZimNr != null) {
-// 			$select->where ( zvp_zimmer::SP_ZIM_NR . " = ?", $ZimNr, 'INTEGER' );
-// 		}
-		
-// 		// echo $select->__toString();
-// 		$back = $select->query ();
-		
-// 		$All = $back->fetchAll ();
-		
-// 		return $All;
-// 	}
+	public function insert($data){
+		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
+		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+		return  parent::insert($data);
+	}
+	
+	/**
+	 * Findet ein Apartment anhand seines Namens
+	 * @param string $name
+	 * @return string|FALSE 
+	 */
+	public function exist($name){
+		$value = DBConnect::getConnect()->fetchOne("select id from apartment where name='$name'");
+		return $value;
+	}
 	
  	
  	public function setNewZimmer($userId, $ownerId, $resortId, $artId, $bookingId, $visibil = TRUE, $data = array() ) {
@@ -152,10 +196,18 @@ class apartment extends DBTable {
 		return $zimmerRow;
 	}
 	
+	public static function testApartmentArt($value){
+		if(is_int($value) && $value < 100 ){
+			return $value;
+		}
+		return NULL;
+	}
 	
-	
-	public static function testOwnerId($value){
-		return $value;
+	public static function testApartmName($value){
+		if(is_string($value)&& strlen($value) < 150 ){
+			return $value;
+		}
+		return NULL;
 	}
 	
 	public static function testGastgeberType($value){
@@ -172,12 +224,7 @@ class apartment extends DBTable {
 		return NULL;
 	}
 	
-	public static function testAdressName($value){		
-		if(is_string($value)&& strlen($value) < 150 ){
-			return $value;
-		}
-		return NULL;
-	}
+
 	public static function testMinMietZeit($value){
 		if(is_int($value) && $value < 100 ){
 			return $value;
@@ -244,7 +291,7 @@ class apartment extends DBTable {
 	
 	}
 	public static function testKurtztext($value){
-		if(is_d ($value) && strlen($value) < 255 ){
+		if(is_string($value) && strlen($value) < 255 ){
 			return $value;
 		}
 		return NULL;
@@ -404,6 +451,41 @@ class apartment extends DBTable {
 // 		return false;
 // 	}
 
+	//const SP_SPEC_ KURZTEXT = "kurztext";
+	
+	
+	
+	
+	// 	const VERPFART_VULL = "V";
+	// 	const VERPFART_HALV = "H";
+	// 	const VERPFART_BREAKFAST = "B";
+	
+	// 	const OUTSITEAREA_BALCONY = "BAL";
+	// 	const OUTSITEAREA_TERRACE = "TER";
+	// 	const OUTSITEAREA_GARDEN = "GAR";
+	
+	
+	
+	// 	public function getZimmerBuNr($ObjNr, $ZimNr = null) {
+	
+	// 		$select = $this->_DBCon->select ();
+	
+	// 		// Hinzuf�gen einer FROM Bedingung
+	// 		$select->FROM ( $this->getDBTableName () );
+	// 		$select->where ( zvp_zimmer::SP_OBJ_NR . " = ?", $ObjNr, 'INTEGER' );
+	// 		if ($ZimNr != null) {
+	// 			$select->where ( zvp_zimmer::SP_ZIM_NR . " = ?", $ZimNr, 'INTEGER' );
+	// 		}
+	
+	// 		// echo $select->__toString();
+	// 		$back = $select->query ();
+	
+	// 		$All = $back->fetchAll ();
+	
+	// 		return $All;
+	// 	}
+	
+	
 }
 
 ?>

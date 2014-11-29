@@ -93,8 +93,8 @@ class ServiceResort extends AService {
 		}
 		
 		if( in_array('apartment_count',$spalten) ){
-			require_once 'db/apartment/apartment.php';
-			$resortSel->joinLeft(array('a'=>apartment::getTableNameStatic()), "a.resort_id = r.id"  , $spaltenInApartment);
+			require_once 'db/apartment/Apartment.php';
+			$resortSel->joinLeft(array('a'=>Apartment::getTableNameStatic()), "a.resort_id = r.id"  , $spaltenInApartment);
 			$resortSel->group("r.id");
 		}
 		

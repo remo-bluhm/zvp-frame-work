@@ -5,12 +5,15 @@ require_once 'citro/update/UpdateDb.php';
 class ServiceContactUpdateHelper extends UpdateDb{
 	
 	private $_contactId = NULL;
+	private $_accessId = NULL;
 	
 	/**
 	 * @param sting $ContactId Die contact Id
 	 */
-	function __construct($ContactId){
+	function __construct($ContactId,$accessId){
+		
 		$this->_contactId = $ContactId;
+		$this->_accessId = $accessId;
 	}
 
 
@@ -35,100 +38,139 @@ class ServiceContactUpdateHelper extends UpdateDb{
 	 */
 	public function update($updateData) {
 		
-
+		FireBug::setDebug($updateData,"inupdate");
 		
-		$contData = array(
-				"title_name",
-				"first_add_name",
-				"first_name",
-				"last_name",
-				"affix_name"
-		);
-		$contUpdateData = array_intersect_key($updateData, array_flip($contData));
+		
+		if(!is_array($updateData))$updateData = array();
+		
+
+		// Bereitstellen der Contact Tabelle
 		$contTab = new contacts();
-		$contUpdateData['edata'] = $contTab->getDateTime();
-		
-
 		$contTab->setDefaultAdapter($this->_connect);
-		$sel = $contTab->select();
-		$sel->where("uid = ?", $this->_contactId);
-		$contRow = $contTab->fetchRow($sel);
-		$contRow->setFromArray($contUpdateData);
-			
 		
-		$contId = $contRow->offsetGet("id");	
-		$mainAddressId = $contRow->offsetGet("main_contact_address_id");	
-		$mainPhoneId = $contRow->offsetGet("main_contact_phone_id");	
-		$mainMailId = $contRow->offsetGet("main_contact_email_id");	
+		// Hollen der Id des Contactes zu der vorgegebenen Uid für abgleichungen der Adressen... 
+		$contId = $contTab->exist($this->_contactId);
+		// Einschreiben des verändernden Aceesses
+		$contTab->setAccessEditId($this->_accessId);
+		
+		
+		
+		
+		
+ 		// Adresse Update
+  		if(array_key_exists("adresses", $updateData) && is_array($updateData["adresses"])){
+	 		require_once 'db/contact/address/Address.php';
+	 		$address = new Address();
+	 		$address->setDefaultAdapter($this->_connect);
 
-		
-		
-		// Adresse Update
-		
-		require_once 'db/contact/address/Address.php';
-		$address = new Address();
-		$address->setDefaultAdapter($this->_connect);
-		
-		if(isset($updateData['adr_art'])) 		$address->setArt($updateData['adr_art']);
-		if(isset($updateData['adr_ort'])) 		$address->setOrt($updateData['adr_ort']);
-		if(isset($updateData['adr_plz'])) 		$address->setPlz($updateData['adr_plz']);
-		if(isset($updateData['adr_strasse'])) 	$address->setStreet($updateData['adr_strasse']);
-		if(isset($updateData['adr_land'])) 		$address->setLand($updateData['adr_land']);
-		if(isset($updateData['adr_landpart'])) 	$address->setLandpart($updateData['adr_landpart']);
-		
-		
-		if($mainAddressId !== NULL && $mainAddressId > 0){
-			$address->updateData($mainAddressId);		// update
-		
-		
-		}else{
-			
-			if( Address::testOrt( $updateData["adr_ort"]) !== FALSE ){
-				$address->setArt("main");
-				$addrPrimId = $address->insertData($contId);			// Insert
-				$contRow->offsetSet("main_contact_address_id", $addrPrimId);
-			}
-		}
-		
-		// Phone Update
-		
-		require_once 'db/contact/phone/Phone.php';
-		$phone = new Phone();
-		$phone->setDefaultAdapter($this->_connect);
-		
-		if(isset($updateData['phone_number'])) 	$phone->setNumber($updateData['phone_number']);
-		if(isset($updateData['phone_text'])) 	$phone->setText($updateData['phone_text']);
-		
-		if($mainPhoneId !== NULL && $mainPhoneId > 0){
-			$phone->updateData($mainPhoneId);		// update
-		}else{
-			if( Phone::testPhoneNumber( $updateData["phone_number"]) !== FALSE ){
-				$phone->setArt("main");
-				$newPhoneId = $phone->insertData($contId);			// Insert
-				$contRow->offsetSet("main_contact_phone_id", $newPhoneId);
-			}
-		}
+ 			foreach ($updateData["adresses"] as $adr){
 	
-		// Email Update
+ 				$address->clearData();
+ 				if(is_array($adr) ){
+ 				// Prüfen auf vorhanden sein der id um ein update auszuführen zu können
+	 				if(array_key_exists("adr_id", $adr) && $adr["adr_id"] > 0 ){
+	
+	 					//Testen auf Main Adresse und setzen
+	 					if(array_key_exists("is_main", $adr))if(strtoupper( $adr["is_main"]) == "TRUE" )$contTab->setMainAdressId($adr["adr_id"]);
+	
+	 					// Updaten der Adresse
+	 					$address->updateDataFull($adr);
+	 				}else {
+	 					//insert
+	 					$adressInsertId = $address->insertDataFull($this->_accessId, $contId,$adr);
+	 					//Testen auf Main Adresse und setzen
+	 					if(array_key_exists("is_main", $adr))if(strtoupper( $adr["is_main"]) == "TRUE" )$contTab->setMainAdressId($adressInsertId);
+	 					
+	 				}
+ 				}
+ 			}
+  		}
+  		
+  		// Phone Update
+  		if(array_key_exists("numbers", $updateData) && is_array($updateData["numbers"])){
+			
+  			require_once 'db/contact/phone/Phone.php';
+			$phone = new Phone();
+			$phone->setDefaultAdapter($this->_connect);
+  		
+  			foreach ($updateData["numbers"] as $numb){
+
+  				$phone->clearData();
+  				if(is_array($numb)){
+  				
+  					// Prüfen auf vorhanden sein der id um ein update auszuführen zu können
+	  				if(array_key_exists("phone_id", $numb) && $numb["phone_id"] > 0  ){
+	  					//Testen auf Main Adresse und setzen
+	  					if(array_key_exists("is_main", $numb))if(strtoupper( $numb["is_main"]) == "TRUE" )$contTab->setMainPhoneId($numb["phone_id"]);
+	  				
+	  					// Updaten der Adresse
+	  					$phone->updateDataFull($numb);
+	  				}else {
+	  				
+	  					//insert
+			  			$phoneInsertId = $phone->insertDataFull($this->_accessId, $contId,$numb);
+	  					//Testen auf Main Adresse und setzen
+	  					if(array_key_exists("is_main", $numb))if(strtoupper( $numb["is_main"]) == "TRUE" )$contTab->setMainPhoneId($phoneInsertId);
+	  		
+	  				}
+	  			}
+  			}
+  		}
 		
-		require_once 'db/contact/email/Email.php';
-		$email = new Email();
-		$email->setDefaultAdapter($this->_connect);
+  		
+  		// Email Update
+  		if(array_key_exists("emails", $updateData) && is_array($updateData["emails"])){
+  				
+			require_once 'db/contact/email/Email.php';
+			$email = new Email();
+			$email->setDefaultAdapter($this->_connect);
+  		
+  			foreach ($updateData["emails"] as $maild){
+  	
+  				$email->clearData();
+  				if(is_array($maild)){
+  	
+  					// Prüfen auf vorhanden sein der id um ein update auszuführen zu können
+  					if(array_key_exists("email_id", $maild) && $maild["email_id"] > 0  ){
+  						//Testen auf Main Adresse und setzen
+  						if(array_key_exists("is_main", $maild))if(strtoupper( $maild["is_main"]) == "TRUE" )$contTab->setMainEmailId($maild["email_id"]);
+  							
+  						// Updaten der Adresse
+  						$email->updateDataFull($maild);
+  					}else {
+  							
+  						// insert
+  						$mailInsertId = $email->insertDataFull($this->_accessId, $contId,$maild);
+  						// Testen auf Main Adresse und setzen
+  						if(array_key_exists("is_main", $maild))if(strtoupper( $maild["is_main"]) == "TRUE" )$contTab->setMainEmailId($mailInsertId);
+  						 
+  					}
+  				}
+  			}
+  		}
 		
-		if(isset($updateData['mail_adress'])) 	$email->setEmail($updateData['mail_adress']);
-		if(isset($updateData['mail_text'])) 	$email->setText($updateData['mail_text']);
+		// Update durchfüren
+		$contTab->updateDataFull($this->_contactId, $updateData);	
 		
-		if($mainMailId !== NULL && $mainMailId > 0){
-			$email->updateData($mainMailId);		// update
-		}else{
-			if( Email::testEmail( $updateData["mail_adress"]) !== FALSE ){
-				$newMailId = $email->insertData($contId);			// Insert
-				$contRow->offsetSet("main_contact_email_id", $newMailId);
-			}
-		}
+
+
+
+
+  		
+
+
+// 		if(isset($updateData['mail_adress'])) 	$email->setEmail($updateData['mail_adress']);
+// 		if(isset($updateData['mail_text'])) 	$email->setText($updateData['mail_text']);
 		
+// 		if($mainMailId !== NULL && $mainMailId > 0){
+// 			$email->updateData($mainMailId);		// update
+// 		}else{
+// 			if( Email::testEmail( $updateData["mail_adress"]) !== FALSE ){
+// 				$newMailId = $email->insertData($contId);			// Insert
+// 				$contRow->offsetSet("main_contact_email_id", $newMailId);
+// 			}
+// 		}
 		
-		$contRow->save();
 		
 		
 		

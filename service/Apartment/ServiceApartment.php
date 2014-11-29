@@ -26,6 +26,56 @@ class ServiceApartment extends AService {
 	}
 
 	
+	
+	/**
+	 * Setzt einen neuenes Apartment
+	 *
+	 * @param string $apartmName  Name des Apartments
+	 * @param string $ownerUid  uid des Besizers(vermieters) dieser muss ein vorher angelegter Vermieter sein
+	 * @param array $fields Die Einzuschreibenden Felder
+	 * @return citro_list 
+	 *
+	 */
+	public function ActionNew($apartmName,$ownerUid, $fields = array()) {
+	
+		FireBug::setDebug($fields,"ServiceApartment::ActionNew->fields");
+
+		
+		
+		require_once 'db/apartment/Apartment.php';
+		$apartmName = Apartment::testApartmName($apartmName);
+		
+		require_once 'db/contact/Contacts.php';
+		$ownerUid = Contacts::testUID($ownerUid);
+		if($ownerUid === NULL  )return FALSE;
+		// falls keiner gefunden wurde dann false ansonsten die id
+		$ownerId = DBConnect::getConnect()->fetchOne("select id from contacts where uid='$ownerUid' and type='HIRER';");
+			
+		
+		if( $apartmName !== NULL && $ownerId !== FALSE  ){
+			$apartmTab = new Apartment();
+			$apartmId = $apartmTab->insertDataFull($this->_rightsAcl->getAccess()->getId(), $apartmName, $ownerId, $fields);
+			if($apartmId !== NULL){
+				
+				return TRUE;
+				
+			}
+		}
+		return FALSE;
+		
+	
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	/**
 	 * Giebt eine Liste von Apartments zurück
@@ -35,13 +85,13 @@ class ServiceApartment extends AService {
 	 * @param array $spalten
 	 * @return array
 	 */
-	public function ActionGetList($count, $offset, $where = array(), $spalten = array()){
+	public function ActionList($count, $offset, $where = array(), $spalten = array()){
 
 
-		require_once 'db/apartment/apartment.php';
-		require_once 'db/ggnr/ggnr.php';
+		require_once 'db/apartment/Apartment.php';
+
 		
-		$db = apartment::getDefaultAdapter();
+		$db = Apartment::getDefaultAdapter();
 		
 		$sel = $db->select();
 		
@@ -57,57 +107,10 @@ class ServiceApartment extends AService {
 		
 
 		
-		$sel->from(array('a' => apartment::getTableNameStatic()), $spA );
-		
-		if( in_array('usercreate_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
-			require_once 'db/contact/Contacts.php';
-			$sel->joinLeft(array('u'=>sys_access::getTableNameStatic()), "a.user_create = u.guid ",array() );
-			$sel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
-		}
-		
-		if( in_array('useredit_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
-			require_once 'db/contact/Contacts.php';
-			$sel->joinLeft(array('u2'=>sys_access::getTableNameStatic()), "a.user_edit = u2.guid " ,array() );
-			$sel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-		}
-		
-		if( in_array('resort',$spalten)  || array_key_exists("ort", $where) ){
-			
-			require_once 'db/resort/resort.php';
-			$resortSpalten = array();
-			$resortSpalten["resort_name"] = "name";
-			$resortSpalten["resort_strasse"] = "strasse";
-			$sel->joinLeft(array('r'=>resort::getTableNameStatic()), "r.id = a.resort_id ",$resortSpalten );
-			
-			require_once 'db/resort/resort_orte.php';
-			$ortSpalten = array();
-			$ortSpalten["ort_name"] = "name";
-			$sel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", $ortSpalten );
-		
+		$sel->from(array('a' => "apartment"), $spA );
 	
-		}
-	
+		$sel->joinLeft(array('g'=>"ggnr"), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
 		
-		$sel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
-		
-
-		
-		
-		if(array_key_exists("ggnr_gg", $where))
-			$sel->where("g.gastgeber_nr = ?", $where["ggnr_gg"]);
-		
-		if(array_key_exists("ggnr_nr", $where))
-			$sel->where("g.zimmer_nr = ?", $where["ggnr_nr"]);
-		
-		if(array_key_exists("name", $where))
-			$sel->where("a.name LIKE ?", $where["name"]."%");
-		
-		if(array_key_exists("ort", $where))
-			$sel->where("o.name LIKE ?", $where["ort"]."%");
-	
-
 		$sel->limit($count,$offset);
 		$result = $db->fetchAll($sel);
 	
@@ -116,47 +119,47 @@ class ServiceApartment extends AService {
 	}
 	
 	
-	/**
-	 * Giebt die anzahl der Apartments zurück
-	 * @param array $where
-	 * @return array
-	 */
-	public function ActionCount( $where = array()){
-		require_once 'db/apartment/apartment.php';
-		$db = apartment::getDefaultAdapter();
+// 	/**
+// 	 * Giebt die anzahl der Apartments zurück
+// 	 * @param array $where
+// 	 * @return array
+// 	 */
+// 	public function ActionCount( $where = array()){
+// 		require_once 'db/apartment/apartment.php';
+// 		$db = apartment::getDefaultAdapter();
 		
-		$sel = $db->select();
-		$sel->from(array('a' => apartment::getTableNameStatic()),"count(a.id)" );
+// 		$sel = $db->select();
+// 		$sel->from(array('a' => apartment::getTableNameStatic()),"count(a.id)" );
 		
-		if(array_key_exists("ggnr_gg", $where) || array_key_exists("ggnr_nr", $where)){
-			require_once 'db/ggnr/ggnr.php';
-			$sel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array() );
-		}
-		if(array_key_exists("ort", $where) ){
-			require_once 'db/resort/resort.php';
-			require_once 'db/resort/resort_orte.php';
-			//require_once 'db/contact/contacts.php';'resort_ortid' => 'ort_id',
-			$sel->joinLeft(array('r'=>resort::getTableNameStatic()), "r.id = a.resort_id ",array() );
-			$sel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ()  );
-		}
+// 		if(array_key_exists("ggnr_gg", $where) || array_key_exists("ggnr_nr", $where)){
+// 			require_once 'db/ggnr/ggnr.php';
+// 			$sel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array() );
+// 		}
+// 		if(array_key_exists("ort", $where) ){
+// 			require_once 'db/resort/resort.php';
+// 			require_once 'db/resort/resort_orte.php';
+// 			//require_once 'db/contact/contacts.php';'resort_ortid' => 'ort_id',
+// 			$sel->joinLeft(array('r'=>resort::getTableNameStatic()), "r.id = a.resort_id ",array() );
+// 			$sel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ()  );
+// 		}
 	
 		
-		if(array_key_exists("ggnr_gg", $where))
-			$sel->where("g.gastgeber_nr = ?", $where["ggnr_gg"]);
+// 		if(array_key_exists("ggnr_gg", $where))
+// 			$sel->where("g.gastgeber_nr = ?", $where["ggnr_gg"]);
 		
-		if(array_key_exists("ggnr_nr", $where))
-			$sel->where("g.zimmer_nr = ?", $where["ggnr_nr"]);
+// 		if(array_key_exists("ggnr_nr", $where))
+// 			$sel->where("g.zimmer_nr = ?", $where["ggnr_nr"]);
 		
-		if(array_key_exists("name", $where))
-			$sel->where("a.name LIKE ?", $where["name"]."%");
+// 		if(array_key_exists("name", $where))
+// 			$sel->where("a.name LIKE ?", $where["name"]."%");
 		
-		if(array_key_exists("ort", $where))
-			$sel->where("o.name LIKE ?", $where["ort"]."%");
+// 		if(array_key_exists("ort", $where))
+// 			$sel->where("o.name LIKE ?", $where["ort"]."%");
 	
-		$allOrtCounts = $db->fetchOne($sel);
+// 		$allOrtCounts = $db->fetchOne($sel);
 				
-		return $allOrtCounts;
-	}
+// 		return $allOrtCounts;
+// 	}
 	
 
 	
@@ -170,19 +173,19 @@ class ServiceApartment extends AService {
 	 * @param string $name nach dem Gesucht werden soll
 	 * @return array|NULL
 	 */
-	public function ActionGetOne($name){
+	public function ActionSingle($name){
 	
 	
 	
 		require_once 'db/ggnr/ggnr.php';
 		require_once 'db/resort/resort.php';
-		require_once 'db/apartment/apartment.php';
+		require_once 'db/apartment/Apartment.php';
 		require_once 'db/resort/resort_orte.php';
 		require_once 'db/contact/contact_access.php';
 		require_once 'db/contact/Contacts.php';
 
 	
-		$db = apartment::getDefaultAdapter();
+		$db = Apartment::getDefaultAdapter();
 	
 	
 		$resortSel = $db->select ();
@@ -201,7 +204,7 @@ class ServiceApartment extends AService {
 	
 	
 
-		$resortSel->from(array('a' => apartment::getTableNameStatic()) ,$spA);
+		$resortSel->from(array('a' => Apartment::getTableNameStatic()) ,$spA);
 	
 		$resortSel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
 		
@@ -239,8 +242,8 @@ class ServiceApartment extends AService {
 	 */
 	public function ActionUpdate($name,$data){
 
-		require_once 'db/apartment/apartment.php';
-		$tab = new apartment();
+		require_once 'db/apartment/Apartment.php';
+		$tab = new Apartment();
 		$insData = array();
 		
 		if(isset($data["name"])){
@@ -286,11 +289,11 @@ class ServiceApartment extends AService {
 	public function ActionGetSearch($searchname, $max = 5, $areas = NULL){
 	
 	
-		require_once 'db/apartment/apartment.php';
-		$db = apartment::getDefaultAdapter();
+		require_once 'db/apartment/Apartment.php';
+		$db = Apartment::getDefaultAdapter();
 	
 		$searchListSel = $db->select ();
-		$searchListSel->from( array('a' => apartment::getTableNameStatic() ), array( "a.name") );
+		$searchListSel->from( array('a' => Apartment::getTableNameStatic() ), array( "a.name") );
 	
 	
 		$searchListSel->where("name LIKE ? " , $searchname."%");

@@ -83,6 +83,22 @@ class Contacts extends DBTable {
 		if($result !== FALSE)$this->_insertData[self::SP_ACCESS_EDIT] = $result;
 		return $result;
 	}
+	public function setMainAdressId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_ADRESS_ID] = $result;
+		return $result;
+	}
+	public function setMainPhoneId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_PHONE_ID] = $result;
+		return $result;
+	}
+	public function setMainEmailId($id){
+		$result = DBTable::testId($id);
+		if($result !== FALSE)$this->_insertData[self::SP_EMAIL_ID] = $result;
+		return $result;
+	}
+	
 	
 	/**
 	 * Enthällt die Uid wenn ich vorher ein Insert oder Select aufgerufen habe
@@ -90,6 +106,12 @@ class Contacts extends DBTable {
 	 */
 	public function getUid(){
 		if(array_key_exists(self::SP_UNID, $this->_insertData)) return $this->_insertData[self::SP_UNID];
+		return NULL;
+	}
+	
+	public static function testUID($value){
+		$value = (string)$value;
+		if(strlen($value) < 20 &&  strlen($value) > 12)return $value;
 		return NULL;
 	}
 	
@@ -136,7 +158,21 @@ class Contacts extends DBTable {
 
 	
  	
- 	
+ 	public function updateDataFull($uid, $data = array()){
+ 		if(!is_array($data))$data = array();
+ 		
+ 		if(self::testUID($uid) !== NULL){
+ 		
+ 			if(array_key_exists("name_title",$data)) 		$this->setTitle($data["name_title"]);
+ 			if(array_key_exists("name_first",$data)) 		$this->setFirstName($data["name_first"]);
+ 			if(array_key_exists("name_firstadd",$data)) 	$this->setFirstAddName($data["name_firstadd"]);
+ 			if(array_key_exists("name_last",$data)) 		$this->setLastName($data["name_last"]);
+ 			if(array_key_exists("name_affix",$data)) 		$this->setAffixName($data["name_affix"]);
+ 			
+ 			$where = $this->getAdapter()->quoteInto( self::SP_UNID."= ?", $uid);
+ 			$this->update($this->_insertData, $where);
+ 		}
+ 	}
  	
  	
 	/**
@@ -159,10 +195,10 @@ class Contacts extends DBTable {
 			array_key_exists("type",$data)?$this->setType($data["type"]):$this->setType(self::NOTSET);
 						
 			//name setzen
-			if(array_key_exists("title_name",$data)) 		$this->setTitle($data["title_name"]);
-			if(array_key_exists("first_name",$data)) 		$this->setFirstName($data["first_name"]);
-			if(array_key_exists("first_add_name",$data)) 		$this->setFirstAddName($data["first_add_name"]);
-			if(array_key_exists("affix_name",$data)) 		$this->setAffixName($data["affix_name"]);
+			if(array_key_exists("name_title",$data)) 		$this->setTitle($data["name_title"]);
+			if(array_key_exists("name_first",$data)) 		$this->setFirstName($data["name_first"]);
+			if(array_key_exists("name_firstadd",$data)) 		$this->setFirstAddName($data["name_firstadd"]);
+			if(array_key_exists("name_affix",$data)) 		$this->setAffixName($data["name_affix"]);
 				
 			// setzen der UID
 			$newUnId = NULL;
@@ -181,11 +217,23 @@ class Contacts extends DBTable {
 			}
 
  			//########### Einschreiben der Daten
- 			$contactId = $this->insert($this->_insertData);
-			return $contactId;			
+ 			return $this->insert($this->_insertData);			
 		}
 		return NULL; // da Plichtparameter LastName nicht gesetzt wurde			
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public function insert($data){
 		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
@@ -234,10 +282,17 @@ class Contacts extends DBTable {
 		return $value;
 	}
 	
+	/**
+	 * Findet ein Contact anhand seiner Uid und liefertseine Id
+	 * 
+	 * @param string $uid
+	 * @return string|FALSE
+	 */
 	public function exist($uid){
-		$value = DBConnect::getConnect()->fetchOne("select id from contacts where uid=$uid");
+		$value = DBConnect::getConnect()->fetchOne("select id from contacts where uid='$uid'");
 		return $value;
 	}
+
 	
 	/**
 	 * Findet einen Contact anhand seiner UID

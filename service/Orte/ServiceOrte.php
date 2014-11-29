@@ -52,12 +52,12 @@ class ServiceOrte extends AService {
 			
 		require_once 'db/resort/resort_orte.php';
 
-		require_once 'db/apartment/apartment.php';
+		require_once 'db/apartment/Apartment.php';
 
 		$db = resort_orte::getDefaultAdapter();
 		$ortListSel = $db->select ();
 		$ortListSel->from(array('o' => resort_orte::getTableNameStatic()) ,array('ort_name' , 'counts' => 'count(a.id)'));
-		$ortListSel->joinLeft(array('a'=>apartment::getTableNameStatic()), "o.ort_name = a.orts_name_key");
+		$ortListSel->joinLeft(array('a'=>Apartment::getTableNameStatic()), "o.ort_name = a.orts_name_key");
 		
 
 		$ortListSel->group("o.ort_name");
@@ -184,8 +184,8 @@ class ServiceOrte extends AService {
 		$ortListSel->from(array('o' => resort_orte::getTableNameStatic()) );
 		
 		
-		$ortListSel->joinLeft(array('u'=>sys_access::getTableNameStatic()), "o.usercreat = u.guid", array ('usercreate_guid' => 'u.guid'));
-		$ortListSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )', 'usercreate_id' => 'c.id' ));
+ 		$ortListSel->joinLeft(array('u'=>"sys_access"), "o.access_create = u.id", array ('usercreate_guid' => 'u.id'));
+ 		$ortListSel->joinLeft(array('c'=>'contacts'), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )', 'usercreate_id' => 'c.id' ));
 		
 		$ortListSel->limit($count,$offset);
 		$allOrts = $db->fetchAll( $ortListSel );
@@ -278,8 +278,8 @@ class ServiceOrte extends AService {
 		
 		$orteTab->update($data, $orteTab->getDefaultAdapter()->quoteInto("ort_name=?", $oldOrtName));
 		
-		require_once 'db/apartment/apartment.php';
-		$appTab = new apartment();
+		require_once 'db/apartment/Apartment.php';
+		$appTab = new Apartment();
 		$dataApp = array();
 		$dataApp['orts_name_key'] = $newOrtName;
 		$appTab->update($dataApp, $appTab->getDefaultAdapter()->quoteInto("orts_name_key=?", $oldOrtName));

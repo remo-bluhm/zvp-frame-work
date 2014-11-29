@@ -111,7 +111,19 @@ class Email extends DBTable {
 	
 	
 	
-
+	public function updateDataFull($data = array(), $id = NULL){
+	
+		if(!is_array($data))$data = array();
+		if(array_key_exists("email_id",$data)) 		$id = $data["email_id"];
+		if(array_key_exists("email_adress",$data)) $this->setEmail($data["email_adress"]);
+		if(array_key_exists("email_text",$data)) $this->setText($data["email_text"]);
+	
+		if(self::testId($id) !== FALSE){
+		
+			$where = $this->getAdapter()->quoteInto( self::SP_ID."= ?", $id);
+			$this->update($this->_insertData, $where);
+		}
+	}
 	
 
 	
@@ -121,15 +133,12 @@ class Email extends DBTable {
 		
 		$contactId = $this->setContactId($contactId);
 		
-		$this->setAccessCreateId($accessId);
-		$this->setAccessEditId($accessId);
 		
-		if(array_key_exists("adress",$data)) $this->setEmail($data["adress"]);
-		if(array_key_exists("text",$data)) $this->setText($data["text"]);
+		if(array_key_exists("email_adress",$data)) $this->setEmail($data["email_adress"]);
+		if(array_key_exists("email_text",$data)) $this->setText($data["email_text"]);
 		
 		//Testen auf plichtfelder
 		if($contactId !== NULL && $this->getEmail() !== NULL){
-
 			$primaryKey = $this->insert($this->_insertData);
 		}
 		return $primaryKey;
@@ -138,8 +147,7 @@ class Email extends DBTable {
 	
 	
 	public function insert($data){
-		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
-		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+
 
 		return  parent::insert($data);
 	

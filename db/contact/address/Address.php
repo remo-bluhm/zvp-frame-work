@@ -262,12 +262,25 @@ class Address extends DBTable {
 	
 
 	
-	public function updateData($id){
-		if($this->_ort !== NULL){
-			$data = $this->generateDate();	
+	public function updateDataFull($data,$id = NULL){
+	
+		if(!is_array($data))$data = array();
+		
+		if(array_key_exists("adr_id",$data)) 		$id = $data["adr_id"];
+		if(array_key_exists("adr_art",$data)) 		$this->setArt($data["adr_art"]);
+		if(array_key_exists("adr_nameline",$data)) 	$this->setNameLine($data["adr_nameline"]);
+		if(array_key_exists("adr_street",$data)) 	$this->setStreet($data["adr_street"]);
+		if(array_key_exists("adr_ort",$data)) 		$this->setOrt($data["adr_ort"]);
+		if(array_key_exists("adr_zip",$data)) 		$this->setZip($data["adr_zip"]);
+		if(array_key_exists("adr_land",$data)) 		$this->setLand($data["adr_land"]);
+		if(array_key_exists("adr_landpart",$data)) 	$this->setLandpart($data["adr_landpart"]);
+
+		if(self::testId($id) !== FALSE){
+	
 			$where = $this->getAdapter()->quoteInto( self::SP_ID."= ?", $id);
-			$this->update($data, $where);
-		}
+			$this->update($this->_insertData, $where);	
+		}	
+
 	}
 	
 
@@ -276,21 +289,17 @@ class Address extends DBTable {
 		$insertId = NULL;
 		
 		// Testen des Pflichtfeldes Contact Id oder abbruch
-		$contId = $this->setContactId($contactId);
-
-		$this->setAccessCreateId($accessId);
-		$this->setAccessEditId($accessId);
+		$contactId = $this->setContactId($contactId);
 		
-		if(array_key_exists("art",$data)) 		$this->setArt($data["art"]);
-		if(array_key_exists("adrline",$data)) 	$this->setNameLine($data["adrline"]);
-		if(array_key_exists("strasse",$data)) 	$this->setStreet($data["strasse"]);
-		if(array_key_exists("ort",$data)) 		$this->setOrt($data["ort"]);
-		if(array_key_exists("plz",$data)) 		$this->setZip($data["plz"]);
-		if(array_key_exists("land",$data)) 		$this->setLand($data["land"]);
-		if(array_key_exists("landpart",$data)) 	$this->setLandpart($data["landpart"]);
+		if(array_key_exists("adr_art",$data)) 		$this->setArt($data["adr_art"]);
+		if(array_key_exists("adr_nameline",$data)) 	$this->setNameLine($data["adr_nameline"]);
+		if(array_key_exists("adr_street",$data)) 	$this->setStreet($data["adr_street"]);
+		if(array_key_exists("adr_ort",$data)) 		$this->setOrt($data["adr_ort"]);
+		if(array_key_exists("adr_zip",$data)) 		$this->setZip($data["adr_zip"]);
+		if(array_key_exists("adr_land",$data)) 		$this->setLand($data["adr_land"]);
+		if(array_key_exists("adr_landpart",$data)) 	$this->setLandpart($data["adr_landpart"]);
 		
-		
-		if($this->getNameLine() !== NULL && $contId !== FALSE){
+		if($this->getNameLine() !== NULL && $contactId !== FALSE){
 
 			$insertId = $this->insert($this->_insertData);
 	
@@ -301,8 +310,6 @@ class Address extends DBTable {
 	
 	
 	public function insert($data){
-		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
-		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
 
 		return  parent::insert($data);
 

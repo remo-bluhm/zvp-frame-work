@@ -130,12 +130,21 @@ class Phone extends DBTable {
 	
 	
 	
-	public function updateData($id){
-		if($this->_number !== NULL){
-			$data = $this->generateDate();	
+	public function updateDataFull($data = array(), $id = NULL){
+		
+		if(!is_array($data))$data = array();
+		
+		if(array_key_exists("phone_id",$data)) 		$id = $data["phone_id"];
+		if(array_key_exists("phone_art",$data)) 	$this->setArt($data["phone_art"]);
+		if(array_key_exists("phone_number",$data)) 	$this->setNumber($data["phone_number"]);
+		if(array_key_exists("phone_text",$data)) 	$this->setText($data["phone_text"]);
+
+
+		if(self::testId($id) !== FALSE){
+	
 			$where = $this->getAdapter()->quoteInto( self::SP_ID."= ?", $id);
-			$this->update($data, $where);
-		}
+			$this->update($this->_insertData, $where);	
+		}	
 	}
 	
 	
@@ -146,13 +155,10 @@ class Phone extends DBTable {
 		// setzen der Pflichtfelder
 		$contactId = $this->setContactId($contactId);
 		
-		$this->setAccessCreateId($accessId);
-		$this->setAccessEditId($accessId);
-		
-		if(array_key_exists("art",$data)) $this->setArt($data["art"]);
-		if(array_key_exists("number",$data)) $this->setNumber($data["number"]);
-		if(array_key_exists("text",$data)) $this->setText($data["text"]);
-		
+		if(array_key_exists("phone_art",$data)) $this->setArt($data["phone_art"]);
+		if(array_key_exists("phone_number",$data)) $this->setNumber($data["phone_number"]);
+		if(array_key_exists("phone_text",$data)) $this->setText($data["phone_text"]);
+	
 		if($contactId !== NULL && $this->getNumber() !== NULL){
 			$primaryKey = $this->insert($this->_insertData);
 		}
@@ -160,8 +166,7 @@ class Phone extends DBTable {
 	}
 	
 	public function insert($data){
-		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
-		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
+
 		
 		return  parent::insert($data);
 	

@@ -39,14 +39,14 @@ class ServiceResortOrt extends AService {
 		require_once 'db/resort/resort_orte.php';
 		require_once 'db/resort/resort_orte_match.php';
 		require_once 'db/resort/resort_orte_region.php';
-		require_once 'db/apartment/apartment.php';
+		require_once 'db/apartment/Apartment.php';
 
 		$db = resort_orte::getDefaultAdapter();
 		$ortListSel = $db->select ();
 		$ortListSel->from(array('o' => resort_orte::getTableNameStatic()) ,array( 'ort_name'=>'o.name' , 'apartment_count' => 'count(a.id)'));
 		$ortListSel->joinLeft(array('m'=>resort_orte_match::getTableNameStatic()), "o.id = m.ort_id",array());
 		$ortListSel->joinLeft(array('r'=>resort_orte_region::getTableNameStatic()), "m.arrea_id = r.id",array('region_name'=>'region'));
-		$ortListSel->joinLeft(array('a'=>apartment::getTableNameStatic()), "o.id = a.orts_id",array());
+		$ortListSel->joinLeft(array('a'=>Apartment::getTableNameStatic()), "o.id = a.orts_id",array());
 		
 		if(!empty($areas) && strlen($areas) < 150 ){
 			$ortListSel->where("r.region = ?",$areas );
@@ -125,7 +125,7 @@ class ServiceResortOrt extends AService {
 	 * @param string $regionName der Regionname unter welche Area der Ort liegen soll
 	 * @param string $desc
 	 */
-	public function ActionNewOrt($name,$regionName = "", $desc = ""){
+	public function ActionNew($name,$regionName = "", $desc = ""){
 
 		if( !empty( $regionName) ){
 			require_once 'db/resort/resort_orte_region.php';
@@ -145,14 +145,14 @@ class ServiceResortOrt extends AService {
 			$orteTab = new resort_orte();
 			
 			$data = array();
-			$data['ort_name'] = $name;
+			$data['name'] = $name;
 			$data['text'] = $desc;
 			$data['edata'] = DBTable::DateTime();
 			$data['vdata'] = DBTable::DateTime();
-			$data['usercreat'] = $this->_rightsAcl->getAccess()->getGuId();
-			$data['useredit'] = $this->_rightsAcl->getAccess()->getGuId();
+			$data['access_create'] = $this->_rightsAcl->getAccess()->getId();
+			$data['access_edit'] = $this->_rightsAcl->getAccess()->getId();
 			$data['in_menue'] = 1;
-			
+			 FireBug::setDebug($data);
 			$newOrtId = $orteTab->insert($data);
 			
 			
@@ -170,6 +170,7 @@ class ServiceResortOrt extends AService {
 			
 			
 		} catch (Exception $e) {
+			FireBug::setDebug($e->getMessage());
 			return FALSE;
 		}
 				
@@ -241,7 +242,7 @@ class ServiceResortOrt extends AService {
 		require_once 'db/resort/resort_orte_region.php';
 		require_once 'db/resort/resort_orte_match.php';
 		require_once 'db/resort/resort_orte.php';
-		require_once 'db/apartment/apartment.php';
+		require_once 'db/apartment/Apartment.php';
 		
 		$db = resort_orte_region::getDefaultAdapter();
 		
