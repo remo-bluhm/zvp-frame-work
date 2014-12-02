@@ -7,11 +7,10 @@ require_once 'citro/DBTable.php';
  *
  * @author:
 */
-class resort extends DBTable {
+class Resort extends DBTable {
 	
-	protected $_TableName = "resort";
-	const SP_ID = "id";
-	
+	protected $_name = 'resort';
+
 	const SP_DATA_CREATE = "edata";
 	const SP_DATA_EDIT = "vdata";
 	const SP_USER_CREAT = "usercreat";
@@ -26,6 +25,25 @@ class resort extends DBTable {
 	const SP_KURZTEXT = "kurztext";
 
 
+	private $_insertData = array();
+	
+	public function clearData(){
+		$this->_insertData = array();
+	}
+	
+	
+	public function setName($value){
+		$result = self::testType($value);
+		if($result !== NULL)$this->_insertData[self::SP_TYPE] = $result;
+		return $result;
+	}
+	
+	public static function testName($value){
+		if(is_string($value) && strlen($value) < 200 &&  strlen($value) > 2)return $value;
+		return NULL;
+	}
+	
+	
 }
 
 ?>

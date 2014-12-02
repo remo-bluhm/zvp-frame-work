@@ -37,9 +37,9 @@ class ServiceResort extends AService {
 	 */
 	public function ActionGetList($count, $offset, $where = array(), $spalten = array()){
 
- 		require_once 'db/resort/resort.php';
+ 		require_once 'db/resort/Resort.php';
 
-		$db = resort::getDefaultAdapter();
+		$db = Resort::getDefaultAdapter();
 		
 		
 		$resortSel = $db->select ();
@@ -66,11 +66,11 @@ class ServiceResort extends AService {
 		 
 
 		
-		$resortSel->from(array('r' => resort::getTableNameStatic()) ,$spA);
+		$resortSel->from(array('r' => Resort::getTableNameStatic()) ,$spA);
 		
 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){		
-			require_once 'db/resort/resort_orte.php';
-			$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
+			require_once 'db/resort/ResortOrte.php';
+			$resortSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
 		}
 
 		if( in_array('usercreate_name',$spalten) ){
@@ -135,18 +135,18 @@ class ServiceResort extends AService {
 	 */
 	public function ActionCount( $where = array()){
 		
-		require_once 'db/resort/resort.php';
-		$db = resort::getDefaultAdapter();
+		require_once 'db/resort/Resort.php';
+		$db = Resort::getDefaultAdapter();
 		
 		$searchListSel = $db->select ();
-		$searchListSel->from( array('r' => resort::getTableNameStatic() ), array( "count(r.id)") );
+		$searchListSel->from( array('r' => Resort::getTableNameStatic() ), array( "count(r.id)") );
 		
 
 		
 		// Suche nach Ort
 		if(array_key_exists("ort", $where)){
-			require_once 'db/resort/resort_orte.php';
-			$searchListSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
+			require_once 'db/resort/ResortOrte.php';
+			$searchListSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
 		}
 			
 		if(array_key_exists("name", $where))
@@ -173,8 +173,8 @@ class ServiceResort extends AService {
 	 */
 	public function ActionUpdate($name,$data){
 		
-		require_once 'db/resort/resort.php';
-		$tab = new resort();
+		require_once 'db/resort/Resort.php';
+		$tab = new Resort();
 		$insData = array();
 		if(isset($data["name"])){
 			$insData["name"] = $data["name"] ;
@@ -196,13 +196,13 @@ class ServiceResort extends AService {
 
 		
 	
-		require_once 'db/resort/resort.php';
-		require_once 'db/resort/resort_orte.php';
+		require_once 'db/resort/Resort.php';
+		require_once 'db/resort/ResortOrte.php';
 		require_once 'db/contact/contact_access.php';
 		require_once 'db/contact/Contacts.php';
 		
 		
-		$db = resort::getDefaultAdapter();
+		$db = Resort::getDefaultAdapter();
 		
 		
 		$resortSel = $db->select ();
@@ -227,7 +227,7 @@ class ServiceResort extends AService {
 	
 		
 		
-		$resortSel->from(array('r' => resort::getTableNameStatic()) ,$spA);
+		$resortSel->from(array('r' => Resort::getTableNameStatic()) ,$spA);
 		
 		$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
 		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
@@ -235,7 +235,7 @@ class ServiceResort extends AService {
 		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
 		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 
-		$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
+		$resortSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
 		
 		
 		$resortSel->where("r.name=?", $name);
@@ -256,8 +256,8 @@ class ServiceResort extends AService {
 		
 		try {
 				
-			require_once 'db/resort/resort.php';
-			$orteTab = new resort();
+			require_once 'db/resort/Resort.php';
+			$orteTab = new Resort();
 				
 			$data = array();
 			$data['name'] = $name;
@@ -285,7 +285,43 @@ class ServiceResort extends AService {
 		}
 	}
 	
+	/**
+	 * Erstellt ein Neues Resourt
+	 * @param string $name
+	 * @param array $newData
+	 */
+	public function ActionNewOrt($name, $newData = array()){
 	
+		try {
+	
+			require_once 'db/resort/Resort.php';
+			$orteTab = new Resort();
+	
+			$data = array();
+			$data['name'] = $name;
+	
+			if(isset($data["strasse"])){
+				$data['strasse'] = $newData["strasse"];
+			}
+	
+			$data['edata'] = DBTable::DateTime();
+			$data['vdata'] = DBTable::DateTime();
+			$data['usercreate'] = $this->_rightsAcl->getAccess()->getGuId();
+			$data['useredit'] = $this->_rightsAcl->getAccess()->getGuId();
+			$data['visibil'] = 1;
+			$data['deleted'] = 0;
+	
+				
+			$newOrtId = $orteTab->insert($data);
+	
+			return TRUE;
+	
+	
+		} catch (Exception $errorDB) {
+				
+			return FALSE;
+		}
+	}
 	
 	/**
 	 * Giebt eine Liste von Resorts zurück
@@ -297,11 +333,11 @@ class ServiceResort extends AService {
 	public function ActionGetSearch($searchname, $max = 5, $areas = NULL){
 	
 	
-		require_once 'db/resort/resort.php';
-		$db = resort::getDefaultAdapter();
+		require_once 'db/resort/Resort.php';
+		$db = Resort::getDefaultAdapter();
 	
 		$searchListSel = $db->select ();
-		$searchListSel->from( array('r' => resort::getTableNameStatic() ), array( "r.name") );
+		$searchListSel->from( array('r' => Resort::getTableNameStatic() ), array( "r.name") );
 	
 	
 		$searchListSel->where("name LIKE ? " , $searchname."%");

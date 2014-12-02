@@ -283,29 +283,29 @@ class ServiceContact extends AService {
 	
 
 	
-	/**
-	 * Giebt meinene Contactdaten zurück
-	 *
-	 * @return citro_list Die contact daten
-	 */
-	public function ActionContactList(){
+// 	/**
+// 	 * Giebt meinene Contactdaten zurück
+// 	 *
+// 	 * @return citro_list Die contact daten
+// 	 */
+// 	public function ActionContactList(){
 	
 	
-		require_once 'citro/db/contact/contacts.php';
-		$contactTab = new Contacts();
-		$contactSel = $contactTab->select();
+// 		require_once 'citro/db/contact/contacts.php';
+// 		$contactTab = new Contacts();
+// 		$contactSel = $contactTab->select();
 	
-		$limit = 10;
-		if(isset($this->limit) && $this->limit < 101){
-			$limit = $this->limit;
-		}
+// 		$limit = 10;
+// 		if(isset($this->limit) && $this->limit < 101){
+// 			$limit = $this->limit;
+// 		}
 	
-		$contactSel->limit($limit,0);
+// 		$contactSel->limit($limit,0);
 	
-		$contactArry = $contactTab->fetchAll($contactSel);
+// 		$contactArry = $contactTab->fetchAll($contactSel);
 	
-		return $contactArry->toArray();
-	}
+// 		return $contactArry->toArray();
+// 	}
 	
 	/**
 	 * Giebt meinene Contactdaten zurück
@@ -397,7 +397,7 @@ class ServiceContact extends AService {
 		
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
-		FireBug::setDebug($fields,"ServContact New Fields");
+		//FireBug::setDebug($fields,"ServContact New Fields");
 		// Prüfen des lastName
 		require_once 'db/contact/Contacts.php';
 		$lastName = Contacts::testLastName($lastName);

@@ -178,9 +178,9 @@ class ServiceApartment extends AService {
 	
 	
 		require_once 'db/ggnr/ggnr.php';
-		require_once 'db/resort/resort.php';
+		require_once 'db/resort/Resort.php';
 		require_once 'db/apartment/Apartment.php';
-		require_once 'db/resort/resort_orte.php';
+		require_once 'db/resort/ResortOrte.php';
 		require_once 'db/contact/contact_access.php';
 		require_once 'db/contact/Contacts.php';
 
@@ -208,8 +208,8 @@ class ServiceApartment extends AService {
 	
 		$resortSel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
 		
-		$resortSel->joinLeft(array('r'=>resort::getTableNameStatic()), "r.id = a.resort_id ",array('resort_name' => 'name','resort_strasse' => 'strasse') );
-		$resortSel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name','ort_gmap_lat' => 'gmap_lat','ort_gmap_lng' => 'gmap_lng','ort_gmap_zoom' => 'gmap_zoom')  );
+		$resortSel->joinLeft(array('r'=>Resort::getTableNameStatic()), "r.id = a.resort_id ",array('resort_name' => 'name','resort_strasse' => 'strasse') );
+		$resortSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name','ort_gmap_lat' => 'gmap_lat','ort_gmap_lng' => 'gmap_lng','ort_gmap_zoom' => 'gmap_zoom')  );
 		
 		$resortSel->joinLeft(array('c_o'=>Contacts::getTableNameStatic()), "a.contact_id = c_o.id ",array ('useroner_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		$resortSel->joinLeft(array('c_b'=>Contacts::getTableNameStatic()), "a.bookingcontact_id = c_b.id ",array ('userbooking_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
@@ -252,8 +252,8 @@ class ServiceApartment extends AService {
 		
 		
 		if(isset($data["resort_name"])){
-			require_once 'db/resort/resort.php';
-			$tabR = new resort();
+			require_once 'db/resort/Resort.php';
+			$tabR = new Resort();
 			$selectR = $tabR->select()->where($tabR->getAdapter()->quoteInto("name=?", $data["resort_name"]));
 			$resortOrt = $tabR->fetchRow($selectR);
 			if($resortOrt !== NULL){

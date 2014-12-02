@@ -194,7 +194,7 @@ class ServiceTrans extends AService {
 	 		
 	 		
 	 		//### resourt_id #######################################
-	 		require_once 'db/resort/resort.php';
+	 		require_once 'db/resort/Resort.php';
 	 		$resourtData = array();
 	 		$resourtData['name'] = $gastgeberNummer."-".$zimmerNummer;
 	 		$resourtData['edata'] = DBTable::DateTime();

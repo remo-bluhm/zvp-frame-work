@@ -133,7 +133,7 @@ class Contacts extends DBTable {
 	 * @return string|boolean Im Fehlerfall FALSE
 	 */
 	public static function testLastName($value){
-		if(is_string($value) && strlen($value) < 200 &&  strlen($value) > 2)return $value;
+		if(is_string($value) && strlen($value) < 150 &&  strlen($value) > 2)return $value;
 		return NULL;
 	}
 	public static function testAffixName($value){
