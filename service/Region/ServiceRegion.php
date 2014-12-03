@@ -225,8 +225,8 @@ class ServiceRegion extends AService {
 	 * @param string $ortName
 	 */
 	public function ActionRemoveOrtOffRegion($regionName,$ortName){
-		require_once 'db/resort/ResortOrte.php';
-		$db = ResortOrte::getDefaultAdapter();
+		require_once 'db/resort/ResortCity.php';
+		$db = ResortCity::getDefaultAdapter();
 		
 		$select = "DELETE from usr_p41239_3.bt_resort_orte_match 
 		where ort_id = (select  id from usr_p41239_3.bt_resort_orte where name = '$ortName')
@@ -274,52 +274,52 @@ class ServiceRegion extends AService {
 	
 	/**
 	 * Fügt ein Element hinzu
-	 * @param string $name
-	 * @param string $regionName der Regionname unter welche Area der Ort liegen soll
-	 * @param string $desc
+	 * @param string $overRegKey
+	 * @param string $newRegKey der Regionname unter welche Area der Ort liegen soll
+	 * @param string $newRegName
+	 * @param array $fields
 	 */
-	public function ActionNew($name,$regionName = "", $desc = ""){
+	public function ActionNew($overRegKey, $newRegKey,  $newRegName , $fields = array()  ) {
 
-		if( !empty( $regionName) ){
-			require_once 'db/resort/ResortRegion.php';
-			$arreaTab = new ResortRegion();
-			$arreaSel = $arreaTab->select();
-			$arreaSel->where("region=?",$regionName);
-			$arreaRow = $arreaTab->fetchRow($arreaSel);
 		
-			if($arreaRow === NULL)
-				throw new Exception("");
-		}
+		require_once 'db/resort/ResortRegion.php';
+		$overRegKey = ResortRegion::testNameUid($overRegKey);
+		if($overRegKey === NULL)		
+			throw new Exception("Over Region is not valide!",E_ERROR);
 		
+		
+		$regTab = new ResortRegion();
+		$arreaSel = $regTab->select();
+		$arreaSel->where("name_uid=?",$overRegKey);
+		$arreaRow = $regTab->fetchRow($arreaSel);
+	
+		if($arreaRow === NULL)
+			throw new Exception("Over Region exist not!",E_ERROR);
+		
+		
+		$existRegKey = DBConnect::getConnect()->fetchOne("select id from resort_region where name_uid = '$newRegKey'");
+		if($existRegKey !== FALSE) throw new Exception("Region ($newRegKey) Exist!",E_ERROR);
 		
 		try {
 			
-			require_once 'db/resort/ResortOrte.php';
-			$orteTab = new ResortOrte();
+			
+
+			
+			
 			
 			$data = array();
-			$data['name'] = $name;
-			$data['text'] = $desc;
-			$data['edata'] = DBTable::DateTime();
-			$data['vdata'] = DBTable::DateTime();
-			$data['access_create'] = $this->_rightsAcl->getAccess()->getId();
-			$data['access_edit'] = $this->_rightsAcl->getAccess()->getId();
-			$data['in_menue'] = 1;
+			$data['pid'] = $arreaRow->offsetGet("id");
+			$data['name_uid'] = $newRegKey;
+			$data['name'] = $newRegName;
+			//$data['edata'] = DBTable::DateTime();
+			//$data['vdata'] = DBTable::DateTime();
+			//$data['access_create'] = $this->_rightsAcl->getAccess()->getId();
+			//$data['access_edit'] = $this->_rightsAcl->getAccess()->getId();
+			//$data['in_menue'] = 1;
 			 FireBug::setDebug($data);
-			$newOrtId = $orteTab->insert($data);
+			$newOrtId = $regTab->insert($data);
 			
-			
-			
-			if(!empty( $regionName) ){
-				require_once 'db/resort/resort_orte_match.php';
-				$matchTab = new resort_orte_match();
-					
-				$data = array();
-				$data['ort_id'] = $newOrtId;
-				$data['arrea_id'] = $arreaRow->offsetGet('id');
-				$newMatchId = $matchTab->insert($data);
-			}
-			return TRUE;
+			return $newOrtId;
 			
 			
 		} catch (Exception $e) {
@@ -394,7 +394,7 @@ class ServiceRegion extends AService {
 	
 		require_once 'db/resort/ResortRegion.php';
 		require_once 'db/resort/resort_orte_match.php';
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 		require_once 'db/apartment/Apartment.php';
 		
 		$db = ResortRegion::getDefaultAdapter();
@@ -404,7 +404,7 @@ class ServiceRegion extends AService {
 		$regionSel = $db->select();
 		$regionSel->from( array("r" => ResortRegion::getTableNameStatic()), array('region' , 'counts_orte' => 'count(m.arrea_id)' ) );
 		$regionSel->joinLeft(	array ("m" => resort_orte_match::getTableNameStatic()),	"r.id = m.arrea_id",array() );
-		$regionSel->joinLeft(	array ("o" => ResortOrte::getTableNameStatic()), "m.ort_id = o.id", array("ort_names" => "GROUP_CONCAT(o.name )" ) );
+		$regionSel->joinLeft(	array ("o" => ResortCity::getTableNameStatic()), "m.ort_id = o.id", array("ort_names" => "GROUP_CONCAT(o.name )" ) );
 		$regionSel->group("r.region");
 
 		$regFetchAll = $db->fetchAll($regionSel);
@@ -422,8 +422,8 @@ class ServiceRegion extends AService {
 	public function ActionSetOrtAddRegion($regionname,$ortname){
 		
 		
-		require_once 'db/resort/ResortOrte.php';
-		$db = ResortOrte::getDefaultAdapter();
+		require_once 'db/resort/ResortCity.php';
+		$db = ResortCity::getDefaultAdapter();
 
 		$select = "	INSERT INTO bt_resort_orte_match (ort_id, arrea_id) 
 					select  o.id, r.id from bt_resort_orte as o, bt_resort_orte_region as r

@@ -32,10 +32,10 @@ class ServiceOrte extends AService {
 	 * @return array
 	 */
 	public function ActionCountOrte( $areas = NULL){
-		require_once 'db/resort/ResortOrte.php';
-		$db = ResortOrte::getDefaultAdapter();
+		require_once 'db/resort/ResortCity.php';
+		$db = ResortCity::getDefaultAdapter();
 	
-		$sql = "SELECT count(id) FROM `".ResortOrte::getTableNameStatic()."`; ";
+		$sql = "SELECT count(id) FROM `".ResortCity::getTableNameStatic()."`; ";
 		$allOrtCounts = $db->fetchOne($sql);
 	
 		return $allOrtCounts;
@@ -50,13 +50,13 @@ class ServiceOrte extends AService {
 	 */
 	public function ActionGetOrtList($count, $offset){
 			
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 
 		require_once 'db/apartment/Apartment.php';
 
-		$db = ResortOrte::getDefaultAdapter();
+		$db = ResortCity::getDefaultAdapter();
 		$ortListSel = $db->select ();
-		$ortListSel->from(array('o' => ResortOrte::getTableNameStatic()) ,array('ort_name' , 'counts' => 'count(a.id)'));
+		$ortListSel->from(array('o' => ResortCity::getTableNameStatic()) ,array('ort_name' , 'counts' => 'count(a.id)'));
 		$ortListSel->joinLeft(array('a'=>Apartment::getTableNameStatic()), "o.ort_name = a.orts_name_key");
 		
 
@@ -88,20 +88,21 @@ class ServiceOrte extends AService {
 		$regionSel = $regTab->select();
 		
 		$spR = array();
-		$spR["name_id"] = "name";
+		$spR["name_uid"] = "name_uid";
 		$spR["name"] = "name";
 		
 		
-		$regionSel->from(array( "r" => "resort_orte_region" ),$spR );
+		$regionSel->from(array( "r" => "resort_region" ),$spR );
 			//$string = $regionSel->__toString();
 	
+		//$regionSel->limit(10);
 		//$regionSel->where("o.name=?",$name);
 			
-		$regionAll = $regTab->fetchRow($regionSel);
+		$regionAll = $regTab->fetchAll($regionSel);
 		if($regionAll === NULL)
 			return NULL;
 
-		return $regionAll;
+		return $regionAll->toArray();
 
 	
 	}
@@ -115,9 +116,9 @@ class ServiceOrte extends AService {
 	 * @param string $zoom
 	 */
 	public function ActionSetPosition($ortName,$lat,$lng,$zoom){
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 
-		$ortTab = new ResortOrte();
+		$ortTab = new ResortCity();
 		$ortSel = $ortTab->select();
 		$ortSel->where("name=?", trim($ortName));
 
@@ -149,11 +150,11 @@ class ServiceOrte extends AService {
 	public function ActionGetOrtSearch($searchname, $max = 5, $areas = NULL){
 	
 	
-		require_once 'db/resort/ResortOrte.php';
-		$db = ResortOrte::getDefaultAdapter();
+		require_once 'db/resort/ResortCity.php';
+		$db = ResortCity::getDefaultAdapter();
 	
 		$searchListSel = $db->select ();
-		$searchListSel->from( array('o' => ResortOrte::getTableNameStatic() ), array( "o.name") );
+		$searchListSel->from( array('o' => ResortCity::getTableNameStatic() ), array( "o.name") );
 
 		
 		$searchListSel->where("name LIKE ? " , $searchname."%");
@@ -175,16 +176,16 @@ class ServiceOrte extends AService {
 	public function ActionGetOrtListFull($count, $offset, $areas = NULL){
 	
 	
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 		require_once 'db/sys/access/sys_access.php';
 		require_once 'db/contact/Contacts.php';
 		
 
-		$db = ResortOrte::getDefaultAdapter();
+		$db = ResortCity::getDefaultAdapter();
 	
 
 		$ortListSel = $db->select ();
-		$ortListSel->from(array('o' => ResortOrte::getTableNameStatic()) );
+		$ortListSel->from(array('o' => ResortCity::getTableNameStatic()) );
 		
 		
  		$ortListSel->joinLeft(array('u'=>"sys_access"), "o.access_create = u.id", array ('usercreate_guid' => 'u.id'));
@@ -207,26 +208,27 @@ class ServiceOrte extends AService {
 	public function ActionList($count, $offset = 0, $where = array(), $spalten = array()){
 	
 	
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 		require_once 'db/sys/access/sys_access.php';
 		require_once 'db/contact/Contacts.php';
 	
 	
-		$db = ResortOrte::getDefaultAdapter();
+		$db = ResortCity::getDefaultAdapter();
 	
 		$spA = array();
 		$spA["id"] = "id";
 		//$spA["anzahl"] = "count(uid)";
+		$spA["name_uid"] = "name_uid";
 		$spA["name"] = "name";
 		$spA["create"] = "edata";
 		$spA["edit"] = "vdata";
-		$spA["name"] = "name";
-		$spA["zip"] = "zip";
-		$spA["land"] = "land";
-		$spA["landpart"] = "landpart";
+	
+// 		$spA["zip"] = "zip";
+// 		$spA["land"] = "land";
+// 		$spA["landpart"] = "landpart";
 		
 		$ortListSel = $db->select ();
-		$ortListSel->from(array('o' => ResortOrte::getTableNameStatic()), $spA );
+		$ortListSel->from(array('o' => "resort_city"), $spA );
 	
 
 		$ortListSel->limit($count,$offset);
@@ -243,129 +245,36 @@ class ServiceOrte extends AService {
 	 * @param array $fields
 	 * @return integer|bool
 	 */
-	public function ActionNew($region, $name, $fields = array()){
+	public function ActionNew($name, $fields = array()){
 
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
-		//FireBug::setDebug($fields,"ServContact New Fields");
-		// Prüfen des lastName
-		require_once 'db/contact/Contacts.php';
-		$lastName = Contacts::testLastName($lastName);
-		if( $lastName !== NULL ){
-		
-		
-			$contTab = new Contacts();
-			$contTab->getDefaultAdapter()->beginTransaction();
-			try {
-		
-		
-				$contactId =  $contTab->insertDataFull( $this->getAccess()->getId(), $lastName, $fields);
-				$contactUid = $contTab->getUid();
-		
-				// setzen von Adressen
-				$mainAdressId = NULL;
-				if(array_key_exists("adresses",$fields) && is_array($fields["adresses"]) ){
-					require_once 'db/contact/address/Address.php';
-					$adrTab = new Address();
-					foreach ($fields["adresses"] as $adrFields){
-						$adrTab->clearData();
-						if(is_array($adrFields) && !empty($adrFields["adr_ort"]) ){
-							$adressId = $adrTab->insertDataFull($this->getAccess()->getId(), $contactId, $adrFields);
-							if (!empty($adrFields["adr_is_main"]) && $adressId !== NULL ){
-								if( strtoupper( $adrFields["adr_is_main"]) == "TRUE" ) $mainAdressId = $adressId;
-							}
-						}
-					}
-				}
-		
-				// setzen der Telefonnummern
-				$mainPhoneId = NULL;
-				if(array_key_exists("numbers",$fields) && is_array($fields["numbers"]) ){
-					require_once 'db/contact/phone/Phone.php';
-					$phoneTab = new Phone();
-					foreach ($fields["numbers"] as $phoneFields){
-						$phoneTab->clearData();
-						if(is_array($phoneFields) && !empty($phoneFields["phone_number"])){
-							$phoneId = $phoneTab->insertDataFull($this->getAccess()->getId(), $contactId, $phoneFields);
-							if (!empty($phoneFields["phone_is_main"]) && $phoneId !== NULL ){
-								if(strtoupper ( $phoneFields["phone_is_main"]) == "TRUE") $mainPhoneId = $phoneId;
-							}
-						}
-					}
-				}
-		
-				// setzen der Mails
-				$mainMailId = NULL;
-				if(array_key_exists("emails",$fields) && is_array($fields["emails"]) ){
-					require_once 'db/contact/email/Email.php';
-					$mailTab = new Email();
-					foreach ($fields["emails"] as $mailFields){
-						$mailTab->clearData();
-						if(is_array($mailFields) && !empty($mailFields["email_adress"])){
-							$mailId = $mailTab->insertDataFull($this->getAccess()->getId(), $contactId,$mailFields);
-							if (!empty($mailFields["email_is_main"])){
-								if(strtoupper ( $mailFields["email_is_main"]) == "TRUE"){
-									$mainMailId = $mailId;
-		
-								}
-							}
-						}
-					}
-				}
-		
-				// Setzen der Haupt Adressen, Mails oder Telefonnummern
-				$updateData = array();
-				if($mainAdressId !== NULL) $updateData[Contacts::SP_ADRESS_ID] = $mainAdressId;
-				if($mainPhoneId !== NULL) $updateData[Contacts::SP_PHONE_ID] = $mainPhoneId;
-				if($mainMailId !== NULL) $updateData[Contacts::SP_EMAIL_ID] = $mainMailId;
-				if(count($updateData) > 0 )$contTab->update($updateData, "id = ".$contactId);
-		
-		
-				//$contactUid = NULL;
-		
-				// Nochmaliges Prüfen auf contactid
-				if($contactUid === NULL){
-					$contTab->getAdapter()->rollBack();
-					return FALSE;
-				}
-				$contTab->getAdapter()->commit();
-				return $contactUid;
-		
-			} catch (Exception $e) {
-				$contTab->getAdapter()->rollBack();
-				return FALSE;
-			}
-		
-		}else{
-			// Fehler da der Lastname nicht valiede ist
-			return FALSE;
-		}
-		return FALSE;
-		// FireBug::setDebug($newUnId);
+
 		
 		
 		try {
 			
-			require_once 'db/resort/ResortOrte.php';
-			$orteTab = new ResortOrte();
+			require_once 'db/resort/ResortCity.php';
+			$orteTab = new ResortCity();
 			
 			$data = array();
 			$data['name'] = $name;
 			
-			if(isset($data["desc"])){
-				$data['text'] = $data["desc"];
+			if(isset($fields["ort_name_uid"])){
+				$data['name_uid'] = $fields["ort_name_uid"];
 			}
 			
 			$data['edata'] = DBTable::DateTime();
 			$data['vdata'] = DBTable::DateTime();
-			$data['usercreat'] = $this->_rightsAcl->getAccess()->getGuId();
-			$data['useredit'] = $this->_rightsAcl->getAccess()->getGuId();
-			$data['in_menue'] = 1;
+			$data['access_create'] = $this->_rightsAcl->getAccess()->getId();
+			$data['access_edit'] = $this->_rightsAcl->getAccess()->getId();
+
 			
+	
 			$newOrtId = $orteTab->insert($data);
 			
+			return $newOrtId;
 		
-			return TRUE;
 			
 			
 		} catch (Exception $e) {
@@ -385,10 +294,10 @@ class ServiceOrte extends AService {
 		require_once 'citro/DBTable.php'; 
 		$db = DBTable::getDefaultAdapter();
 
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 		
 		$ortSel = $db->select();
-		$ortSel->from( ResortOrte::getTableNameStatic() , '*');
+		$ortSel->from( ResortCity::getTableNameStatic() , '*');
 		$ortSel->where("ort_name=?", $ortname);
 		$ortRow = $db->fetchRow($ortSel);
 		
@@ -397,7 +306,7 @@ class ServiceOrte extends AService {
 	
 		require_once 'db/resort/resort_orte_match.php';
 		$db->delete(resort_orte_match::getTableNameStatic(),  $db->quoteInto("ort_id=?", $ortRow['id'] ) );
-		$db->delete(ResortOrte::getTableNameStatic(),  $db->quoteInto("id=?", $ortRow['id'] ) );
+		$db->delete(ResortCity::getTableNameStatic(),  $db->quoteInto("id=?", $ortRow['id'] ) );
 		return TRUE;
 	}
 	
@@ -410,8 +319,8 @@ class ServiceOrte extends AService {
 	 */
 	public function ActionEdit($oldOrtName,$newOrtName){
 		
-		require_once 'db/resort/ResortOrte.php';
-		$orteTab = new ResortOrte();
+		require_once 'db/resort/ResortCity.php';
+		$orteTab = new ResortCity();
 		$data = array();
 		$data['ort_name'] = $newOrtName;
 		
@@ -438,7 +347,7 @@ class ServiceOrte extends AService {
 		$db = DBConnect::getConnect();
 		$ortListSel = $db->select ();
 		
-		$ortListSel->from(array("resort_orte") );
+		$ortListSel->from(array("resort_city") );
 	
 		$ortListSel->where("name=?", $ortName);
 		$allOrts = $db->fetchRow( $ortListSel );
@@ -508,8 +417,8 @@ class ServiceOrte extends AService {
 	 * @return boolean|array
 	 */
 	public function ActionExist($name){
-		require_once 'db/resort/ResortOrte.php';
-		$tab = new ResortOrte();
+		require_once 'db/resort/ResortCity.php';
+		$tab = new ResortCity();
 		$sel = $tab->select();
 		$sel->where("name=?",$name);
 		$row = $tab->fetchRow($sel);

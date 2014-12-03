@@ -7,25 +7,24 @@ require_once 'citro/DBTable.php';
  *
  * @author:
 */
-class ResortOrte extends DBTable {
+class ResortCity extends DBTable {
 	
-	protected $_name = 'contacts';
+	protected $_name = 'resort_city';
 	
 	const SP_ID = "id";
 	
 	const SP_DATA_CREATE = "edata";
 	const SP_DATA_EDIT = "vdata";
-	const SP_USER_CREAT = "usercreat";
-	const SP_USER_EDIT = "useredit";
+
 	
 	const SP_PLZ = "plz";
 	const SP_ORT_NAME = "ort";
 	const SP_TEXT = "text";
 	const SP_IN_MENUE = "in_menu";
 	
-	const SP_GMAP_KARTE_X = "gmap_karte_x";
-	const SP_GMAP_KARTE_Y = "gmap_karte_y";
-	const SP_GMAP_ZOOM = "gmap_zoom";
+	const SP_MAP_X = "map_lat";
+	const SP_MAP_Y = "map_lng";
+	const SP_MAP_ZOOM = "map_zoom";
 
 	
 	const MIN_SYSID = 100000;

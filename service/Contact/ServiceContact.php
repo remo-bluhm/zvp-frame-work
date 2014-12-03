@@ -393,7 +393,7 @@ class ServiceContact extends AService {
 	 * @return citro_list Den eingetragenen User mit  guid|name|password|aeskey|visibil|date_create|admin Der Parameter "admin" bekommt man nur wenn man selber Admin ist
 	 *
 	 */
-	public function ActionNew($lastName, $fields = array()) {
+	public function ActionNew($lastName, $fields = array() ) {
 		
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();

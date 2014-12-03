@@ -69,8 +69,8 @@ class ServiceResort extends AService {
 		$resortSel->from(array('r' => Resort::getTableNameStatic()) ,$spA);
 		
 		if( in_array('ort_name',$spalten) || array_key_exists("ort", $where)  ){		
-			require_once 'db/resort/ResortOrte.php';
-			$resortSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
+			require_once 'db/resort/ResortCity.php';
+			$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ( 'ort_name'=>'o.name') );
 		}
 
 		if( in_array('usercreate_name',$spalten) ){
@@ -145,8 +145,8 @@ class ServiceResort extends AService {
 		
 		// Suche nach Ort
 		if(array_key_exists("ort", $where)){
-			require_once 'db/resort/ResortOrte.php';
-			$searchListSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
+			require_once 'db/resort/ResortCity.php';
+			$searchListSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
 		}
 			
 		if(array_key_exists("name", $where))
@@ -197,7 +197,7 @@ class ServiceResort extends AService {
 		
 	
 		require_once 'db/resort/Resort.php';
-		require_once 'db/resort/ResortOrte.php';
+		require_once 'db/resort/ResortCity.php';
 		require_once 'db/contact/contact_access.php';
 		require_once 'db/contact/Contacts.php';
 		
@@ -235,7 +235,7 @@ class ServiceResort extends AService {
 		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
 		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 
-		$resortSel->joinLeft(array('o'=>ResortOrte::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
+		$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
 		
 		
 		$resortSel->where("r.name=?", $name);
