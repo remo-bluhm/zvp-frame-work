@@ -179,8 +179,8 @@ class ServiceTrans extends AService {
 	 		// erstellen oder hollen des Ortskeys
 	 		
 	 		
-	 		require_once 'service/Orte/ServiceOrte.php';
-	 		$servOrt = new ServiceOrte();
+	 		require_once 'service/City/ServiceCity.php';
+	 		$servOrt = new ServiceCity();
 	 		$servOrt->_setRightsAcl($this->_rightsAcl);
 	 		
 	 		$ort = $servOrt->ActionExist( $HTZeile["Ort"] );

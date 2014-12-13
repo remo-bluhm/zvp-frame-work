@@ -156,6 +156,7 @@ class ServiceApartmentOwner extends AService {
 	
 	
 	
+	
 	/**
 	 * Giebt die Contactdaten eines Contactes zurück
 	 *
@@ -165,20 +166,148 @@ class ServiceApartmentOwner extends AService {
 	 */
 	public function ActionSingle($contactuid, $spalten = array()){
 	
-		$conn = DBConnect::getConnect();
-		$value = $conn->fetchOne( "SELECT id FROM contacts where (".$conn->quoteInto("uid = ?", $contactuid).") AND (type='HIRER')"  );
-		if($value == FALSE)return FALSE;
+			
+		if(is_string($spalten) && $spalten=="*"){
+			$spalten = array();
+			$spalten[] = "usercreate_name";
+			$spalten[] = "useredit_name";
+			$spalten[] = "all_address";
+			$spalten[] = "all_phone";
+			$spalten[] = "all_email";
+		}
+		if(!is_array($spalten))$spalten = array();
 		
-		$service = $this->_serviceFabric->getService(new Service("Contact"), $this->_resource);
-		$action =  new Action("Single");
-		$action->setParam("contactuid", $contactuid);
-		//kann noch hinzugefügt werden
-		//$action->setParam("spalten", $spalten);
+		require_once 'db/contact/Contacts.php';
+		$db = Contacts::getDefaultAdapter();
+
 		
+		$spA = array();
+		$spA["uid"] = "uid";
+		//$spA["type"] = "type";
+		$spA["id_name"] = "id";
+		$spA["create_date"] = "edata";
+		$spA["edit_date"] = "vdata";
+		$spA["name_title"] = "title_name";
+		$spA["name_first"] = "first_name";
+		$spA["name_firstadd"] = "first_add_name";
+		$spA["name_last"] = "last_name";
+		$spA["name_affix"] = "affix_name";
+		
+		$spA["address_id"] = "main_contact_address_id";
+		$spA["phone_id"] = "main_contact_phone_id";
+		$spA["email_id"] = "main_contact_email_id";
+
+// 		$spA["firma"] = "firma";
+// 		$spA["position"] = "position";
+		
+		$sel = $db->select ();
+		$sel->from( array('c' => "contacts" ), $spA );
+		
+		if( in_array('usercreate_name',$spalten) ){
+
+			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array("create_access_guid"=>"guid") );
+			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('create_access_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+		}
+		
+		if( in_array('useredit_name',$spalten) ){
+			require_once 'db/sys/access/sys_access.php';
+			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array("edit_access_guid"=>"guid") );
+			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('edit_access_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+		}
+
+		
+		$adresSp = array();
+		$adresSp["adr_id"] = "id";
+		$adresSp["adr_art"] = "art";
+		$adresSp["adr_nameline"] = "nameline";
+		$adresSp["adr_street"] = "strasse";
+		$adresSp["adr_ort"] = "ort";
+		$adresSp["adr_zip"] = "plz";
+		$adresSp["adr_land"] = "land";
+		$adresSp["adr_landpart"] = "landpart";
+		$adresSp["adr_infotext"] = "infotext";
+		
+		//$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
+
+		
+ 		$phoneSp = array();
+ 		$phoneSp["phone_id"] = "id";
+ 		$phoneSp["phone_art"] = "art";
+ 		$phoneSp["phone_number"] = "number";
+ 		$phoneSp["phone_text"] = "text";
+		
+ 
+ 		//$sel->joinLeft(array('p'=>"contact_phone"), "c.main_contact_phone_id = p.id" ,$phoneSp);
+
+		
+ 		$mailSp = array();
+ 		$mailSp["email_id"] = "id";
+ 		$mailSp["email_adress"] = "mailadress";
+ 		$mailSp["email_text"] = "text";
+ 		
+
+ 		//$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
+		
+		$sel->where("c.uid = ?",$contactuid);
+		$sel->where("c.deleted = ?", "0");
+		$sel->where("c.type = ?", "HIRER");
+		
+
+		
+		$contactA = $db->fetchRow($sel);
+		
+		// falls nichts gefunden wurde dann abbruch
+		if($contactA === FALSE) return FALSE;
+			
+		//////////////////////////////////////
+		if( in_array('all_address',$spalten) ){
 	
-		$actionBack = $this->_serviceFabric->getAction($this->_resource, $service, $action);
+			
+			$mainAddressId = (int)$contactA["address_id"];
+			$adresSp["adr_is_main"] = "IF(`id` = ".$mainAddressId.", 'TRUE', 'FALSE' ) ";
+			
+			$selAdress = $db->select ();
+			$selAdress->from( "contact_address" , $adresSp );
+			$selAdress->where("contacts_id = ?",$contactA["id_name"]);
+			
+
+			$contactA["adresses"] = $db->fetchAll($selAdress);
+		}
+		//////////////////////////////////////////////////////////////////
+		if( in_array('all_phone',$spalten) ){
+			
+			$mainPhoneId = (int)$contactA["phone_id"];
+			$phoneSp["phone_is_main"] = "IF(`id` = ".$mainPhoneId.", 'TRUE', 'FALSE' ) ";
+					
+			$selPhone = $db->select ();
+			$selPhone->from( "contact_phone" , $phoneSp );
+			$selPhone->where("contacts_id = ?",$contactA["id_name"]);
+			
+			$contactA["numbers"] = $db->fetchAll($selPhone);
+		}
+		//////////////////////////////////////////////////////////////////
+		if( in_array('all_email',$spalten) ){
+				
+			$mainEmailId = (int)$contactA["email_id"];
+			$mailSp["email_is_main"] = "IF(`id` = ".$mainEmailId.", 'TRUE', 'FALSE' ) ";
+				
+			$selEmail = $db->select ();
+			$selEmail->from( "contact_email" , $mailSp );
+			$selEmail->where("contacts_id = ?",$contactA["id_name"]);
+				
+			$contactA["emails"] = $db->fetchAll($selEmail);
+		}
+
+
+		unset($contactA["id_name"]);
+		unset($contactA["address_id"]);
+		unset($contactA["phone_id"]);
+		unset($contactA["email_id"]);
 		
-		return $actionBack;	
+		FireBug::setDebug($contactA,"ServiceContact Single");
+		return $contactA;
+	
+	
 	}
 	
 	/**

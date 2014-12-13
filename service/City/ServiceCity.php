@@ -9,7 +9,7 @@ require_once 'citro/service-class/AService.php';
  * @version 1.0
  *         
  */
-class ServiceOrte extends AService {
+class ServiceCity extends AService {
 	
 
 	private $_rootName = "Orte";
@@ -240,46 +240,73 @@ class ServiceOrte extends AService {
 	
 	/**
 	 * Fügt ein Element hinzu
-	 * @param string $region
 	 * @param string $name
+	 * @param string $zip
+	 * @param string $landkey
 	 * @param array $fields
 	 * @return integer|bool
 	 */
-	public function ActionNew($name, $fields = array()){
+	public function ActionNew($name,$zip,$landkey, $fields = array()){
 
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
 
+		require_once 'db/resort/ResortCity.php';
+
+		
+		$name = ResortCity::testName($name);
 		
 		
-		try {
-			
-			require_once 'db/resort/ResortCity.php';
-			$orteTab = new ResortCity();
-			
-			$data = array();
-			$data['name'] = $name;
-			
-			if(isset($fields["ort_name_uid"])){
-				$data['name_uid'] = $fields["ort_name_uid"];
+	
+		$zip = ResortCity::testZip($zip);
+		
+		$landKey = 1; // "germany" key = 1
+		
+
+		if($name !== NULL && $zip !== NULL){
+			$cityTab = new ResortCity();
+			$resultUid = $cityTab->exist($name, $zip, $landKey);
+	
+			if($resultUid !== FALSE){
+				// Achtung eigentlich erst mal die LandId hollen
+				// einschreiben
+				//$cityTab->insertDataFull($this->_rightsAcl->getAccess()->getId(), $name, $zip, $land, $data);
+				
+			}else{
+				return $resultUid;
 			}
 			
-			$data['edata'] = DBTable::DateTime();
-			$data['vdata'] = DBTable::DateTime();
-			$data['access_create'] = $this->_rightsAcl->getAccess()->getId();
-			$data['access_edit'] = $this->_rightsAcl->getAccess()->getId();
+			
+		}
+		
+// 		try {
+			
+			
+			
+			
+			
+// 			$data = array();
+// 			$data['name'] = $name;
+			
+// 			if(isset($fields["ort_name_uid"])){
+// 				$data['name_uid'] = $fields["ort_name_uid"];
+// 			}
+			
+
+// 			$newOrtId = $cityTab->insertDataFull($this->_rightsAcl->getAccess()->getId(), $name, $zip, $data);
 
 			
-	
-			$newOrtId = $orteTab->insert($data);
 			
-			return $newOrtId;
+	
+// 			//$newOrtId = $orteTab->insert($data);
+			
+// 			return $newOrtId;
 		
 			
 			
-		} catch (Exception $e) {
-			return FALSE;
-		}
+// 		} catch (Exception $e) {
+// 			return FALSE;
+// 		}
 				
 	}
 	
@@ -410,7 +437,24 @@ class ServiceOrte extends AService {
 		
 	}
 	
-
+	/**
+	 * Prüft ob es den Ort giebt falls ja giebt er diesen wieder
+	 * @param string $key
+	 * @return boolean|array
+	 */
+	public function ActionExistCityKey($key){
+		require_once 'db/resort/ResortCity.php';
+		$tab = new ResortCity();
+		$sel = $tab->select();
+		$sel->where("name_uid=?",$key);
+		$row = $tab->fetchRow($sel);
+	
+		if($row === NULL){
+			return FALSE;
+		}
+		return $row->toArray();
+	
+	}
 	/**
 	 * Prüft ob es den Ort giebt falls ja giebt er diesen wieder
 	 * @param string $name

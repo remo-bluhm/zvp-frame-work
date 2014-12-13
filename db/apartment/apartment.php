@@ -16,6 +16,7 @@ class Apartment extends DBTable {
 	const SP_APARTM_ART_ID = "art_id";
 	const SP_BOOKINGKONTAKT_ID = "bookingcontact_id";
 	const SP_RESORT_ID = "resort_id";
+	const SP_APARTM_NAME_UID = "name_uid";// ist ein einmaliger Wer für das zimmer der keine lerrzeichen enthalten darf oder sonderzeichen auser minus
 	const SP_APARTM_NAME = "name";// ist ein einmaliger Wer für das zimmer der keine lerrzeichen enthalten darf oder sonderzeichen auser minus
 	
 	
@@ -63,6 +64,11 @@ class Apartment extends DBTable {
 		$this->_insertData = array();
 	}
 	
+	public function setNameUid($value){
+		$result = self::testApartmName($value);
+		if($result !== NULL)$this->_insertData[self::SP_APARTM_NAME_UID] = $result;
+		return $result;
+	}
 	public function setName($value){
 		$result = self::testApartmName($value);
 		if($result !== NULL)$this->_insertData[self::SP_APARTM_NAME] = $result;
@@ -109,17 +115,20 @@ class Apartment extends DBTable {
 	
 
 	
-	public function insertDataFull($accessId,$name,$ownerId,    $data=array()){
+	public function insertDataFull($accessId,$nameUid,$ownerId,    $data=array()){
 		// Die Pflichtparameter
 		$this->setAccessCreateId($accessId);
 		
-		$apartmName = $this->setName($name);
+		$apartmName = $this->setNameUid($nameUid);
 		
-		$resultFind = $this->exist($name);
+		$resultFind = $this->exist($nameUid);
 		
 		$ownerIdValue = $this->setOwnerId($ownerId);
 		
 		if($apartmName !== NULL  && $resultFind === FALSE ){
+			
+			if(array_key_exists("name",$data)) 		$this->setName($data["name"]);
+			
 			return $this->insert($this->_insertData);
 		}else{
 			return NULL;
@@ -138,8 +147,8 @@ class Apartment extends DBTable {
 	 * @param string $name
 	 * @return string|FALSE 
 	 */
-	public function exist($name){
-		$value = DBConnect::getConnect()->fetchOne("select id from apartment where name='$name'");
+	public function exist($nameUid){
+		$value = DBConnect::getConnect()->fetchOne("select id from apartment where name_uid='$nameUid'");
 		return $value;
 	}
 	
@@ -198,6 +207,13 @@ class Apartment extends DBTable {
 	
 	public static function testApartmentArt($value){
 		if(is_int($value) && $value < 100 ){
+			return $value;
+		}
+		return NULL;
+	}
+	
+	public static function testApartmNameUid($value){
+		if(is_string($value)&& strlen($value) < 150 ){
 			return $value;
 		}
 		return NULL;

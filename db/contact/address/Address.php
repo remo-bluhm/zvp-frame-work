@@ -133,7 +133,9 @@ class Address extends DBTable {
 	 */
 	public function setOrt($ort) {
 		$result = self::testOrt($ort);
-		if($result !== FALSE)$this->_insertData[self::SP_ORT] = $result;
+		if($result !== FALSE){	
+			$this->_insertData[self::SP_ORT] = $result;
+		}
 		return $result;
 	}
 

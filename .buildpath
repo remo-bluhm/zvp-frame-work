@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
-	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
 	<buildpathentry kind="con" path="org.eclipse.dltk.USER_LIBRARY/zendlib"/>
+	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
 	<buildpathentry kind="con" path="org.eclipse.dltk.USER_LIBRARY/libzend"/>
 	<buildpathentry kind="src" path=""/>
+	<buildpathentry combineaccessrules="false" kind="prj" path="/ZVP-Webseite"/>
 </buildpath>

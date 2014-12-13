@@ -93,10 +93,10 @@ class ServiceContact extends AService {
 		// suche nach Namen
 		if(!empty($where["last_name"]))
 			$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
+		
 		if(!empty($where["first_name"]))
 			$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
 	
-		
 		if(!empty($where["zip"])){
 			$groupIsOn = TRUE;
 			$resortSel->where("a.plz LIKE ?", $where["zip"]."%");
@@ -141,6 +141,7 @@ class ServiceContact extends AService {
 	 */
 	public function ActionSingle($contactuid, $spalten = array()){
 	
+
 		if(is_string($spalten) && $spalten=="*"){
 			$spalten = array();
 			$spalten[] = "usercreate_name";
@@ -178,7 +179,7 @@ class ServiceContact extends AService {
 		$sel->from( array('c' => "contacts" ), $spA );
 		
 		if( in_array('usercreate_name',$spalten) ){
-			
+
 			$sel->joinLeft(array('a'=>"sys_access"), "c.access_create = a.id",array("create_access_guid"=>"guid") );
 			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('create_access_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
 		}
@@ -224,7 +225,9 @@ class ServiceContact extends AService {
 		
 		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
+
 		
+
 		$contactA = $db->fetchRow($sel);
 		
 		// falls nichts gefunden wurde dann abbruch
@@ -275,7 +278,7 @@ class ServiceContact extends AService {
 		unset($contactA["phone_id"]);
 		unset($contactA["email_id"]);
 		
-		FireBug::setDebug($contactA,"ServiceContact Single");
+		//FireBug::setDebug($contactA,"ServiceContact Single");
 		return $contactA;
 	
 	

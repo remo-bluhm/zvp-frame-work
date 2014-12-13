@@ -87,17 +87,14 @@ class ServiceApartment extends AService {
 	 */
 	public function ActionList($count, $offset, $where = array(), $spalten = array()){
 
-
 		require_once 'db/apartment/Apartment.php';
-
-		
 		$db = Apartment::getDefaultAdapter();
-		
 		$sel = $db->select();
 		
 		$spA = array();
-		$spA["name"] = "name";
-		$spA["visibil"] = "visibil";
+		$spA["apart_name_uid"] = "name_uid";
+		$spA["apart_name"] = "name";
+		$spA["apart_visibil"] = "visibil";
 			
 		$spA["creat_date"] = "date_create";
 		$spA["edit_date"] = "date_edit";
@@ -108,58 +105,93 @@ class ServiceApartment extends AService {
 
 		
 		$sel->from(array('a' => "apartment"), $spA );
+		
+		$ggSp = array();
+		$ggSp["ggnr_ga"] = "gastgeber_nr";
+		$ggSp["ggnr_zi"] = "zimmer_nr";
+		$sel->joinLeft(array('gg'=>"ggnr"), "a.id = gg.apartment_id ",$ggSp );
 	
-		$sel->joinLeft(array('g'=>"ggnr"), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
+		//$sel->joinLeft(array('g'=>"ggnr"), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
+		
+		// suche nach Namen
+		if(!empty($where["owner_uid"])){
+			$sel->joinLeft(array('c'=>"contacts"),"a.owner_id = c.id", array() );
+			$sel->where("c.uid = ?", $where["owner_uid"]);
+			
+			
+		}
+		if(!empty($where["search_name"])){
+			$sel->where("a.name LIKE ?", $where["search_name"]."%");
+			
+			
+		}
 		
 		$sel->limit($count,$offset);
+		
 		$result = $db->fetchAll($sel);
-	
+
 
 		return $result;
 	}
 	
+	/**
+	 * Giebt eine Liste von Apartments zurück
+	 * @param string $ownerUid
+	 * @param integer $count
+	 * @param integer $offset
+	 * @param array $where kann ein array mit abfragen übergeben werden RESORT_ID|ORT_ID
+	 * @param array $spalten
+	 * @return array
+	 */
+	public function ActionListOwner($ownerUid, $count, $offset, $where = array(), $spalten = array()){
 	
-// 	/**
-// 	 * Giebt die anzahl der Apartments zurück
-// 	 * @param array $where
-// 	 * @return array
-// 	 */
-// 	public function ActionCount( $where = array()){
-// 		require_once 'db/apartment/apartment.php';
-// 		$db = apartment::getDefaultAdapter();
-		
-// 		$sel = $db->select();
-// 		$sel->from(array('a' => apartment::getTableNameStatic()),"count(a.id)" );
-		
-// 		if(array_key_exists("ggnr_gg", $where) || array_key_exists("ggnr_nr", $where)){
-// 			require_once 'db/ggnr/ggnr.php';
-// 			$sel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array() );
-// 		}
-// 		if(array_key_exists("ort", $where) ){
-// 			require_once 'db/resort/resort.php';
-// 			require_once 'db/resort/resort_orte.php';
-// 			//require_once 'db/contact/contacts.php';'resort_ortid' => 'ort_id',
-// 			$sel->joinLeft(array('r'=>resort::getTableNameStatic()), "r.id = a.resort_id ",array() );
-// 			$sel->joinLeft(array('o'=>resort_orte::getTableNameStatic()), "o.id = r.ort_id", array ()  );
-// 		}
+		require_once 'db/apartment/Apartment.php';
+		$db = Apartment::getDefaultAdapter();
+		$sel = $db->select();
 	
+		$sel->from(array('c' => "contacts"), array() );
 		
-// 		if(array_key_exists("ggnr_gg", $where))
-// 			$sel->where("g.gastgeber_nr = ?", $where["ggnr_gg"]);
-		
-// 		if(array_key_exists("ggnr_nr", $where))
-// 			$sel->where("g.zimmer_nr = ?", $where["ggnr_nr"]);
-		
-// 		if(array_key_exists("name", $where))
-// 			$sel->where("a.name LIKE ?", $where["name"]."%");
-		
-// 		if(array_key_exists("ort", $where))
-// 			$sel->where("o.name LIKE ?", $where["ort"]."%");
+		$spA = array();
+		$spA["apart_name_uid"] = "name_uid";
+		$spA["apart_name"] = "name";
+		$spA["apart_visibil"] = "visibil";
+			
+		$spA["creat_date"] = "date_create";
+		$spA["edit_date"] = "date_edit";
 	
-// 		$allOrtCounts = $db->fetchOne($sel);
+		$spA["create_guid"] = "user_create";
+		$spA["edit_guid"] = "user_edit";
+	
+
+	
+		$sel->joinLeft(array('a'=>"apartment"), "c.id = a.owner_id ",$spA );
+		$ggSp = array();
+		$ggSp["ggnr_ga"] = "gastgeber_nr";
+		$ggSp["ggnr_zi"] = "zimmer_nr";
+		$sel->joinLeft(array('gg'=>"ggnr"), "a.id = gg.apartment_id ",$ggSp );
+	
+		// suche nach Namen
+		$sel->where("c.uid = ?", $ownerUid);
 				
-// 		return $allOrtCounts;
-// 	}
+				
+		
+		if(!empty($where["search_name"])){
+			$sel->where("a.name LIKE ?", $where["search_name"]."%");
+				
+				
+		}
+	
+		$sel->limit($count,$offset);
+	
+		$result = $db->fetchAll($sel);
+	
+	
+		return $result;
+	}
+	
+	
+	
+
 	
 
 	
@@ -171,63 +203,82 @@ class ServiceApartment extends AService {
 	/**
 	 * Giebt ein einzelnes Apartment zurück
 	 * @param string $name nach dem Gesucht werden soll
+	 * @param string $as kann genutzt werden um stadt nach den namenUid die "apartm_id" zu suchen. Standard ist nameId
 	 * @return array|NULL
 	 */
-	public function ActionSingle($name){
+	public function ActionSingle($name,$as = NULL){
 	
 	
 	
-		require_once 'db/ggnr/ggnr.php';
-		require_once 'db/resort/Resort.php';
-		require_once 'db/apartment/Apartment.php';
-		require_once 'db/resort/ResortCity.php';
-		require_once 'db/contact/contact_access.php';
-		require_once 'db/contact/Contacts.php';
+
 
 	
-		$db = Apartment::getDefaultAdapter();
+		$db = DBConnect::getConnect();
 	
 	
-		$resortSel = $db->select ();
+		$apartSel = $db->select ();
 	
 		$spA = array();
-		$spA["art"] = "art";
-		$spA["name"] = "name";
-		$spA["visibil"] = "visibil";
+		$spA["apartm_uid"] = "name_uid";
+		$spA["apartm_name"] = "name";
 	
-	
-		$spA["creat_date"] = "date_create";
+		$spA["create_date"] = "date_create";
  		$spA["edit_date"] = "date_edit";
+ 		//$spA[] = "resort_id";
 	
-		$spA["create_guid"] = "user_create";
-		$spA["edit_guid"] = "user_edit";
+
 	
 	
 
-		$resortSel->from(array('a' => Apartment::getTableNameStatic()) ,$spA);
+		$apartSel->from(array('a' => "apartment") ,$spA);
 	
-		$resortSel->joinLeft(array('g'=>ggnr::getTableNameStatic()), "g.zimmer_id = a.id ",array('ggnr' => 'gastgeber_nr','zimnr' => 'zimmer_nr') );
+		$spOwner = array();
+		$spOwner["owner_uid"] = "uid";
+		$spOwner["owner_title"] = "title_name";
+		$spOwner["owner_first"] = "first_name";
+		$spOwner["owner_firstadd"] = "first_add_name";
+		$spOwner["owner_last"] = "last_name";
+		$spOwner["owner_affix"] = "affix_name";
 		
-		$resortSel->joinLeft(array('r'=>Resort::getTableNameStatic()), "r.id = a.resort_id ",array('resort_name' => 'name','resort_strasse' => 'strasse') );
-		$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name','ort_gmap_lat' => 'gmap_lat','ort_gmap_lng' => 'gmap_lng','ort_gmap_zoom' => 'gmap_zoom')  );
+		$apartSel->joinLeft(array('ow'=>"contacts"), "a.owner_id = ow.id ",$spOwner );
 		
-		$resortSel->joinLeft(array('c_o'=>Contacts::getTableNameStatic()), "a.contact_id = c_o.id ",array ('useroner_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-		$resortSel->joinLeft(array('c_b'=>Contacts::getTableNameStatic()), "a.bookingcontact_id = c_b.id ",array ('userbooking_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-
+		$spResOrt = array();
+		$spResOrt["resort_name"] = "name";
+		$spResOrt["resort_uid"] = "name_uid";
+		$spResOrt["resort_strasse"] = "strasse";
 		
-		$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "a.user_create = u.guid ",array() );
-		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
-	
-		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "a.user_edit = u2.guid " ,array() );
-		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-	
+ 		$apartSel->joinLeft(array('r'=>"resort"), "a.resort_id = r.id ",$spResOrt);
  		
+ 		
+ 		$spResOrt = array();
+ 		$spResOrt["city_name"] = "name";
+ 		$spResOrt["city_uid"] = "name_uid";
+ 		
+ 		$apartSel->joinLeft(array('ci'=>"resort_city"), "r.ort_id = ci.id ",$spResOrt);
+// 		$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name','ort_gmap_lat' => 'gmap_lat','ort_gmap_lng' => 'gmap_lng','ort_gmap_zoom' => 'gmap_zoom')  );
+		
+// 		$resortSel->joinLeft(array('c_o'=>Contacts::getTableNameStatic()), "a.contact_id = c_o.id ",array ('useroner_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+// 		$resortSel->joinLeft(array('c_b'=>Contacts::getTableNameStatic()), "a.bookingcontact_id = c_b.id ",array ('userbooking_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+
+		
+// 		$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "a.user_create = u.guid ",array() );
+// 		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
 	
+// 		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "a.user_edit = u2.guid " ,array() );
+// 		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+
+		
+ 		if($as === "apartm_id" && ctype_digit($name)){
+			$apartSel->where("a.id=?", $name,Zend_Db::INT_TYPE);
+ 			
+ 			
+ 		}else {
+			$apartSel->where("a.name_uid=?", $name);
+ 			
+ 		}
+// die();
 	
-		$resortSel->where("a.name=?", $name);
-		$resortSel->where("'a.deleted'=?", 0);
-	
-		$resort = $db->fetchRow( $resortSel );
+		$resort = $db->fetchRow( $apartSel );
 	
 		return $resort;
 	
