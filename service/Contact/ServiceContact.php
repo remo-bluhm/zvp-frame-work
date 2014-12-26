@@ -35,7 +35,7 @@ class ServiceContact extends AService {
 	 */
 	public function ActionList($count, $offset = 0, $where = array(), $spalten = array()){
 	
-		require_once 'db/contact/Contacts.php';
+		require_once 'db/contact/contacts.php';
 	
 		$db = Contacts::getDefaultAdapter();
 
@@ -152,7 +152,7 @@ class ServiceContact extends AService {
 		}
 		if(!is_array($spalten))$spalten = array();
 		
-		require_once 'db/contact/Contacts.php';
+		require_once 'db/contact/contacts.php';
 		$db = Contacts::getDefaultAdapter();
 
 		
@@ -318,7 +318,7 @@ class ServiceContact extends AService {
 
 		$contactId = $this->_user->getContactId();
 
-		require_once 'db/contact/Contacts.php';
+		require_once 'db/contact/contacts.php';
 		$kontaktTab = new Contacts();
 		$contactSel = $kontaktTab->select();
 		$contactSel->where(Contacts::SP_ID . " = ?", $contactId);
@@ -402,7 +402,7 @@ class ServiceContact extends AService {
 		if(!is_array($fields))$fields = array();
 		//FireBug::setDebug($fields,"ServContact New Fields");
 		// Prüfen des lastName
-		require_once 'db/contact/Contacts.php';
+		require_once 'db/contact/contacts.php';
 		$lastName = Contacts::testLastName($lastName);
 		if( $lastName !== NULL ){
 		
