@@ -11,7 +11,6 @@
 class Message {
 	
 	const TAG_GUID = "code"; // der KeyName der Responce
-
 	
 	private $_guid = NULL;
 
@@ -26,6 +25,8 @@ class Message {
 	private $_services = array ();
 	
 
+	
+	
 	
 	/**
 	 * Inizialisieren
@@ -65,6 +66,13 @@ class Message {
 		return $this->_guid;
 	}
 	
+	
+	
+	
+	/**
+	 * Giebt die Backart zurück
+	 * 
+	 */
 	public function getBackArt(){
 		return $this->_backart;
 	}

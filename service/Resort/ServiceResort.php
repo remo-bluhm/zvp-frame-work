@@ -251,40 +251,40 @@ class ServiceResort extends AService {
 
 	/**
 	 * Erstellt ein Neues Resourt
+	 * @param string $resortUid
 	 * @param string $name
-	 * @param array $newData
+	 * @param string $cityUid 
+	 * @param array $data
 	 */
-	public function ActionNew($name, $newData = array()){
+	public function ActionNew($resortUid,$name,$cityUid, $data = array()){
 		
-		try {
-				
-			require_once 'db/resort/Resort.php';
-			$orteTab = new Resort();
-				
-			$data = array();
-			$data['name'] = $name;
-				
-			if(isset($data["strasse"])){
-				$data['strasse'] = $newData["strasse"];
-			}
-				
-			$data['edata'] = DBTable::DateTime();
-			$data['vdata'] = DBTable::DateTime();
-			$data['usercreate'] = $this->_rightsAcl->getAccess()->getGuId();
-			$data['useredit'] = $this->_rightsAcl->getAccess()->getGuId();
-			$data['visibil'] = 1;
-			$data['deleted'] = 0;
-				
+	    if(!is_array($data))$data = array();
+		    
+		require_once 'db/resort/Resort.php';
+		$resortTab = new Resort();
 			
-			$newOrtId = $orteTab->insert($data);
-				
-			return TRUE;
-				
-				
-		} catch (Exception $errorDB) {
+		// setzen des Accesses
+		$accessId = $this->_rightsAcl->getAccess()->getId();
+	
+		// hollen der OrtsId
+		$citySql = $resortTab->getAdapter()->select()->from("resort_city")->where("name_uid=?",$cityUid);
+		$cityId = (integer) $resortTab->getAdapter()->fetchOne($citySql);
+
+	
+	    $sendUid = $resortTab->post_slug($resortUid);
+
+	    $sendUid = Resort::testUid($sendUid);
+	    if($sendUid === NULL) throw new Exception("Resort Uid ist nicht Valiede", E_ERROR);
+	    
+	    $existUid = $resortTab->existUid($sendUid);
+	    if($existUid !== FALSE) throw new Exception("Resort Existiert", E_ERROR);
+		
+		$newOrtId = $resortTab->insertDataFull($accessId,$cityId,$sendUid,$name, $data);
 			
-			return FALSE;
-		}
+		return TRUE;
+				
+				
+	
 	}
 	
 	/**
