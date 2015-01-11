@@ -45,6 +45,7 @@ class ServiceResort extends AService {
 		$resortSel = $db->select ();
 		
 		$spA = array();
+		$spA["resort_uid"] = "uid";
 		$spA["resort_name"] = "name";
 		$spA["resort_visibil"] = "visibil";
 			
@@ -179,36 +180,43 @@ class ServiceResort extends AService {
 	
 	/**
 	 * Giebt ein einzelnes Resort zurück
-	 * @param string $name nach dem Gesucht werden soll 
+	 * @param string $resortUid nach dem Gesucht werden soll 	 
+	 * @param array $spalten
 	 * @return array|NULL
 	 */
-	public function ActionGetResort($name){
+	public function ActionSingle($resortUid , $spalten = array()){
 
-		
-	
+	    if(is_string($spalten) && $spalten=="*"){
+	        $spalten = array();
+	        $spalten[] = "usercreate_name";
+	        $spalten[] = "useredit_name";
+	        $spalten[] = "all_address";
+	        $spalten[] = "all_phone";
+	        $spalten[] = "all_email";
+	    }
+	    if(!is_array($spalten))$spalten = array();
+	    
 		require_once 'db/resort/Resort.php';
-		require_once 'db/resort/ResortCity.php';
-		require_once 'db/contact/contact_access.php';
-		require_once 'db/contact/Contacts.php';
+// 		require_once 'db/resort/ResortCity.php';
+// 		require_once 'db/contact/contact_access.php';
+// 		require_once 'db/contact/Contacts.php';
 		
 		
 		$db = Resort::getDefaultAdapter();
 		
 		
-		$resortSel = $db->select ();
 		
 		$spA = array();
+		$spA["uid"] = "uid";
 		$spA["name"] = "name";
 		$spA["visibil"] = "visibil";
 
-		
-		$spA["creat_date"] = "edata";
+		$spA["create_date"] = "edata";
 		$spA["edit_date"] = "vdata";
 		
- 		$spA["create_guid"] = "usercreate";
- 		$spA["edit_guid"] = "useredit";
+//  		$spA["create_guid"] = "access_create";
+//  		$spA["edit_guid"] = "access_edit";
 
-		
 		$spA["strasse"]="strasse";
 
 		$spA["gmap_lat"]= "gmap_lat";
@@ -216,22 +224,28 @@ class ServiceResort extends AService {
 		$spA["gmap_zoom"]= "gmap_zoom";
 	
 		
+		$sel = $db->select ();
+		$sel->from(array('r' => "resort") ,$spA);
 		
-		$resortSel->from(array('r' => Resort::getTableNameStatic()) ,$spA);
+		if( in_array('usercreate_name',$spalten) ){
+			$sel->joinLeft(array('a'=>"sys_access"), "r.access_create = a.id",array("create_access_guid"=>"guid") );
+			$sel->joinLeft(array('c1'=>"contacts"), "a.contacts_id = c1.id", array ('create_access_name' => 'CONCAT(c1.first_name," ",c1.last_name )' ) );
+		}
 		
-		$resortSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "r.usercreate = u.guid ",array() );
-		$resortSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
-		
-		$resortSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "r.useredit = u2.guid " ,array() );
-		$resortSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-
-		$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name')  );
+		if( in_array('useredit_name',$spalten) ){
+			$sel->joinLeft(array('a2'=>"sys_access"), "r.access_edit = a2.id" ,array("edit_access_guid"=>"guid") );
+			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('edit_access_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
+		}
 		
 		
-		$resortSel->where("r.name=?", $name);
-		$resortSel->where("'r.deleted'=?", 0);
 		
-		$resort = $db->fetchRow( $resortSel );
+		$sel->joinLeft(array('o'=>'resort_city'), "o.id = r.city_id", array ('ort_name' => 'name')  );
+		
+		
+		$sel->where("r.uid=?", $resortUid);
+		$sel->where("'r.deleted'=?", 0);
+		
+		$resort = $db->fetchRow( $sel );
 		
 		return $resort;
 
@@ -265,7 +279,7 @@ class ServiceResort extends AService {
 	    if($sendUid === NULL) throw new Exception("Resort Uid ist nicht Valiede", E_ERROR);
 	    
 	    $existUid = $resortTab->existUid($sendUid);
-	    if($existUid !== FALSE) throw new Exception("Resort Existiert", E_ERROR);
+	    if($existUid !== FALSE) throw new Exception("Resort UID Existiert schon", E_ERROR);
 		
 		$newOrtId = $resortTab->insertDataFull($accessId,$cityId,$sendUid,$name, $data);
 			

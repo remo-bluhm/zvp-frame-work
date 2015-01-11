@@ -185,7 +185,6 @@ class ServiceContact extends AService {
 		}
 		
 		if( in_array('useredit_name',$spalten) ){
-			require_once 'db/sys/access/sys_access.php';
 			$sel->joinLeft(array('a2'=>"sys_access"), "c.access_edit = a2.id" ,array("edit_access_guid"=>"guid") );
 			$sel->joinLeft(array('c2'=>"contacts"), "a2.contacts_id = c2.id", array ('edit_access_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
 		}
