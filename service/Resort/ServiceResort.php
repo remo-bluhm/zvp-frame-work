@@ -217,7 +217,7 @@ class ServiceResort extends AService {
 //  		$spA["create_guid"] = "access_create";
 //  		$spA["edit_guid"] = "access_edit";
 
-		$spA["strasse"]="strasse";
+		$spA["street"]="strasse";
 
 		$spA["gmap_lat"]= "gmap_lat";
 		$spA["gmap_lng"]= "gmap_lng";
