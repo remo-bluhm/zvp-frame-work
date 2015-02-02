@@ -117,13 +117,30 @@ class ServiceApartment extends AService {
 		if(!empty($where["owner_uid"])){
 			$sel->joinLeft(array('c'=>"contacts"),"a.owner_id = c.id", array() );
 			$sel->where("c.uid = ?", $where["owner_uid"]);
-			
-			
 		}
+		
+		
+		$resortSp = array();
+		$resortSp["resort_name"] = "name";
+		$resortSp["resort_uid"] = "uid";
+		$resortSp["resort_street"] = "strasse";
+		$sel->joinLeft(array('r'=>"resort"),"a.resort_id = r.id", $resortSp );
+		
+		$resortCitySp = array();
+		$resortCitySp["resort_city_name"] = "name";
+		$resortCitySp["resort_city_uid"] = "name_uid";
+		$resortCitySp["resort_city_zip"] = "zip";
+		$sel->joinLeft(array('rc'=>"resort_city"),"r.city_id = rc.id", $resortCitySp );
+
+		
+		// suche nach ResortName
+		if(!empty($where["resort_name"])){
+			$sel->where("r.name LIKE ?", $where["resort_name"]."%" );
+		}
+		
+		
 		if(!empty($where["search_name"])){
 			$sel->where("a.name LIKE ?", $where["search_name"]."%");
-			
-			
 		}
 		
 		$sel->limit($count,$offset);
@@ -207,14 +224,8 @@ class ServiceApartment extends AService {
 	 * @return array|NULL
 	 */
 	public function ActionSingle($name,$as = NULL){
-	
-	
-	
 
-
-	
 		$db = DBConnect::getConnect();
-	
 	
 		$apartSel = $db->select ();
 	
@@ -224,12 +235,7 @@ class ServiceApartment extends AService {
 	
 		$spA["create_date"] = "date_create";
  		$spA["edit_date"] = "date_edit";
- 		//$spA[] = "resort_id";
-	
-
-	
-	
-
+ 	
 		$apartSel->from(array('a' => "apartment") ,$spA);
 	
 		$spOwner = array();
@@ -244,7 +250,7 @@ class ServiceApartment extends AService {
 		
 		$spResOrt = array();
 		$spResOrt["resort_name"] = "name";
-		$spResOrt["resort_uid"] = "name_uid";
+		$spResOrt["resort_uid"] = "uid";
 		$spResOrt["resort_strasse"] = "strasse";
 		
  		$apartSel->joinLeft(array('r'=>"resort"), "a.resort_id = r.id ",$spResOrt);
@@ -254,7 +260,7 @@ class ServiceApartment extends AService {
  		$spResOrt["city_name"] = "name";
  		$spResOrt["city_uid"] = "name_uid";
  		
- 		$apartSel->joinLeft(array('ci'=>"resort_city"), "r.ort_id = ci.id ",$spResOrt);
+ 		$apartSel->joinLeft(array('ci'=>"resort_city"), "r.city_id = ci.id ",$spResOrt);
 // 		$resortSel->joinLeft(array('o'=>ResortCity::getTableNameStatic()), "o.id = r.ort_id", array ('ort_name' => 'name','ort_gmap_lat' => 'gmap_lat','ort_gmap_lng' => 'gmap_lng','ort_gmap_zoom' => 'gmap_zoom')  );
 		
 // 		$resortSel->joinLeft(array('c_o'=>Contacts::getTableNameStatic()), "a.contact_id = c_o.id ",array ('useroner_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
@@ -270,8 +276,6 @@ class ServiceApartment extends AService {
 		
  		if($as === "apartm_id" && ctype_digit($name)){
 			$apartSel->where("a.id=?", $name,Zend_Db::INT_TYPE);
- 			
- 			
  		}else {
 			$apartSel->where("a.name_uid=?", $name);
  			
