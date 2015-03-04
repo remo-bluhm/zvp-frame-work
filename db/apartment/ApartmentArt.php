@@ -1,15 +1,15 @@
 <?php
 
 /**
- * class zvp_zimmer
+ * class ApartmentArt 
  *
- * Description for class zvp_zimmer
+ * Description Apartment Arten bezieht sich auf das Apartment welche art es ist ob FW1 oder Apartment oder Fewo
  *
- * @author:
+ * @author: Remo Bluhm
 */
-class apartment_art extends DBTable {
+class ApartmentArt extends DBTable {
 	
-	protected $_TableName = "apartment_art";
+	protected $_name = "apartment_art";
 	const SP_ID = "id";
 	
 	const SP_E_DATA = "edatum";
@@ -30,6 +30,7 @@ class apartment_art extends DBTable {
 	 * @return NULL|Zend_Db_Table_Row_Abstract
 	 */
 	public function createZimmerArt($userId, $sysName){
+		
 		$artSelect = $this->select();
 		$artSelect->where(self::SP_SYS_NAME." = ?", $sysName);
 		$artRow = $this->fetchRow($artSelect); 
@@ -61,7 +62,24 @@ class apartment_art extends DBTable {
 	public static function testSysName($value){
 		return $value;
 	}
+	
+	public function exist($sysName){
+		$con = DBConnect::getConnect();
+		$artId = $con->fetchOne("select ".self::SP_ID." from ".$this->_name." where ".$con->quoteInto( self::SP_SYS_NAME." = ?",$sysName)." ;" )   ;
+		return $artId;
+	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
 
 ?>

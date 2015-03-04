@@ -162,10 +162,10 @@ class ServiceApartmentOwner extends AService {
 	 *
 	 * @param string $contactuid Die Uid des Contacts als String
 	 * @param array $spalten
-	 * @return array
+	 * @return array|bool FALSE
 	 */
 	public function ActionSingle($contactuid, $spalten = array()){
-	
+
 			
 		if(is_string($spalten) && $spalten=="*"){
 			$spalten = array();
@@ -176,7 +176,7 @@ class ServiceApartmentOwner extends AService {
 			$spalten[] = "all_email";
 		}
 		if(!is_array($spalten))$spalten = array();
-		
+	
 		require_once 'db/contact/Contacts.php';
 		$db = Contacts::getDefaultAdapter();
 
@@ -258,8 +258,9 @@ class ServiceApartmentOwner extends AService {
 		
 		// falls nichts gefunden wurde dann abbruch
 		if($contactA === FALSE) return FALSE;
+
 			
-		//////////////////////////////////////
+			//////////////////////////////////////
 		if( in_array('all_address',$spalten) ){
 	
 			
@@ -303,8 +304,8 @@ class ServiceApartmentOwner extends AService {
 		unset($contactA["address_id"]);
 		unset($contactA["phone_id"]);
 		unset($contactA["email_id"]);
-		
-		FireBug::setDebug($contactA,"ServiceContact Single");
+	
+		//FireBug::setDebug($contactA,"ServiceContact Single");
 		return $contactA;
 	
 	

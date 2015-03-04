@@ -289,7 +289,10 @@ class Contacts extends DBTable {
 	 * @return string|FALSE
 	 */
 	public function exist($uid){
-		$value = DBConnect::getConnect()->fetchOne("select id from contacts where uid='$uid'");
+// 		$sel = $this->select();
+// 		$sel
+		$con = DBConnect::getConnect();
+		$value = $con->fetchOne("select ".self::SP_ID." from ".$this->_name." where ".$con->quoteInto(self::SP_UNID."=?", $uid));    
 		return $value;
 	}
 

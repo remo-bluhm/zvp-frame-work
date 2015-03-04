@@ -115,7 +115,7 @@ class Apartment extends DBTable {
 	
 
 	
-	public function insertDataFull($accessId,$nameUid,$ownerId,    $data=array()){
+	public function insertDataFull($accessId,$nameUid,$ownerId, $data=array()){
 		// Die Pflichtparameter
 		$this->setAccessCreateId($accessId);
 		
@@ -125,11 +125,30 @@ class Apartment extends DBTable {
 		
 		$ownerIdValue = $this->setOwnerId($ownerId);
 		
+	
 		if($apartmName !== NULL  && $resultFind === FALSE ){
-			
 			if(array_key_exists("name",$data)) 		$this->setName($data["name"]);
 			
-			return $this->insert($this->_insertData);
+			if(array_key_exists("art_sys_name",$data)){
+
+				require_once 'db/apartment/ApartmentArt.php';
+				$apartmArtTab = new ApartmentArt($data["art_sys_name"]);
+				
+				
+				$id = $apartmArtTab->exist($sysName);
+				
+				var_dump($id);
+				
+				
+				$this->setArt($data["art_sys_name"]); // Die art des Quartieres FZ2,FW1
+			}
+			if(array_key_exists("bookingcontact_id",$data)) 		$this->setName($data["bookingcontact_id"]); 
+			if(array_key_exists("bookingcontact_id",$data)) 		$this->setName($data["bookingcontact_id"]); 
+			
+			
+			
+			
+			//return $this->insert($this->_insertData);
 		}else{
 			return NULL;
 			//@TODO hier kann noch ein Fehler gesetzt werden
@@ -205,6 +224,11 @@ class Apartment extends DBTable {
 		return $zimmerRow;
 	}
 	
+	/**
+	 * Testet die Art des Apartments
+	 * @param unknown $value
+	 * @return unknown|NULL
+	 */
 	public static function testApartmentArt($value){
 		if(is_int($value) && $value < 100 ){
 			return $value;

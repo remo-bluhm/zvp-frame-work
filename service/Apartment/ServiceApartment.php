@@ -38,23 +38,32 @@ class ServiceApartment extends AService {
 	 */
 	public function ActionNew($apartmName,$ownerUid, $fields = array()) {
 	
-		FireBug::setDebug($fields,"ServiceApartment::ActionNew->fields");
+		//FireBug::setDebug($fields,"ServiceApartment::ActionNew->fields");
 
 		
-		
+		// Tesetet den Apartmentname
 		require_once 'db/apartment/Apartment.php';
 		$apartmName = Apartment::testApartmName($apartmName);
 		
+		// Testet den Contact
 		require_once 'db/contact/Contacts.php';
 		$ownerUid = Contacts::testUID($ownerUid);
-		if($ownerUid === NULL  )return FALSE;
-		// falls keiner gefunden wurde dann false ansonsten die id
-		$ownerId = DBConnect::getConnect()->fetchOne("select id from contacts where uid='$ownerUid' and type='HIRER';");
-			
 		
+		// falls keiner gefunden wurde dann false ansonsten die id
+		if($ownerUid === NULL  )return FALSE;
+
+		// hollt die Besizer id 
+		$contactsTab = new Contacts();
+		$ownerId = $contactsTab->exist($ownerUid);
+		
+	
 		if( $apartmName !== NULL && $ownerId !== FALSE  ){
+			
+			
+			
 			$apartmTab = new Apartment();
 			$apartmId = $apartmTab->insertDataFull($this->_rightsAcl->getAccess()->getId(), $apartmName, $ownerId, $fields);
+			$apartmId = NULL;
 			if($apartmId !== NULL){
 				
 				return TRUE;
