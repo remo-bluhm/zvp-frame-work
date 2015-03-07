@@ -173,7 +173,7 @@ class Request {
 			$SendDataString = $GLOBALS ["_GET"] ["vars"];;
 			$this->_sendDataArt = "GET";
 		
-		} elseif (! empty ( $GLOBALS ['HTTP_RAW_POST_DATA'] )) {
+		}elseif (! empty ( $GLOBALS ['HTTP_RAW_POST_DATA'] )) {
 			// Fals die Daten über die RawPostData kommen
 			$SendDataString = $GLOBALS ['HTTP_RAW_POST_DATA'];
 			$this->_sendDataArt = "RAWPOST";

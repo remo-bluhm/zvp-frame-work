@@ -44,7 +44,7 @@ class ServiceApartmentOwner extends AService {
 		$spA = array();
 		$spA["uid"] = "uid";
 		//$spA["anzahl"] = "count(uid)";
-		$spA["type"] = "type";
+		//$spA["type"] = "type";
 		$spA["title_name"] = "title_name";
 		$spA["last_name"] = "last_name";
 		$spA["first_name"] = "first_name";
@@ -85,39 +85,66 @@ class ServiceApartmentOwner extends AService {
 		$resortSel->where("c.deleted = ?", 0);
 		$resortSel->where("c.type = ?", "HIRER");
 		
-		// suche nach Namen
-		if(!empty($where["uid"]))
-			$resortSel->where("c.uid LIKE ?", $where["uid"]);
-			
-		// suche nach Namen
-		if(!empty($where["last_name"]))
-			$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
-		if(!empty($where["first_name"]))
-			$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
+		// suche nach uid kann nicht sein da es nur einen gibt
+// 		if(!empty($where["uid"]))
+// 			$resortSel->where("c.uid LIKE ?", $where["uid"]);
+
 		
+		// Die OrWheres
+		$isSetOneOr = FALSE;
 		
-		if(!empty($where["zip"])){
-			$groupIsOn = TRUE;
-			$resortSel->where("a.plz LIKE ?", $where["zip"]."%");
+		// suche nach Namen
+		if(!empty($where["last_name"])){
+			if($isSetOneOr){
+				$resortSel->orWhere("c.last_name LIKE ?", $where["last_name"]."%");
+			}else {
+				$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
+				$isSetOneOr = TRUE;
+			}
 		}
+		
+		if(!empty($where["first_name"]))
+			if($isSetOneOr){
+				$resortSel->orWhere("c.first_name LIKE ?", $where["first_name"]."%");
+			}else {
+				$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
+				$isSetOneOr = TRUE;
+			}
+		
+		
 		if(!empty($where["ort"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.ort LIKE ?", $where["ort"]."%");
+			if($isSetOneOr){
+				$resortSel->orWhere("a.ort LIKE ?", $where["ort"]."%");
+			}else {
+				$resortSel->where("a.ort LIKE ?", $where["ort"]."%");
+				$isSetOneOr = TRUE;
+			}
 		}
 		if(!empty($where["street"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("a.strasse LIKE ?", $where["street"]."%");
+			if($isSetOneOr){
+				$resortSel->orWhere("a.strasse LIKE ?", $where["street"]."%");
+			}else {
+				$resortSel->where("a.strasse LIKE ?", $where["street"]."%");
+				$isSetOneOr = TRUE;
+			}
 		}
 		
 		if(!empty($where["email"])){
 			$groupIsOn = TRUE;
-			$resortSel->where("m.mailadress LIKE ?", $where["email"]."%");
+			if($isSetOneOr){
+				$resortSel->orWhere("m.mailadress LIKE ?", $where["email"]."%");
+			}else {
+				$resortSel->where("m.mailadress LIKE ?", $where["email"]."%");
+				$isSetOneOr = TRUE;
+			}
 		}
 			
 			
 		$resortSel->limit($count,$offset);
 		$resortSel->group("c.id");
-		
+		//echo $resortSel->__toString();
 		$resort = $db->fetchAll( $resortSel );
 		
 		return $resort;
@@ -248,9 +275,10 @@ class ServiceApartmentOwner extends AService {
 
  		//$sel->joinLeft(array('em'=>"contact_email"), "c.main_contact_email_id = em.id" ,$mailSp);
 		
-		$sel->where("c.uid = ?",$contactuid);
 		$sel->where("c.deleted = ?", "0");
 		$sel->where("c.type = ?", "HIRER");
+		$sel->where("c.uid = ?",$contactuid);
+
 		
 
 		
@@ -325,7 +353,7 @@ class ServiceApartmentOwner extends AService {
 		if(!is_array($fields))$fields = array();
 	
 		// Prüfen des lastName
-		require_once 'db/contact/Contacts.php';
+		require_once 'db/contact/contacts.php';
 		$lastName = Contacts::testLastName($lastName);
 		if( $lastName !== NULL ){
 	
@@ -334,8 +362,8 @@ class ServiceApartmentOwner extends AService {
 			$contTab->getDefaultAdapter()->beginTransaction();
 			try {
 	
-				$fields["cont_type"] = "HIRER";
-				$contactUid = $contTab->insertData( $this->getAccess()->getId() , $lastName,$fields);
+				$fields["type"] = "HIRER";
+				$contactUid = $contTab->insertDataFull( $this->getAccess()->getId() , $lastName,$fields);
 					
 				// Nochmaliges Prüfen auf contactid
 				if($contactUid === NULL){

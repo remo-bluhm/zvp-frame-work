@@ -123,10 +123,14 @@ class IpTooling {
 	
 	}
 	
+	/**
+	 * Giebt die Anfragende Ip zurück
+	 * @return string Die Ip
+	 */
 	public static function getIp() {
 		
 		$IP = $_SERVER ['REMOTE_ADDR'];
-		return ( integer ) $IP;
+		return $IP;
 	}
 	
 	/**

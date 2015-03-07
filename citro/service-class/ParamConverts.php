@@ -68,7 +68,7 @@ class ParamConverts {
 				break;
 					
 			case self::TYPE_INT :
-				$value = is_integer( $Value );
+				$value = is_numeric( $Value );
 				break;
 					
 			case self::TYPE_STRING :
