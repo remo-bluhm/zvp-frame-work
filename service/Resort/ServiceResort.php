@@ -35,7 +35,7 @@ class ServiceResort extends AService {
 	 * @param array $spalten
 	 * @return array
 	 */
-	public function ActionList($count, $offset, $where = array(), $spalten = array()){
+	public function ActionList($count = 10, $offset = 0, $where = array(), $spalten = array()){
 
  		require_once 'db/resort/resort.php';
 
