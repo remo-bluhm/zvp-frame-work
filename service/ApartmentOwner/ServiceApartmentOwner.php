@@ -82,65 +82,39 @@ class ServiceApartmentOwner extends AService {
 		!empty($where['phonenumber'])  ? $phoneJoin = "c.id = p.contacts_id": $phoneJoin = "c.main_contact_email_id = p.id";
 		$resortSel->joinLeft(array('p'=>"contact_phone"),$phoneJoin, $mailSpaltenA );
 		
-		$resortSel->where("c.deleted = ?", 0);
-		$resortSel->where("c.type = ?", "HIRER");
+
 		
 		// suche nach uid kann nicht sein da es nur einen gibt
 // 		if(!empty($where["uid"]))
 // 			$resortSel->where("c.uid LIKE ?", $where["uid"]);
 
 		
-		// Die OrWheres
-		$isSetOneOr = FALSE;
-		
-		// suche nach Namen
+		// Das Or Where seggment
+		$searchData = array();
+
 		if(!empty($where["last_name"])){
-			if($isSetOneOr){
-				$resortSel->orWhere("c.last_name LIKE ?", $where["last_name"]."%");
-			}else {
-				$resortSel->where("c.last_name LIKE ?", $where["last_name"]."%");
-				$isSetOneOr = TRUE;
-			}
+			$searchData[] = $db->quoteInto("c.last_name LIKE ?", $where["last_name"]."%");
 		}
-		
-		if(!empty($where["first_name"]))
-			if($isSetOneOr){
-				$resortSel->orWhere("c.first_name LIKE ?", $where["first_name"]."%");
-			}else {
-				$resortSel->where("c.first_name LIKE ?", $where["first_name"]."%");
-				$isSetOneOr = TRUE;
-			}
-		
-		
+		if(!empty($where["first_name"])){
+			$searchData[] = $db->quoteInto("c.first_name LIKE ?", $where["first_name"]."%");
+		}
 		if(!empty($where["ort"])){
-			$groupIsOn = TRUE;
-			if($isSetOneOr){
-				$resortSel->orWhere("a.ort LIKE ?", $where["ort"]."%");
-			}else {
-				$resortSel->where("a.ort LIKE ?", $where["ort"]."%");
-				$isSetOneOr = TRUE;
-			}
+			$searchData[] = $db->quoteInto("a.ort LIKE ?", $where["ort"]."%");
 		}
 		if(!empty($where["street"])){
-			$groupIsOn = TRUE;
-			if($isSetOneOr){
-				$resortSel->orWhere("a.strasse LIKE ?", $where["street"]."%");
-			}else {
-				$resortSel->where("a.strasse LIKE ?", $where["street"]."%");
-				$isSetOneOr = TRUE;
-			}
+			$searchData[] = $db->quoteInto("a.strasse LIKE ?", $where["street"]."%");
+		}
+		if(!empty($where["email"])){
+			$searchData[] = $db->quoteInto("m.mailadress LIKE ?", $where["email"]."%");
 		}
 		
-		if(!empty($where["email"])){
-			$groupIsOn = TRUE;
-			if($isSetOneOr){
-				$resortSel->orWhere("m.mailadress LIKE ?", $where["email"]."%");
-			}else {
-				$resortSel->where("m.mailadress LIKE ?", $where["email"]."%");
-				$isSetOneOr = TRUE;
-			}
+		if(count($searchData)>0){
+			$orString =	implode(" OR ", $searchData);
+			$resortSel->where($orString);
 		}
-			
+		
+		$resortSel->where("c.deleted = ?", 0);
+		$resortSel->where("c.type = ?", "HIRER");
 			
 		$resortSel->limit($count,$offset);
 		$resortSel->group("c.id");
@@ -151,6 +125,8 @@ class ServiceApartmentOwner extends AService {
 	
 	
 	}
+	
+
 	
 	/**
 	 * Arbeitet die Suche für die Listmethode ab
