@@ -146,18 +146,6 @@ class ServiceResourceInstance {
 	
 	
 	
-	/**
-	 * Giebt das Verzeichnis zurück in den die Cachdaten gespeichert werden
-	 * sollen
-	 * 
-	 * @return string
-	 */
-	public function getCachDir() {
-		//$dir = dirname ( __FILE__ ) . DIRECTORY_SEPARATOR . "serviceResource_Cach";
-		return $this->_cacheDir;
-	}
-	
-	
 	
 	
 	/**
@@ -245,6 +233,20 @@ class ServiceResourceInstance {
 	
 		return $cache;
 	
+	}
+	
+	
+
+
+	/**
+	 * Giebt das Verzeichnis zurück in den die Cachdaten gespeichert werden
+	 * sollen
+	 *
+	 * @return string
+	 */
+	public function getCachDir() {
+	    //$dir = dirname ( __FILE__ ) . DIRECTORY_SEPARATOR . "serviceResource_Cach";
+	    return $this->_cacheDir;
 	}
 	
 }
