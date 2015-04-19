@@ -84,8 +84,7 @@ class Resort extends DBTable {
 	    return $result;
 	}
 	public function setUid($value){
-	    
-	    $result = self::testUid($value);
+		$result = self::testUid($value);
 	    if($result !== FALSE)$this->_insertData[self::SP_UID] = $result;
 	    return $result;
 	}
