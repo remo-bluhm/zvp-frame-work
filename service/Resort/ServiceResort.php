@@ -55,7 +55,7 @@ class ServiceResort extends AService {
 // 		$spA["resort_create_guid"] = "usercreate";
 // 		$spA["resort_edit_guid"] = "useredit";
 		
-		$spA["resort_strasse"]="strasse";
+		$spA["resort_strasse"]="street";
 		
 		$spA["gmap_lat"]= "gmap_lat";
 		$spA["gmap_lng"]= "gmap_lng";
@@ -102,7 +102,7 @@ class ServiceResort extends AService {
  		
  		// Suche nach Strasse
  		if(array_key_exists("strasse", $where))
- 			$resortSel->where("r.strasse LIKE ?", $where["strasse"]."%"); 
+ 			$resortSel->where("r.street LIKE ?", $where["street"]."%"); 
  		
  		
 		$resortSel->limit($count,$offset);
@@ -117,6 +117,59 @@ class ServiceResort extends AService {
 		
 		
 	}
+	
+	/**
+	 * Sucht ein Resort
+	 * @param string $searchStr
+	 * @param integer $count
+	 * @return array
+	 */
+	public function ActionSearch( $searchStr , $count = 10) {
+	
+		$db = DBConnect::getConnect();
+	
+		$spA = array();
+		$spA["resort_uid"] = "uid";
+		$spA["resort_name"] = "name";
+		$spA["resort_street"]="street";
+	
+		$resortSel = $db->select();
+		$resortSel->from( array('r' => "resort") ,$spA);
+	
+				
+		$citySp =  array('city_name'=>'c.name');
+		$resortSel->joinLeft(array('c'=>"resort_city"), "c.id = r.city_id", $citySp);
+		
+		$searchA = explode(" ", $searchStr);
+		$cleanSearA = array();
+		foreach ($searchA as $searchElem){
+			if(!empty($searchElem)){
+				$elemClean = trim($searchElem);
+				$cleanSearA[] = $elemClean;
+			}
+		}
+		$numberSearchElem = count($cleanSearA);
+		if($numberSearchElem < 1) return array();
+			
+		$searchstring = "(r.name LIKE '".$cleanSearA[0]."%' OR r.street LIKE '".$cleanSearA[0]."%' OR c.name LIKE '".$cleanSearA[0]."%') ";
+		 
+		for($i=1; $i<count($cleanSearA); $i++) //bei mehr als einem Suchbegriff, weitere zur Abfrage hinzufügen
+		{
+			$searchstring .= " AND (r.name LIKE '".$cleanSearA[$i]."%' OR r.street LIKE '".$cleanSearA[$i]."%' OR c.name LIKE '".$cleanSearA[$i]."%') ";
+		}
+		
+		$resortSel->where($searchstring);
+		$resortSel->limit($count);
+		//echo $resortSel->__toString();
+
+		$resort = $db->fetchAll( $resortSel );
+		if(!is_array($resort))$resort = array();	
+		return $resort;
+	
+	
+	}
+	
+	
 	
 	
 	/**
@@ -156,6 +209,26 @@ class ServiceResort extends AService {
 		
 	}
 	
+	/**
+	 * Prüft ob eine Resortuid existiert
+	 * @param string $uidname Der Resortname
+	 * @return int 1 resource existiert 0 exestiert nicht
+	 */
+	public function ActionExist($uidname){
+	
+		if(empty($uidname))return 1; // falls eine lehre anfrage kommt diese als standart mit existiert zurückgeben
+		require_once 'db/resort/Resort.php';
+		$tab = new Resort();
+		$id = $tab->existUid($uidname);
+		if(is_int($id)&&$id > 0){
+			//Gefunden
+			return 1;
+		}else {
+			//nicht gefunden
+			return 0;
+		}
+	
+	}
 	
 	/**
 	 * Überschreibt die Daten

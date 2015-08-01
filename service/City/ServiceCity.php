@@ -40,6 +40,52 @@ class ServiceCity extends AService {
 	
 		return $allOrtCounts;
 	}
+	
+	/**
+	 * Sucht ein Ort
+	 * @param string $searchStr
+	 * @param integer $count
+	 * @return array
+	 */
+	public function ActionSearch( $searchStr , $count = 10) {
+	
+		$db = DBConnect::getConnect();
+	
+		$spA = array();
+		$spA["city_uid"] = "uid";
+		$spA["city_name"] = "name";
+		$spA["city_zip"] = "zip";
+		$spA["city_land"] = "land";
+		$spA["city_land_part"] = "land_part";
+		$spA["city_country"] = "land_country";
+	
+		$resortSel = $db->select();
+		$resortSel->from( array('c' => "resort_city") ,$spA);
+	
+		$searchA = explode(" ", $searchStr);
+		$cleanSearA = array();
+		foreach ($searchA as $searchElem){
+			if(!empty($searchElem)){
+				$elemClean = trim($searchElem);
+				$cleanSearA[] = $elemClean;
+			}
+		}
+		$numberSearchElem = count($cleanSearA);
+		if($numberSearchElem < 1) return array();
+			
+		$searchstring = "(c.name LIKE '".$cleanSearA[0]."%' OR c.zip LIKE '".$cleanSearA[0]."%' ) ";
+			
+		
+		$resortSel->where($searchstring);
+		$resortSel->limit($count);
+		//echo $resortSel->__toString();
+	
+		$resort = $db->fetchAll( $resortSel );
+		if(!is_array($resort))$resort = array();
+		return $resort;
+	
+	
+	}
 
 	/**
 	 * Giebt eine Liste von Orten zurück

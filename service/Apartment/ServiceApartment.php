@@ -132,12 +132,12 @@ class ServiceApartment extends AService {
 		$resortSp = array();
 		$resortSp["resort_name"] = "name";
 		$resortSp["resort_uid"] = "uid";
-		$resortSp["resort_street"] = "strasse";
+		$resortSp["resort_street"] = "street";
 		$sel->joinLeft(array('r'=>"resort"),"a.resort_id = r.id", $resortSp );
 		
 		$resortCitySp = array();
 		$resortCitySp["resort_city_name"] = "name";
-		$resortCitySp["resort_city_uid"] = "name_uid";
+		$resortCitySp["resort_city_uid"] = "uid";
 		$resortCitySp["resort_city_zip"] = "zip";
 		$sel->joinLeft(array('rc'=>"resort_city"),"r.city_id = rc.id", $resortCitySp );
 
@@ -331,6 +331,25 @@ class ServiceApartment extends AService {
 	
 	}
 	
+	/**
+	 * Prüft ob eine Apartmentuid existiert
+	 * @param string $uidname Der Resortname
+	 * @return int 1 resource existiert 0 exestiert nicht
+	 */
+	public function ActionExist($uidname){
+	
+		if(empty($uidname))return 1; // falls eine lehre anfrage kommt diese als standart mit existiert zurückgeben um fehler zu vermeinden
+		require_once 'db/apartment/apartment.php';
+		$tab = new Apartment();
+		$id = $tab->exist($uidname);
+		if($id === TRUE){
+			return 1;
+		}else{
+			return 0;
+		}
+
+	
+	}
 	
 	/**
 	 * Überschreiben des Resorts

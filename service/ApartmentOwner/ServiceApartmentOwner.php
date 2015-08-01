@@ -366,7 +366,66 @@ class ServiceApartmentOwner extends AService {
 	
 	
 	
+	/**
+	 * Sucht ein Resort
+	 * @param string $searchStr
+	 * @param integer $count
+	 * @return array
+	 */
+	public function ActionSearch( $searchStr , $count = 10) {
 	
+		$db = DBConnect::getConnect();
+	
+		$spA["uid"] = "uid";
+		$spA["title_name"] = "title_name";
+		$spA["last_name"] = "last_name";
+		$spA["first_name"] = "first_name";
+		$spA["first_add_name"] = "first_add_name";
+		$spA["affix_name"] = "affix_name";
+		
+		$spA["firma"] = "firma";
+		$spA["position"] = "position";
+	
+		$sel = $db->select ();
+		$sel->from( array('c' => "contacts" ), $spA );
+	
+		$adressSpaltenA = array();
+		$adressSpaltenA['a_plz'] = "plz";
+		$adressSpaltenA['a_ort'] = "ort";
+		$adressSpaltenA['a_strasse'] = "strasse";
+ 		$sel->joinLeft(array('a'=>"contact_address"),"c.id = a.contacts_id" , $adressSpaltenA );
+	
+	
+		$searchA = explode(" ", $searchStr);
+		$cleanSearA = array();
+		foreach ($searchA as $searchElem){
+			if(!empty($searchElem)){
+				$elemClean = trim($searchElem);
+				$cleanSearA[] = $elemClean;
+			}
+		}
+		$numberSearchElem = count($cleanSearA);
+		if($numberSearchElem < 1) return array();
+			
+		$searchstring = "(c.first_name LIKE '".$cleanSearA[0]."%' OR c.last_name LIKE '".$cleanSearA[0].
+							"%' OR a.ort LIKE '".$cleanSearA[0]."%' OR a.strasse LIKE '".$cleanSearA[0]."%') ";
+			
+		for($i=1; $i<count($cleanSearA); $i++) //bei mehr als einem Suchbegriff, weitere zur Abfrage hinzufügen
+		{
+			$searchstring .= " AND (c.first_name LIKE '".$cleanSearA[$i]."%' OR c.last_name LIKE '".$cleanSearA[$i].
+								"%' OR a.ort LIKE '".$cleanSearA[$i]."%' OR a.strasse LIKE '".$cleanSearA[$i]."%') ";
+		}
+	
+		$sel->where($searchstring);
+		$sel->limit($count);
+		//echo $resortSel->__toString();
+	
+		$resort = $db->fetchAll( $sel );
+		if(!is_array($resort))$resort = array();
+		return $resort;
+	
+	
+	}
 	
 
 	

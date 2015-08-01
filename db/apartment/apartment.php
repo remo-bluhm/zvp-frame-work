@@ -162,13 +162,30 @@ class Apartment extends DBTable {
 	}
 	
 	/**
-	 * Findet ein Apartment anhand seines Namens
+	 * Prüfft ob ein Apartment existiert
 	 * @param string $name
-	 * @return string|FALSE 
+	 * @return bool 
 	 */
 	public function exist($nameUid){
-		$value = DBConnect::getConnect()->fetchOne("select id from apartment where name_uid='$nameUid'");
-		return $value;
+		
+		if($this->getId($nameUid) !== FALSE){
+			//Gefunden
+			return TRUE;
+		}else {
+			//nicht gefunden
+			return FALSE;
+		}
+	}
+	/**
+	 * Findet die Id anhand ihrer Uid
+	 * @param string $nameUid
+	 * @return int|FALSE
+	 */
+	public function getId($nameUid){
+		$conn = DBConnect::getConnect();
+		$value = $conn->fetchOne("select id from apartment where ".$conn->quoteInto("name_uid = ?", $nameUid) );
+		if($value === FALSE) return FALSE;
+		return (int) $value;
 	}
 	
  	

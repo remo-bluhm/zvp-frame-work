@@ -101,7 +101,8 @@ class Resort extends DBTable {
 	    
 	    $sel = $this->getAdapter()->select()->from($this->_name,array("id"))->where("uid=?",$uid);
 	    $id = $this->getAdapter()->fetchOne($sel);
-	    return $id;
+	    if($id !== FALSE);
+	    return (int) $id;
 	}
 	
 
