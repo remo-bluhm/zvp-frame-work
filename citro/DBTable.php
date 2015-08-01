@@ -16,6 +16,7 @@ abstract class DBTable extends Zend_Db_Table_Abstract {
 	
 	}
 	
+	
 	public function init() 
 
 	{
