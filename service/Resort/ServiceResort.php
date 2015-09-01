@@ -118,6 +118,10 @@ class ServiceResort extends AService {
 		
 	}
 	
+	
+	
+	
+	
 	/**
 	 * Sucht ein Resort
 	 * @param string $searchStr
@@ -169,7 +173,39 @@ class ServiceResort extends AService {
 	
 	}
 	
+	/**
+	 * Sucht ein Resort
+	 * @param string $searchStr
+	 * @param integer $count
+	 * @return array
+	 */
+	public function ActionSearchName( $searchStr , $count = 10) {
 	
+		$db = DBConnect::getConnect();
+	
+		$spA = array();
+		$spA["resort_uid"] = "uid";
+		$spA["resort_name"] = "name";
+		$spA["resort_street"]="street";
+	
+		$resortSel = $db->select();
+		$resortSel->from( array('r' => "resort") ,$spA);
+	
+	
+		$citySp =  array('city_name'=>'c.name');
+		$resortSel->joinLeft(array('c'=>"resort_city"), "c.id = r.city_id", $citySp);
+		
+		$resortSel->where($db->quoteInto("r.name LIKE ?", $searchStr."%"));
+		$resortSel->limit($count);
+		//echo $resortSel->__toString();
+	
+		$resort = $db->fetchAll( $resortSel );
+		if(!is_array($resort))$resort = array();
+
+		return $resort;
+	
+	
+	}
 	
 	
 	/**
