@@ -202,7 +202,18 @@ class ResortCity extends DBTable {
 
 		return $value;
 	}
-	
+	/**
+	 * Prüfen auf Existens der Uid mit rückgabe der Id
+	 * @param string $uid die Uid des Datensatzes
+	 * @return integer|bool Die id des Datensatzes wenn nicht gefunden dann FALSE
+	 */
+	public function existUid($uid){
+		 
+		$sel = $this->getAdapter()->select()->from($this->_name,array("id"))->where("uid=?",$uid);
+		$id = $this->getAdapter()->fetchOne($sel);
+		if($id !== FALSE);
+		return (int) $id;
+	}
 	
 }
 

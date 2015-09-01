@@ -485,20 +485,21 @@ class ServiceCity extends AService {
 	
 	/**
 	 * Prüft ob es den Ort giebt falls ja giebt er diesen wieder
-	 * @param string $key
+	 * @param string $uid
 	 * @return boolean|array
 	 */
-	public function ActionExistCityKey($key){
+	public function ActionExistUid($uid){
+		if(empty($uid))return 1; // falls eine lehre anfrage kommt diese als standart mit existiert zurückgeben
 		require_once 'db/resort/ResortCity.php';
 		$tab = new ResortCity();
-		$sel = $tab->select();
-		$sel->where("name_uid=?",$key);
-		$row = $tab->fetchRow($sel);
-	
-		if($row === NULL){
-			return FALSE;
+		$id = $tab->existUid($uid);
+		if(is_int($id)&&$id > 0){
+			//Gefunden
+			return 1;
+		}else {
+			//nicht gefunden
+			return 0;
 		}
-		return $row->toArray();
 	
 	}
 	/**
