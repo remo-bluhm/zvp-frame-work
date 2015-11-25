@@ -45,11 +45,11 @@ class ServiceContact extends AService {
 		$spA["uid"] = "uid";
 		//$spA["anzahl"] = "count(uid)";
 		$spA["type"] = "type";
-		$spA["title_name"] = "title_name";
-		$spA["last_name"] = "last_name";
-		$spA["first_name"] = "first_name";
-		$spA["first_add_name"] = "first_add_name";
-		$spA["affix_name"] = "affix_name";
+		//$spA["title_name"] = "title_name";
+		//$spA["last_name"] = "last_name";
+		//$spA["first_name"] = "first_name";
+		//$spA["first_add_name"] = "first_add_name";
+		//$spA["affix_name"] = "affix_name";
 		
 		$spA["firma"] = "firma";
 		$spA["position"] = "position";
@@ -62,14 +62,21 @@ class ServiceContact extends AService {
  			
  		require_once 'db/contact/address/Address.php';
  		$adressSpaltenA = array();
+ 		
+ 		$adressSpaltenA["title_name"] = "name_title";
+ 		$adressSpaltenA["first_name"] = "name_first";
+ 		$adressSpaltenA["last_name"] = "name_last";
+ 		$adressSpaltenA["affix_name"] = "name_affix";
+ 		$adressSpaltenA["name_addline"] = "name_addline";
+ 		
  		$adressSpaltenA['a_plz'] = "plz";
  		$adressSpaltenA['a_ort'] = "ort";
  		$adressSpaltenA['a_strasse'] = "strasse";
- 		if( !empty($where["zip"]) || !empty($where["ort"]) || !empty($where["street"]) ){	
- 			$adressJoin = "c.id = a.contacts_id";
- 		}else {
+//  		if( !empty($where["zip"]) || !empty($where["ort"]) || !empty($where["street"]) ){	
+//  			$adressJoin = "c.id = a.contacts_id";
+//  		}else {
  			$adressJoin ="c.main_contact_address_id = a.id";
- 		}
+//  		}
 		$resortSel->joinLeft(array('a'=>"contact_address"),$adressJoin , $adressSpaltenA );
  		
  		// Join der Email
@@ -121,7 +128,8 @@ class ServiceContact extends AService {
 //  		$selectStr = $resortSel->__toString();
 //  		echo $selectStr;
 		$resort = $db->fetchAll( $resortSel );
-	
+// 	echo "<pre>";
+// 	print_r($resort);
 		return $resort;
 	
 	
@@ -517,7 +525,58 @@ class ServiceContact extends AService {
 	
 	
 	
-	
+	/**
+	 * Findet anhand Des Namens die Contacte
+	 * @param string $lastname
+	 * @param string $firstname
+	 */
+	public  function ActionFindName($lastname,$firstname = "" ){
+		require_once 'db/contact/contacts.php';
+		$db = Contacts::getDefaultAdapter();
+		
+		
+		$spA = array();
+		$spA["uid"] = "uid";
+		//$spA["type"] = "type";
+		//$spA["id_name"] = "id";
+// 		$spA["create_date"] = "edata";
+// 		$spA["edit_date"] = "vdata";
+		
+		$spA["address_id"] = "main_contact_address_id";
+// 		$spA["phone_id"] = "main_contact_phone_id";
+// 		$spA["email_id"] = "main_contact_email_id";
+		
+		// 		$spA["firma"] = "firma";
+		// 		$spA["position"] = "position";
+		
+		$sel = $db->select ();
+		$sel->from( array('c' => "contacts" ), $spA );
+				
+		
+		$adresSp = array();
+// 		$adresSp["adr_id"] = "id";
+// 		$adresSp["adr_art"] = "art";
+		$adresSp["adr_firstname"] = "name_first";
+		$adresSp["adr_lastname"] = "name_last";
+		$adresSp["adr_street"] = "street";
+		$adresSp["adr_city"] = "city";
+// 		$adresSp["adr_zip"] = "zip";
+// 		$adresSp["adr_land"] = "land";
+// 		$adresSp["adr_infotext"] = "infotext";
+		
+		$sel->joinLeft(array('ca'=>"contact_address"), "c.main_contact_address_id = ca.id" ,$adresSp);
+		
+		//$sel->where("c.uid = ?",$contactuid);
+		//$sel->where("c.deleted = ?", "0");
+		
+		
+		$contactA = $db->fetchRow($sel);
+		print_r($contactA);
+		
+		return $contactA;
+		
+		return array("vor"=> "Remo","nach"=> "Bluhm");
+	}
 	
 	
 	

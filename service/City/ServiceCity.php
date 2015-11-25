@@ -172,9 +172,9 @@ class ServiceCity extends AService {
 		
 		if($ortRow !== NULL){
 			
-			$ortRow->offsetSet("gmap_lat", $lat);
-			$ortRow->offsetSet("gmap_lng", $lng);
-			$ortRow->offsetSet("gmap_zoom", $zoom);
+			$ortRow->offsetSet("map_lat", $lat);
+			$ortRow->offsetSet("map_lng", $lng);
+			$ortRow->offsetSet("map_zoom", $zoom);
 			
 			$ortRow->save();
 			return TRUE;
@@ -264,7 +264,7 @@ class ServiceCity extends AService {
 		$spA = array();
 		$spA["id"] = "id";
 		//$spA["anzahl"] = "count(uid)";
-		$spA["name_uid"] = "name_uid";
+		$spA["uid"] = "uid";
 		$spA["name"] = "name";
 		$spA["create"] = "edata";
 		$spA["edit"] = "vdata";
@@ -274,8 +274,14 @@ class ServiceCity extends AService {
 // 		$spA["landpart"] = "landpart";
 		
 		$ortListSel = $db->select ();
-		$ortListSel->from(array('o' => "resort_city"), $spA );
+		$ortListSel->from(array('c' => "resort_city"), $spA );
+		
+		$landSp = array();
+		$landSp["land_name"] = "name";
 	
+		$ortListSel->joinLeft(array('l'=>"resort_land"), "c.land = l.id ",$landSp );
+		
+		
 
 		$ortListSel->limit($count,$offset);
 		$allOrts = $db->fetchAll( $ortListSel );
@@ -286,13 +292,14 @@ class ServiceCity extends AService {
 	
 	/**
 	 * Fügt ein Element hinzu
+	 * @param string $cityuid Ist ein eindeutiger name für
 	 * @param string $name
 	 * @param string $zip
-	 * @param string $landkey
+	 * @param string $landkey Ist das Land
 	 * @param array $fields
 	 * @return integer|bool
 	 */
-	public function ActionNew($name,$zip,$landkey, $fields = array()){
+	public function ActionNew($cityuid,$name,$zip,$landkey=1, $fields = array()){
 
 		// Setzen der $fieldsvariabel auf array
 		if(!is_array($fields))$fields = array();
@@ -412,76 +419,39 @@ class ServiceCity extends AService {
 	
 
 	/**
-	 * Giebt den Ort Datensatz zurück
-	 * @param string $ortName
+	 * Giebt einen Ort Datensatz zurück
+	 * @param string $cityUid
 	 * @return array
 	 */
-	public function ActionSingle($ortName){
+	public function ActionSingle($cityUid){
 		$db = DBConnect::getConnect();
 		$ortListSel = $db->select ();
 		
 		$ortListSel->from(array("resort_city") );
 	
-		$ortListSel->where("name=?", $ortName);
-		$allOrts = $db->fetchRow( $ortListSel );
+		$ortListSel->where("uid=?", $cityUid);
+		$CityA = $db->fetchRow( $ortListSel );
 		
-		return $allOrts;
+		return $CityA;
 	}
 
+
 	
-	/**
-	 * Giebt den angefragten ort zurück
-	 * @param string $ortName
-	 */
-	public function ActionGetOrt($ortName){
-	
-	
-	//	require_once 'db/resort/resort_orte.php';
-	//	require_once 'db/contact/contact_access.php';
-		require_once 'db/contact/Contacts.php';
+// 	/**
+// 	 * Giebt den angefragten ort zurück
+// 	 * @param string $ortName
+// 	 */
+// 	public function ActionGetOrt($ortName){
+// 		require_once 'db/contact/Contacts.php';
+// 		$db = DBConnect::getConnect();
 		
-		
-		$db = DBConnect::getConnect();
-		
-		
-		$ortListSel = $db->select ();
+// 		$ortListSel = $db->select ();
+// 		$ortListSel->from(array("resort_orte") );
+// 		$ortListSel->where("name=?", $ortName);
+// 		$allOrts = $db->fetchRow( $ortListSel );
 
-// 		$spA = array();
-// 		$spA["o.name"];
-// 		$spA["in_menue"];
-
-// 		$spA["creat_date"] = "edata";
-// 		$spA["edit_date"] = "vdata";
-
-// 		$spA["create_guid"] = "usercreat";
-// 		$spA["c.usercreate_name"];
-// 		$spA["edit_guid"] = "useredit";
-// 		$spA["useredit_name"];
-		
-// 		$spA["text"];
-// 		$spA["gmaps_id"];
-// 		$spA["gmap_karte_x"];
-// 		$spA["gmap_karte_y"];
-// 		$spA["gmap_zoom"];
-
-
-		
-		#$ortListSel->from(array('o' => resort_orte::getTableNameStatic()) ,$spA);
-		$ortListSel->from(array("resort_orte") );
-				
-//		$ortListSel->joinLeft(array('u'=>contact_access::getTableNameStatic()), "o.usercreat = u.guid ",array() );
-	//	$ortListSel->joinLeft(array('c'=>Contacts::getTableNameStatic()), "u.contacts_id = c.id", array ('usercreate_name' => 'CONCAT(c.first_name," ",c.last_name )' ) );
-
-//		$ortListSel->joinLeft(array('u2'=>contact_access::getTableNameStatic()), "o.useredit = u2.guid " ,array() );
-	//	$ortListSel->joinLeft(array('c2'=>Contacts::getTableNameStatic()), "u2.contacts_id = c2.id", array ('useredit_name' => 'CONCAT(c2.first_name," ",c2.last_name )')  );
-		
-		
-		$ortListSel->where("name=?", $ortName);
-		$allOrts = $db->fetchRow( $ortListSel );
-
-		return $allOrts;
-		
-	}
+// 		return $allOrts;
+// 	}
 	
 	/**
 	 * Prüft ob es den Ort giebt falls ja giebt er diesen wieder

@@ -161,8 +161,8 @@ class Request {
 			$this->_sendDataRaw = $Data;
 			return ;
 		}
-// 		echo "<pre>";
-// 		print_r($GLOBALS);
+		echo "<pre>";
+		print_r($GLOBALS);
 		$SendDataString = NULL;
 		// Fals Daten über die Url gesendet wurden dann diese nehmen
 		if (! empty ( $GLOBALS ["_GET"] ["vars"] )) {
@@ -191,6 +191,8 @@ class Request {
 // 		echo $SendDataString;
 // 		echo $this->_sendDataArt;
 		$this->_sendDataRaw = $SendDataString;
+		echo "<pre>";
+		print_r($SendDataString);
 	}
 	
 	
