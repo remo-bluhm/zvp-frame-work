@@ -306,6 +306,27 @@ class Contacts extends DBTable {
 	public function findUid($uid, $testDeletet = TRUE){
 	    
 	    //SHOW TABLE STATUS FROM datenbank LIKE 'tabelle'
+	    // mit fetch row auslesen und
+	    //
+// 	    Array
+// (
+// [Name] => person
+// [Type] => InnoDB
+// [Row_format] => Fixed
+// [Rows] => 0
+// [Avg_row_length] => 0
+// [Data_length] => 16384
+// [Max_data_length] =>
+// [Index_length] => 0
+// [Data_free] => 0
+// [Auto_increment] => 1
+// [Create_time] =>
+// [Update_time] =>
+// [Check_time] =>
+// [Charset] => latin1_swedish_ci
+// [Create_options] =>
+// [Comment] => InnoDB free: 4096 kB
+// )
 		$sel = $this->select();
 		$sel->where( self::SP_UNID."= ?", $uid);
 		if($testDeletet === TRUE){
