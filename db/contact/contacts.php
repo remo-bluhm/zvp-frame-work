@@ -205,7 +205,7 @@ class Contacts extends DBTable {
 			$setInsert = TRUE;
 			while ( $setInsert )
 			{
-				$newUnId = self::generateUnId("bt");
+				$newUnId = self::generateUnId("bt-");
 				$allTubles = $this->findUid($newUnId,FALSE);
 			
 				if($allTubles === NULL){
@@ -268,7 +268,7 @@ class Contacts extends DBTable {
 	 * @return string
 	 */
 	public static function generateUnId($prefix){
-		return uniqid ($prefix."-");
+		return uniqid ($prefix);
 	}
 	
 	/**
@@ -304,6 +304,8 @@ class Contacts extends DBTable {
 	 * @return Zend_Db_Table_Row_Abstract|NULL
 	 */
 	public function findUid($uid, $testDeletet = TRUE){
+	    
+	    //SHOW TABLE STATUS FROM datenbank LIKE 'tabelle'
 		$sel = $this->select();
 		$sel->where( self::SP_UNID."= ?", $uid);
 		if($testDeletet === TRUE){
