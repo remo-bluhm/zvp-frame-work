@@ -41,21 +41,27 @@ class DBConnect {
 		
 		try {
 			
-			require_once 'Zend/Db.php';
-			require_once 'Zend/Db/Adapter/Pdo/Mysql.php';
+ 			require_once 'Zend/Db.php';
+ 			require_once 'Zend/Db/Adapter/Pdo/Mysql.php';
 		
-			$db = Zend_Db::factory (self::$config );
-			self::setAdappter ( $db );
-			$db->getConnection ();
+ 			$mysqli = new mysqli("db1146.mydbserver.com", "p41239d1", "mCmJzsfm54", "usr_p41239_1");
+ 			$result = $mysqli->query("SELECT * From contacts");
+ 			$row = $result->fetch_assoc();
+ 			//print_r($row);
+ 			
+  			$db = Zend_Db::factory (self::$config );
+  			self::setAdappter ( $db );
+  			//$db->getConnection ();
+  	
 			
 			// setzt das Profiling für den Fierfox
 			if($dbConfig->get("profiling_firefox", NULL) === "true"){
-				self::setProfilingFirebug($db);
-			}
+ 				self::setProfilingFirebug($db);
+ 			}
 			
 		
 			
-			self::$connect = $db;
+// 			self::$connect = $db;
 		
 		} catch ( Exception $e ) {
 			// @todo Die Exception noch loggen
