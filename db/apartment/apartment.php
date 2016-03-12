@@ -155,7 +155,7 @@ class Apartment extends DBTable {
 		}
 	}
 	
-	public function insert($data){
+	public function insertData($data){
 		$data[self::SP_DATA_CREATE] = DBTable::DateTime ();
 		$data[self::SP_DATA_EDIT] = DBTable::DateTime ();
 		return  parent::insert($data);

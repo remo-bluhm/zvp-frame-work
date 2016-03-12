@@ -44,14 +44,11 @@ class DBConnect {
  			require_once 'Zend/Db.php';
  			require_once 'Zend/Db/Adapter/Pdo/Mysql.php';
 		
- 			$mysqli = new mysqli("db1146.mydbserver.com", "p41239d1", "mCmJzsfm54", "usr_p41239_1");
- 			$result = $mysqli->query("SELECT * From contacts");
- 			$row = $result->fetch_assoc();
- 			//print_r($row);
+
  			
   			$db = Zend_Db::factory (self::$config );
   			self::setAdappter ( $db );
-  			//$db->getConnection ();
+  			$db->getConnection ();
   	
 			
 			// setzt das Profiling für den Fierfox
@@ -61,7 +58,7 @@ class DBConnect {
 			
 		
 			
-// 			self::$connect = $db;
+ 			self::$connect = $db;
 		
 		} catch ( Exception $e ) {
 			// @todo Die Exception noch loggen
@@ -85,6 +82,7 @@ class DBConnect {
 		Zend_Db_Table_Abstract::setDefaultAdapter ( $conn );
 		
 		$Prafix = self::$config->get ( self::CONF_DB_PRAFIX, FALSE );
+		
 		
 		if ($Prafix) {
 			
